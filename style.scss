@@ -1,0 +1,39 @@
+$font-stack: 'Pangolin', 'Montserrat', serif;
+
+body {
+    font-family: $font-stack;
+}
+
+.container {
+    background-color: #00F0F0;
+}
+
+header.container {
+    background-color: #0099CC;
+    border-top-right-radius: 1em;
+    border-top-left-radius: 1em;
+}
+
+footer.container {
+    background-color: #0099CC;
+    border-bottom-right-radius: 1em;
+    border-bottom-left-radius: 1em;
+}
+
+footer p {
+    float: right;
+    margin: 1em;
+    font-size: 18px;
+}
+
+.row ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 1em;
+}
+
+.row ul ul {
+    list-style-type: circle;
+    margin: 0;
+    padding: 1em;
+}
