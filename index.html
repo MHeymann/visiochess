@@ -31,13 +31,33 @@
 
 		<div class="container">
 			<div class="row">
-				<div class="col-m-1 col-lg-2">
+				<div class="col-xs-12 col-sm-3 col-md-3">
+					<p>left</p>
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<p>hehe</p>
+						</div>
+					</div>
 				</div>
-				<div class="col-xs-12 col-m-10 col-lg-8">
+				<div class="col-xs-12 col-sm-6 col-md-6">
 					<p>Stuff here</p>
 					<p>Amazing!!</p>
+					
 				</div>
-				<div class="col-m-1 col-lg-2">
+				<div class="col-xs-12 col-sm-3 col-md-3">
+					<p>right</p>
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<form action="php/user_upload.php" method="post"
+								enctype="multipart/form-data">
+								Select database to upload:
+								<input type="file" name="user_db"
+								id="user_db">
+								<input type="submit" value="Upload"
+								name="submit">
+							</form>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
