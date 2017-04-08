@@ -2,6 +2,8 @@
 *.css.map
 *.swp
 *~
+
+.my.cnf
 userfiles
 data
 
