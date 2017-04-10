@@ -12,9 +12,9 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 	$start_i = strlen($start_of_string);
 	$end_i = strlen($read_string);
 	for ($i = $start_i; //set index into read_string
-			(($i < $end_i) && ($read_string{$i} !== '"')); //loop conditionals
+			(($i < $end_i) && ($read_string[$i] !== '"')); //loop conditionals
 			$i++) {
-		$ret_string .= $read_string{$i};
+		$ret_string .= $read_string[$i];
 	}
 	return $ret_string;
 }
