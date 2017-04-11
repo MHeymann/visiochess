@@ -6,8 +6,15 @@
 ini_set('display_errors',1); // for the development PC only
 error_reporting(E_ALL); // ALWAYS
 
-
-function sscan_tag($read_string, $start_of_string = "[Event \"") {		
+/*
+ * Scan a tag as presented in PGN notation and return it's value.
+ * @param $read_string:		The string containing the tag to be read.
+ * @param $start_of_string: The start of the line being scanned,
+ *							used to determine the offset into the tag being
+ *							scanned. The default is the start of the
+ *							"Event" tag.
+ */
+function sscan_tag($read_string, $start_of_string = "[Event \"") {
 	$ret_string = "";
 	$start_i = strlen($start_of_string);
 	$end_i = strlen($read_string);
@@ -20,7 +27,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 }
 
 
-/* 
+/*
  * site root, ie, where in the broader directory tree
  * this site is hosted.  the Double dirname is to not
  * have the path end with php, as we want the actual 
@@ -68,21 +75,23 @@ if ($uploadOk == false) {
     echo "<p>Sorry, your file was not uploaded.\n</p>";
 	exit ("Upload failed one of the checks.");
 } else {
-    if (move_uploaded_file($_FILES["user_db"]["tmp_name"], SITE_ROOT . $target_file)) {
-        echo "<p>The file ". basename( $_FILES["user_db"]["name"]). " has been uploaded.\n</p>";
+	if (move_uploaded_file($_FILES["user_db"]["tmp_name"], SITE_ROOT .
+		$target_file)) {
+		echo "<p>The file " . basename( $_FILES["user_db"]["name"]) .
+			" has been uploaded.\n</p>";
     } else {
         echo "<p>Upload failed.\n</p>";
 		exit ("Upload failed.\n");
     }
 }
 
-/* 
- * Create a new database for this user.  
- * as we already checked for the existance 
+/*
+ * Create a new database for this user.
+ * as we already checked for the existance
  * of a png file with the same name
  * and passed to be able to get here,
  * it is safe to assume that we can expect no
- * clashes from here on.  
+ * clashes from here on.
  */
 
 $settings = parse_ini_file(__DIR__."/../.my.cnf", true);
@@ -107,7 +116,8 @@ $sql = "CREATE DATABASE " . $hash;
 if ($connect->query($sql) === TRUE) {
 	echo "<p>Database created successfully\n</p>";
 } else {
-	echo "<p>Error creating database " . $hash .": " . $connect->error . "</p>";
+	echo "<p>Error creating database " . $hash .": " . $connect->error .
+		"</p>";
 }
 
 
@@ -122,11 +132,32 @@ $connect->close();
  * Also implement some syntax validation in the process
  */
 
-$db_file = fopen(SITE_ROOT . $target_file, "r") or 
+$db_file = fopen(SITE_ROOT . $target_file, "r") or
 	die("Opening file for parsing to database failed!");
+
+
 
 $event_line = fgets($db_file);
 while (!feof($db_file)) {
+	/*
+	 * Declare variables for this while loop, so that if any variables
+	 * are missing in the PGN file, they are only given the empty string
+	 * as values.
+	 */
+	/* "Seven for the Dwarf-lords in their halls of stone" */
+	$event_name  = "";
+	$site_name   = "";
+	$event_date  = "";
+	$event_round = "";
+	$white_name  = "";
+	$black_name  = "";
+	$game_result = "";
+
+	/* "Three rings for the Elven kings under the sky..." */
+	$ECO_class	 = "";
+	$black_elo	 = "";
+	$white_elo	 = "";
+
 	if (feof($db_file)) {
 		break;
 	}
@@ -139,6 +170,11 @@ while (!feof($db_file)) {
 	$site_name = sscan_tag($site_line, '[Site "');
 
 	$date_line = fgets($db_file);
+	/*
+	 * TODO: harvest the year out of the date string, as this is the only
+	 * value of interest, in addition to many games in the default database
+	 * being uncomplete beyond the year.
+	 */
 	$event_date = sscan_tag($date_line, '[Date "');
 
 	$round_line = fgets($db_file);
@@ -153,17 +189,30 @@ while (!feof($db_file)) {
 	$result_line = fgets($db_file);
 	$game_result = sscan_tag($result_line, '[Result "');
 
-	$dud_line = fgets($db_file);
-	while (sscanf($dud_line, '[%s "%s"]', $a, $b) == 2) {
-		$dud_line = fgets($db_file);
+	/* Harvest ECO and elo's from optional tag data */
+	$optional_line = fgets($db_file);
+	while ($optional_line[0] == '[') {
+		$eleven_sub = substr($optional_line, 0, 11);
+
+		if (substr($optional_line, 0, 6) == '[ECO "') {
+			$ECO_class = sscan_tag($optional_line, '[ECO "');
+
+		if ($eleven_sub == '[BlackElo "') {
+			$black_elo = sscan_tag($optional_line, '[BlackElo "');
+
+		if ($eleven_sub == '[WhiteElo "') {
+			$white_elo = sscan_tag($optional_line, '[WhiteElo "');
+		}
+
+		$optional_line = fgets($db_file);
 	}
 	/*
 	 * TODO: assert that dud_line is now an empty line
 	 * before start of moves.
 	 */
 
-	/* 
-	 * TODO: Change following while to actually parse 
+	/*
+	 * TODO: Change following while to actually parse
 	 * moves, instead of just skippin lines
 	 */
 	$dud_line = fgets($db_file);
@@ -177,11 +226,14 @@ while (!feof($db_file)) {
 	 * TODO: instead of just echoing back the table entry info, add to data base
 	 * table
 	 */
-	echo "<p>----------------start of entry---------------------</p><p>" . 
-		$event_name . "</p><p>" . $site_name . 
-		"</p>\n<p>" . $event_date . "</p>\n<p>" . $event_round . "</p>\n<p>" . 
-		$white_name . "</p>\n<p>" . $black_name . " </p>\n<p>" . $game_result .
-		"</p>\n<p>-----------------end of entry---------------------</p>\n<p></p>";
+	echo "<p>----------------start of entry---------------------</p>";
+	echo "<p>event: " . $event_name . "</p><p>site: " . $site_name . "</p>";
+	echo "<p>date: " . $event_date . "</p><p>round: " . $event_round . "</p>";
+	echo "<p> white: " . $white_name . "</p><p>black: " . $black_name . "</p>";
+	echo "<p>result: " . $game_result . "</p><p>ECO: " . $ECO_class . "</p>";
+	echo "<p>white elo: " . $white_elo . "</p><p>black elo: " . $black_elo . "</p>";
+
+	echo "<p>-----------------end of entry---------------------</p>\n<p></p>";
 	$event_line = $dud_line;
 }
 
