@@ -19,7 +19,8 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 	$start_i = strlen($start_of_string);
 	$end_i = strlen($read_string);
 	for ($i = $start_i; //set index into read_string
-			(($i < $end_i) && ($read_string[$i] !== '"')); //loop conditionals
+		(($i < $end_i) &&
+		($read_string[$i] !== '"')); //loop conditionals
 			$i++) {
 		$ret_string .= $read_string[$i];
 	}
@@ -86,14 +87,11 @@ if ($uploadOk == false) {
 }
 
 /*
- * Create a new database for this user.
- * as we already checked for the existance
- * of a png file with the same name
- * and passed to be able to get here,
- * it is safe to assume that we can expect no
- * clashes from here on.
+ * Create a new database for this user. as we already checked for the
+ * existance of a png file with the same name and passed to be able to
+ * get here, it is safe to assume that we can expect no clashes from here
+ * on.
  */
-
 $settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 
 $servername = "localhost";
@@ -196,9 +194,11 @@ while (!feof($db_file)) {
 
 		if (substr($optional_line, 0, 6) == '[ECO "') {
 			$ECO_class = sscan_tag($optional_line, '[ECO "');
+		}
 
 		if ($eleven_sub == '[BlackElo "') {
 			$black_elo = sscan_tag($optional_line, '[BlackElo "');
+		}
 
 		if ($eleven_sub == '[WhiteElo "') {
 			$white_elo = sscan_tag($optional_line, '[WhiteElo "');
@@ -206,34 +206,67 @@ while (!feof($db_file)) {
 
 		$optional_line = fgets($db_file);
 	}
+
 	/*
 	 * TODO: assert that dud_line is now an empty line
 	 * before start of moves.
 	 */
 
 	/*
-	 * TODO: Change following while to actually parse
-	 * moves, instead of just skippin lines
+	 * Parse moves into array structure.
+	 * TODO: The end of line of the entire moves array still has an extra
+	 * two spaces after processing.  While this does not corrupt the data,
+	 * it does make the count of the moves array misleading.  This is
+	 * complicated by the fact, that the number of non-trivial entries is
+	 * a multiple of 3 when black wins, and one less than a multiple of
+	 * three when white wins.  Note, that, regardless of all of this, the
+	 * move count numbers follow a distinctive pattern:  move i has its
+	 * label i in array position (i - 1) * 3 in the $moves array. It may
+	 * therefore be necessary to make some adjustments here, once the
+	 * database structure has been finalized.
 	 */
+	$moves = "";
 	$dud_line = fgets($db_file);
-	while (!feof($db_file) && $dud_line{0} !== '[') {
+	while (!feof($db_file) && ($dud_line{0} !== '[') &&
+		($dud_line{0} !== '\r')) {
+		$moves .= $dud_line;
+		$dud_line = fgets($db_file);
+	}
+	/*
+	 * This is end of line (\r\n) characters in the windows setup, causing
+	 * each line to somehow have a \r\r at the end of the line. This 
+	 * workaround changes that to a simple space, as required in our setup.
+	 */
+	$moves = str_replace("\r\r", " ", $moves);
+	$moves = explode(" ", $moves);
+
+
+	while (!feof($db_file) && ($dud_line{0} !== '[')) {
 		$dud_line = fgets($db_file);
 	}
 
-
-
 	/*
-	 * TODO: instead of just echoing back the table entry info, add to data base
-	 * table
+	 * TODO: Instead of just echoing back the table entry info, add to
+	 * database table.
 	 */
 	echo "<p>----------------start of entry---------------------</p>";
-	echo "<p>event: " . $event_name . "</p><p>site: " . $site_name . "</p>";
-	echo "<p>date: " . $event_date . "</p><p>round: " . $event_round . "</p>";
-	echo "<p> white: " . $white_name . "</p><p>black: " . $black_name . "</p>";
-	echo "<p>result: " . $game_result . "</p><p>ECO: " . $ECO_class . "</p>";
-	echo "<p>white elo: " . $white_elo . "</p><p>black elo: " . $black_elo . "</p>";
-
-	echo "<p>-----------------end of entry---------------------</p>\n<p></p>";
+	echo "<p>event: " . $event_name . "</p><p>site: " . $site_name .
+		"</p>";
+	echo "<p>date: " . $event_date . "</p><p>round: " . $event_round .
+		"</p>";
+	echo "<p> white: " . $white_name . "</p><p>black: " . $black_name .
+		"</p>";
+	echo "<p>result: " . $game_result . "</p><p>ECO: " . $ECO_class .
+		"</p>";
+	echo "<p>white elo: " . $white_elo . "</p><p>black elo: " .
+		$black_elo . "</p>";
+	echo "<p>moves: </p><p>";
+	for ($i = 0; $i < count($moves); $i++) {
+		echo " " . $moves[$i];
+	}
+	echo "</p><p>move array size: " . count($moves) .
+		", consistently two more than expected...</p>";
+	echo "<p>-----------------end of entry---------------------</p>";
 	$event_line = $dud_line;
 }
 
