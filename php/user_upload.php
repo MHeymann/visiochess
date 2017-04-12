@@ -1,4 +1,7 @@
 <?php
+
+require "create_db.php";
+
 /* TODO:
  * remove the following line, as this is for development purposes only
  */
@@ -86,44 +89,14 @@ if ($uploadOk == false) {
     }
 }
 
+
 /*
  * Create a new database for this user. as we already checked for the
  * existance of a png file with the same name and passed to be able to
- * get here, it is safe to assume that we can expect no clashes from here
- * on.
+ * get here, it is reasonably  safe to assume that we can expect no clashes
+ * from here on.
  */
-$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
-
-$servername = "localhost";
-$username = $settings['client']['user'];
-$password = $settings['client']['password'];
-
-/*
- * Create connection to the local mysql server
- * as provided by the LAMP/MAMP stack.
- */
-$connect = new mysqli($servername, $username, $password);
-
-/* Check the newly created connection */
-if ($connect->connect_error) {
-	die("Connection failed: " . $connect->connect_error);
-}
-
-/*drop new database */
-$sql = "CREATE DATABASE " . $hash;
-if ($connect->query($sql) === TRUE) {
-	echo "<p>Database created successfully\n</p>";
-} else {
-	echo "<p>Error creating database " . $hash .": " . $connect->error .
-		"</p>";
-}
-
-
-/*
- * TODO: create new table in new database.
- */
-
-$connect->close();
+create_database($hash);
 
 /*
  * TODO:Parse the file into a db.
@@ -132,7 +105,6 @@ $connect->close();
 
 $db_file = fopen(SITE_ROOT . $target_file, "r") or
 	die("Opening file for parsing to database failed!");
-
 
 
 $event_line = fgets($db_file);
@@ -214,7 +186,7 @@ while (!feof($db_file)) {
 
 	/*
 	 * Parse moves into array structure.
-	 * TODO: The end of line of the entire moves array still has an extra
+	 * DONE: The end of line of the entire moves array still has an extra
 	 * two spaces after processing.  While this does not corrupt the data,
 	 * it does make the count of the moves array misleading.  This is
 	 * complicated by the fact, that the number of non-trivial entries is
@@ -231,16 +203,14 @@ while (!feof($db_file)) {
 		$moves .= $dud_line . " ";
 		$dud_line = trim(fgets($db_file));
 	}
-	/*
-	 * This is end of line (\r\n) characters in the windows setup, causing
-	 * each line to somehow have a \r\r at the end of the line. This
-	 * workaround changes that to a simple space, as required in our setup.
-	 */
-	// $moves = str_replace("\r\r", " ", $moves);
+
+	/* turn into one huge array */
 	$moves_messy = explode(" ", trim($moves));
-	// removes score from moves
+
+	/* removes score from moves */
 	unset($moves_messy[count($moves_messy) - 1]);
 
+	/* sort into two arrays, one for each player */
 	$moves = array("white" => array(), "black" => array());
 	$prev_player = "black"; // set black as initial so that first push is on white
 	foreach($moves_messy as $value) {
@@ -257,7 +227,7 @@ while (!feof($db_file)) {
 		}
 	}
 
-	// get's rid of dud empty lines between games
+	/* get's rid of dud empty lines between games */
 	while (!feof($db_file) && (empty($dud_line) || ($dud_line[0] !== '['))) {
 		$dud_line = trim(fgets($db_file));
 	}
@@ -287,8 +257,7 @@ while (!feof($db_file)) {
 		echo $move;
 	}
 	echo "</p><p>move array size: " . count($moves['white']) .
-		", more consistantly what we expect," .
-		" the only problem is the score counting as a move</p>";
+		", exactly what we expect. :)</p>";
 	echo "<p>-----------------end of entry---------------------</p>";
 	$event_line = $dud_line;
 }
