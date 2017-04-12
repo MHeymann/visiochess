@@ -31,7 +31,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 /*
  * site root, ie, where in the broader directory tree
  * this site is hosted.  the Double dirname is to not
- * have the path end with php, as we want the actual 
+ * have the path end with php, as we want the actual
  * site root.
  */
 define ('SITE_ROOT', realpath(dirname(dirname(__FILE__))));
@@ -107,7 +107,7 @@ $connect = new mysqli($servername, $username, $password);
 /* Check the newly created connection */
 if ($connect->connect_error) {
 	die("Connection failed: " . $connect->connect_error);
-} 
+}
 
 /*drop new database */
 $sql = "CREATE DATABASE " . $hash;
@@ -125,7 +125,7 @@ if ($connect->query($sql) === TRUE) {
 
 $connect->close();
 
-/* 
+/*
  * TODO:Parse the file into a db.
  * Also implement some syntax validation in the process
  */
@@ -226,23 +226,40 @@ while (!feof($db_file)) {
 	 * database structure has been finalized.
 	 */
 	$moves = "";
-	$dud_line = fgets($db_file);
-	while (!feof($db_file) && ($dud_line{0} !== '[') &&
-		($dud_line{0} !== '\r')) {
-		$moves .= $dud_line;
-		$dud_line = fgets($db_file);
+	$dud_line = trim(fgets($db_file));
+	while (!feof($db_file) && !empty($dud_line) && ($dud_line[0] !== '[')) {
+		$moves .= $dud_line . " ";
+		$dud_line = trim(fgets($db_file));
 	}
 	/*
 	 * This is end of line (\r\n) characters in the windows setup, causing
-	 * each line to somehow have a \r\r at the end of the line. This 
+	 * each line to somehow have a \r\r at the end of the line. This
 	 * workaround changes that to a simple space, as required in our setup.
 	 */
-	$moves = str_replace("\r\r", " ", $moves);
-	$moves = explode(" ", $moves);
+	// $moves = str_replace("\r\r", " ", $moves);
+	$moves_messy = explode(" ", trim($moves));
+	// removes score from moves
+	unset($moves_messy[count($moves_messy) - 1]);
 
+	$moves = array("white" => array(), "black" => array());
+	$prev_player = "black"; // set black as initial so that first push is on white
+	foreach($moves_messy as $value) {
+		$value = trim($value);
+		$value = str_replace(".", "", $value);
+		if(!is_numeric($value) && !empty($value) && ($value != $game_result)) {
+			if($prev_player == "black") {
+				array_push($moves["white"], $value);
+				$prev_player = "white";
+			} else {
+				array_push($moves["black"], $value);
+				$prev_player = "black";
+			}
+		}
+	}
 
-	while (!feof($db_file) && ($dud_line{0} !== '[')) {
-		$dud_line = fgets($db_file);
+	// get's rid of dud empty lines between games
+	while (!feof($db_file) && (empty($dud_line) || ($dud_line[0] !== '['))) {
+		$dud_line = trim(fgets($db_file));
 	}
 
 	/*
@@ -261,11 +278,17 @@ while (!feof($db_file)) {
 	echo "<p>white elo: " . $white_elo . "</p><p>black elo: " .
 		$black_elo . "</p>";
 	echo "<p>moves: </p><p>";
-	for ($i = 0; $i < count($moves); $i++) {
-		echo " " . $moves[$i];
+	$num_moves = max(count($moves['white']), count($moves['black']));
+	for ($i = 0; $i < $num_moves; $i++) {
+		$move = ($i+1) . ": white: " . $moves['white'][$i];
+		if(isset($moves['black'][$i])) {
+			$move .= ", black: " . $moves['black'][$i] . "<br>";
+		}
+		echo $move;
 	}
-	echo "</p><p>move array size: " . count($moves) .
-		", consistently two more than expected...</p>";
+	echo "</p><p>move array size: " . count($moves['white']) .
+		", more consistantly what we expect," .
+		" the only problem is the score counting as a move</p>";
 	echo "<p>-----------------end of entry---------------------</p>";
 	$event_line = $dud_line;
 }
