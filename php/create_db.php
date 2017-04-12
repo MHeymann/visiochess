@@ -18,7 +18,7 @@ function create_database($db_name) {
 	}
 
 	/*drop new database */
-	$sql = "CREATE DATABASE " . $db_name;
+	$sql = "CREATE DATABASE `" . $db_name . "`";
 	if ($connect->query($sql) === TRUE) {
 		echo "<p>Database created successfully\n</p>";
 	} else {

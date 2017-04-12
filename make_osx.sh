@@ -30,8 +30,8 @@ fi
 # create database
 # TODO: change names of php script and sql
 # database when we know what they will be
-php -f ../php/create_db.php
-mv ../php/db.sql ./
+php -f ../php/create_default_db.php
+#mv ../php/db.sql ./
 cd ../
 
 read -s -p "Enter Password for visiochess mysql:

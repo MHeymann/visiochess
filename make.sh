@@ -34,3 +34,5 @@ echo "[client]
 user=visiochess
 password=$VISIOPW
 " > .my.cnf
+
+#TODO: Add visiochess as a mysql user...
