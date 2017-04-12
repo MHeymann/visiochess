@@ -79,12 +79,6 @@ if ($uploadOk == false) {
  */
 create_database($hash);
 
-/*
- * TODO:Parse the file into a db.
- * Also implement some syntax validation in the process
- */
-
-////////////////////////////////////////
 parse_pgn_file_to_db($target_file, $hash);
 
 ?>

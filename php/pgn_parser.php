@@ -1,6 +1,7 @@
 <?php
 require_once("define.php");
 
+
 /*
  * Scan a tag as presented in PGN notation and return it's value.
  * @param $read_string:		The string containing the tag to be read.
@@ -22,7 +23,9 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 	return $ret_string;
 }
 
-
+/*
+ * TODO:Parse the entries into a db.
+ */
 function parse_pgn_file_to_db($target_file, $db_name) {
 	echo "Database to be parsed to: " . $db_name;
 
