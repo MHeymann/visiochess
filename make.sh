@@ -35,4 +35,18 @@ user=visiochess
 password=$VISIOPW
 " > .my.cnf
 
+#echo "Enter root mysql password when probed"
+read -s -p "Enter the root mysql password: " ROOTPW
+HAS_VISIO_USER="$(mysql -uroot -p$ROOTPW -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'visiochess')")"
+
+if [ $HAS_VISIO_USER == 1 ]
+then
+	echo "Enter root mysql password again when probed"
+	mysql -uroot -p$ROOTPW -sse "SET PASSWORD FOR 'visiochess'@'localhost' = '${VISIOPW}'"
+else
+	mysql -uroot -p$ROOTPW -sse "CREATE USER 'visiochess'@'localhost' IDENTIFIED BY '${VISIOPW}'"
+	mysql -uroot -p$ROOTPW -sse "GRANT ALL PRIVILEGES ON * . * TO 'visiochess'@'localhost'"
+	mysql -uroot -p$ROOTPW -sse "FLUSH PRIVILEGES;"
+fi
+
 #TODO: Add visiochess as a mysql user...
