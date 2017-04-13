@@ -15,6 +15,8 @@
 
 		<link href="css/style.css" rel="stylesheet">
 		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/sha256.js"></script>
 
 
 		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -48,8 +50,8 @@
 					<p>right</p>
 					<div class="panel panel-default">
 						<div class="panel-body">
-							<form action="php/user_upload.php" method="post"
-								enctype="multipart/form-data">
+							<form action="php/user_upload.php" id="up_form"
+								method="post" enctype="multipart/form-data">
 								Select database to upload:
 								<input type="file" name="user_db"
 								id="user_db">
