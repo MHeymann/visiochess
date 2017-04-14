@@ -1,6 +1,10 @@
 <?php
 
-function create_database($db_name) {
+function create_database($db_name, $target_file) {
+	/* just for testing */
+	$max_move_length = get_longest_moves_string($target_file);
+	echo "The length of the longest move is: ". $max_move_length;
+	
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 
 	$servername = "localhost";
@@ -14,7 +18,7 @@ function create_database($db_name) {
 
 	/* Check the newly created connection */
 	if ($connect->connect_error) {
-		 die("Connection failed: " . $connect->connect_error);
+		die("Connection failed: " . $connect->connect_error);
 	}
 
 	/*drop new database */
