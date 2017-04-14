@@ -14,7 +14,7 @@ function create_database($db_name) {
 
 	/* Check the newly created connection */
 	if ($connect->connect_error) {
-		die("Connection failed: " . $connect->connect_error);
+		 die("Connection failed: " . $connect->connect_error);
 	}
 
 	/*drop new database */
