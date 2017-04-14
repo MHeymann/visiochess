@@ -196,11 +196,9 @@ function parse_pgn_file_to_db($target_file, $db_name) {
  * @param $read_string:		The string containing the tag to be read.
  * @param $start_of_string: The start of the line being scanned.
 */
-function get_longest_moves_string($target_file, $db_name) {
+function get_longest_moves_string($target_file) {
 	$max_move_string = 0;
 	
-	echo "Database to be parsed to: " . $db_name;
-
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
 
@@ -311,9 +309,9 @@ function get_longest_moves_string($target_file, $db_name) {
 		/* turn back into atring */
 		$moves_string = implode(" ", $moves_messy);
 		
+		/* find longer string */
 		if (strlen($moves_string) > $max_move_string) {
 			$max_move_string = strlen($moves_string);
-			echo "long string: ". $moves_string;
 		}	 
 
 	}

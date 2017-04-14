@@ -78,11 +78,7 @@ if ($uploadOk == false) {
  * get here, it is reasonably  safe to assume that we can expect no clashes
  * from here on.
  */
-create_database($hash);
+create_database($hash, $target_file);
 
 parse_pgn_file_to_db($target_file, $hash);
-
-$max_move_length = get_longest_moves_string($target_file, $hash);
-echo "The longest move is: ". $max_move_length;
-
 ?>
