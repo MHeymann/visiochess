@@ -18,7 +18,7 @@ error_reporting(E_ALL); // ALWAYS
  * have the path end with php, as we want the actual
  * site root.
  */
-define ('SITE_ROOT', realpath(dirname(dirname(__FILE__))));
+/* define ('SITE_ROOT', realpath(dirname(dirname(__FILE__)))); */
 
 $target_dir = "/data/";
 
@@ -36,10 +36,11 @@ $target_file = $target_dir . $hash . "." . pathinfo(basename(
 $uploadOk = true;
 
 /* Check if file already exists */
-if (file_exists(SITE_ROOT.$target_file)) {
+/* Commented out for testing purposes */
+/* if (file_exists(SITE_ROOT.$target_file)) {
     echo "<p>file exists.\n</p>";
     $uploadOk = false;
-}
+} */
 
 /* Check file size */
 /* TODO: this limit must be revised for realistic db sizes */
@@ -80,5 +81,8 @@ if ($uploadOk == false) {
 create_database($hash);
 
 parse_pgn_file_to_db($target_file, $hash);
+
+$max_move_length = get_longest_moves_string($target_file, $hash);
+echo "The longest move is: ". $max_move_length;
 
 ?>
