@@ -28,13 +28,13 @@
 			<![endif]-->
 	</head>
 	<body>
-		<header id="top" class="container"> 
+		<header id="top" class="container">
 			<h1>VisioChess!</h1>
 		</header>
 
 		<div class="container">
 			<div class="row">
-				<div class="col-xs-12 col-sm-3 col-md-3">
+				<div class="col-xs-12 col-sm-3">
 					<p>left</p>
 					<div class="panel panel-default">
 						<div class="panel-body">
@@ -42,12 +42,61 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-xs-12 col-sm-6 col-md-6">
+				<div class="col-xs-12 col-sm-6">
 					<p>Stuff here</p>
 					<p>Amazing!!</p>
-					
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<form action="php/query.php" id="filter_form"
+								method="post" enctype="multipart/form-data">
+								<h3>Select filters:</h3>
+
+								<label name="startyear"
+								class="control-label col-xs-12 col-sm-4">
+									Start Year:
+								</label>
+								<input type="text" name="year-low" placeholder="Low"
+								class="control-label col-xs-12 col-sm-4">
+								<input type="text" name="year-high" placeholder="High"
+								class="control-label col-xs-12 col-sm-4">
+
+								<label name="black-elo"
+								class="control-label col-xs-12 col-sm-4">
+									Black Elo:
+								</label>
+								<input type="text" name="black-elo-low" placeholder="Low"
+								class="control-label col-xs-12 col-sm-4">
+								<input type="text" name="black-elo-high" placeholder="High"
+								class="control-label col-xs-12 col-sm-4">
+
+								<label name="whileelo"
+								class="control-label col-xs-12 col-sm-4">
+									White Elo:
+								</label>
+								<input type="text" name="white-elo-low" placeholder="Low"
+								class="control-label col-xs-12 col-sm-4">
+								<input type="text" name="white-elo-high" placeholder="High"
+								class="control-label col-xs-12 col-sm-4">
+
+								<label name="eco"
+								class="control-label col-xs-12 col-sm-4">
+									ECO Code:
+								</label>
+								<input type="text" name="eco-type" placeholder="A/B/C/D/E"
+								class="control-label col-xs-12 col-sm-4">
+								<input type="text" name="eco-low" placeholder="Low"
+								class="control-label col-xs-12 col-sm-2">
+								<input type="text" name="eco-high" placeholder="High"
+								class="control-label col-xs-12 col-sm-2">
+
+								<input type="submit" value="Apply" name="submit"
+								class="col-xs-12 col-sm-4 col-sm-push-4">
+							</form>
+						</div>
+					</div>
+
 				</div>
-				<div class="col-xs-12 col-sm-3 col-md-3">
+				<div class="col-xs-12 col-sm-3">
 					<p>right</p>
 					<div class="panel panel-default">
 						<div class="panel-body">
