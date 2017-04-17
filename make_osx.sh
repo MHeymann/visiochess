@@ -36,6 +36,8 @@ read -s -p "Enter Password for visiochess mysql:
 echo "[client]
 user=visiochess
 password=$VISIOPW
+mysql_server=127.0.0.1
+php_server=127.0.0.1:8000
 " > ../.my.cnf
 
 # get root passowrd to interact with mysql server
@@ -73,6 +75,9 @@ fi
 php -f ../php/create_default_db.php
 #mv ../php/db.sql ./
 cd ../
+
+# start php server in seperate window - we could do the same with the mysql server
+xterm -hold -e "php -S 127.0.0.1:8000" &
 
 # stop mysql server (perhaps we should not stop it..)
 # (we need it up to handle user queries...)
