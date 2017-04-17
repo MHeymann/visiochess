@@ -33,6 +33,7 @@ echo "Thanks! Please do not lose"
 echo "[client]
 user=visiochess
 password=$VISIOPW
+mysql_server=localhost
 " > .my.cnf
 
 #echo "Enter root mysql password when probed"
