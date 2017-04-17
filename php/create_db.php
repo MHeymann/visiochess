@@ -8,7 +8,7 @@ function create_database($db_name, $target_file) {
 
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 
-	$servername = "127.0.0.1"; // needs ip on osx, will this work on Ubuntu?
+	$servername = $settings['client']['mysql_server'];
 	$username = $settings['client']['user'];
 	$password = $settings['client']['password'];
 	/*
