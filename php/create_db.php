@@ -1,4 +1,5 @@
 <?php
+require_once "pgn_parser.php";
 
 function create_database($db_name, $target_file) {
 	/* just for testing */
