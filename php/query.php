@@ -8,5 +8,7 @@ $filters = array();
 foreach($_POST as $filter_field => $value) {
   array_push($filters, "filter: " . $filter_field . ", value: " . $value);
 }
+echo "<p>";
 echo json_encode($filters);
+echo "</p>";
 ?>

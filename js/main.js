@@ -63,12 +63,13 @@ function handle_filter_submit(event) {
 		data: filters,
 		dataType: 'html',
 		success: function(response) {
-			console.log(response);
+			//console.log(response);
 			// render results
+			$("#temp_results").html(response);
 		},
 		error: function (xhr, textStatus, errorMessage) {
-      console.log(errorMessage);
-    }
+			console.log(errorMessage);
+		}
 	});
 }
 
