@@ -25,18 +25,19 @@ $target_dir = "/data/";
 /* receive the file and run some tests */
 
 /* Calculate hash */
-$hash = hash_file("sha256", $_FILES["user_db"]["tmp_name"]);
+$hash = hash_file("sha256", $_FILES["user_db_uploader"]["tmp_name"]);
 
 /* TODO: get hash from user as well and compare to our hash */
 
 /*Set up the target file name */
 $target_file = $target_dir . $hash . "." . pathinfo(basename(
-	$_FILES["user_db"]["name"]), PATHINFO_EXTENSION);
+	$_FILES["user_db_uploader"]["name"]), PATHINFO_EXTENSION);
 
 $uploadOk = true;
 
 /* Check if file already exists */
 /* Commented out for testing purposes */
+/* TODO: put this test back in */
 /* if (file_exists(SITE_ROOT.$target_file)) {
     echo "<p>file exists.\n</p>";
     $uploadOk = false;
@@ -44,7 +45,7 @@ $uploadOk = true;
 
 /* Check file size */
 /* TODO: this limit must be revised for realistic db sizes */
-if ($_FILES["user_db"]["size"] > 5000000) {
+if ($_FILES["user_db_uploader"]["size"] > 5000000) {
     echo "<p>File too large.\n</p>";
     $uploadOk = false;
 }
@@ -61,9 +62,9 @@ if ($uploadOk == false) {
     echo "<p>Sorry, your file was not uploaded.\n</p>";
 	exit ("Upload failed one of the checks.");
 } else {
-	if (move_uploaded_file($_FILES["user_db"]["tmp_name"], SITE_ROOT .
+	if (move_uploaded_file($_FILES["user_db_uploader"]["tmp_name"], SITE_ROOT .
 		$target_file)) {
-		echo "<p>The file " . basename( $_FILES["user_db"]["name"]) .
+		echo "<p>The file " . basename( $_FILES["user_db_uploader"]["name"]) .
 			" has been uploaded.\n</p>";
     } else {
         echo "<p>Upload failed.\n</p>";

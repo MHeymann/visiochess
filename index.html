@@ -91,25 +91,40 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-xs-12 col-sm-6">
-					<p>Stuff here</p>
-					<div id="temp_results">
-					<p>Amazing!!</p>
-					</div>
-					
+				<div class="col-xs-12 col-sm-4">
 
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div id="temp_results">
+								<p>Stuff here</p>
+								<p>Amazing!!</p>
+							</div>
+						</div>
+					</div>
 				</div>
-				<div class="col-xs-12 col-sm-3">
-					<p>right</p>
+				<div class="col-xs-12 col-sm-4">
 					<div class="panel panel-default">
 						<div class="panel-body">
 							<form action="php/user_upload.php" id="up_form"
 								method="post" enctype="multipart/form-data">
 								Select database to upload:
-								<input type="file" name="user_db"
-								id="user_db">
+								<input type="file" name="user_db_uploader"
+								id="user_db_uploader">
 								<input type="submit" value="Upload"
 								name="submit">
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-12 col-sm-4">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<form id="db_select_form">
+								<select name="db_selector" id="db_selector" size="3"
+									style="max-width:90%">
+										<option>Default</option>
+									<optgroup label="user uploaded">
+								</select>
 							</form>
 						</div>
 					</div>
