@@ -49,7 +49,7 @@ function handle_pgn_submit(e) {
 
 			success: function(response) {
 				// render results
-				$("#temp_results").html(response);
+				$("#temp_results").append(response);
 			},
 			error: function (xhr, textStatus, errorMessage) {
 				console.log(errorMessage);
