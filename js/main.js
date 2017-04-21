@@ -5,27 +5,24 @@ function handle_pgn_submit(e) {
 	e.preventDefault();
 	var fileSubmitter = document.getElementById("user_db_uploader");
 
-	var $form = $('#up_form');
-	send_url = $form.attr("action");
-	console.log("action url: ", send_url);
-
-	var form_data = new FormData();
-
 	if (('files' in fileSubmitter) && (fileSubmitter.files.length == 1)) {
 		var file = fileSubmitter.files[0];
-		form_data.append("user_db_uploader", file)
 		var reader = new FileReader();
+		var $form = $('#up_form');
+		send_url = $form.attr("action");
+		console.log("action url: ", send_url);
 
 		/* readers load files asyncronously */
 		reader.onload = function(e) {
 			var text = reader.result;
 			var i = pgnHashes.length;
-			pgnHashes[i] = [file.name, hex_sha256(text)];
+			pgnHashes[i] = [file.name, hex_sha256(text), file];
 			console.log("New file " + pgnHashes[i][0] + " with hash: " + 
 					pgnHashes[i][1]);
 			var db_selector = document.getElementById("db_selector");
 			var option = document.createElement("option");
-			option.text = file.name;
+			option.text = file.name; // set name a clickable display
+			option.value = pgnHashes[i][1]; //set hash as identifiable val
 			db_selector.add(option);
 		}
 
@@ -36,26 +33,7 @@ function handle_pgn_submit(e) {
 		 */
 		reader.readAsText(file);
 
-		$.ajax({
-			url: send_url,
-			type: 'post',
-			data: form_data,
-			dataType: 'html',
-
-			/* these three are necessary for file uploads with ajax */
-			cache: false,
-			contentType: false,
-			processData: false,
-
-			success: function(response) {
-				// render results
-				$("#temp_results").append(response);
-			},
-			error: function (xhr, textStatus, errorMessage) {
-				console.log(errorMessage);
-			}
-		});
-
+		submit_file(file, send_url);
 
 	} else {
 		console.log("Something is wrong with the file input object...");
@@ -68,7 +46,36 @@ function handle_pgn_submit(e) {
 	}
 }
 
-function getFormData($form){
+function submit_file(file, send_url) {
+
+	var form_data = new FormData();
+	form_data.append("user_db_uploader", file)
+
+	$.ajax({
+		url: send_url,
+		type: 'post',
+		data: form_data,
+		dataType: 'html',
+		/* make synchronous so that once reupload of filters can be done
+		 * again */
+		async: false,
+		/* these three are necessary for file uploads with ajax */
+		cache: false,
+		contentType: false,
+		processData: false,
+
+		success: function(response) {
+			// render results
+			$("#temp_results").append(response);
+		},
+		error: function (xhr, textStatus, errorMessage) {
+			console.log(errorMessage);
+		}
+	});
+
+}
+
+function getFormData($form) {
     var unindexed_array = $form.serializeArray();
     var indexed_array = {};
 
@@ -95,7 +102,6 @@ function handle_filter_submit(event) {
 	alert('Sending filters, look at console');
 
 	$.ajax({
-		// this needs to be changed such that it fetces this from the config file
 		url: send_url,
 		type: 'post',
 		data: filters,
@@ -111,6 +117,20 @@ function handle_filter_submit(event) {
 	});
 }
 
+function get_file_from_hash(hash) {
+	var i;
+	for (i = 0; i < pgnHashes.length; i++) {
+		if (pgnHashes[i][1] == hash) {
+			break;
+		}
+	}
+	if (i == pgnHashes.length) {
+		return null;
+	} else {
+		return pgnHashes[i][2];
+	}
+}
+
 window.onload = function() {
 	/* TODO 
 	 * Add function that, when files are selected, checks them for size
@@ -123,4 +143,26 @@ window.onload = function() {
 	 * the filters.  
 	 */
 	$('#filter_form').submit(handle_filter_submit);
+
+	$("#test_reupload").click(function(e) {
+		var i = pgnHashes.length;
+		if (i > 0) {
+			$.ajax({
+				url: "php/reload_pgn_db.php",
+				type: 'post',
+				data: {
+					"hash": pgnHashes[i-1][1]
+				},
+				dataType: "html",
+				success: function(response) {
+					$("#temp_results").append("<p>--------reload-----------</p>");
+					$("#temp_results").append(response);
+				},
+				error: function (xhr, textStatus, errorMessage) {
+					console.log(errorMessage);
+				}
+
+			});
+		}
+	});
 }
