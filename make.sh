@@ -34,6 +34,7 @@ echo "[client]
 user=visiochess
 password=$VISIOPW
 mysql_server=localhost
+moves_table=flat
 " > .my.cnf
 
 #echo "Enter root mysql password when probed"

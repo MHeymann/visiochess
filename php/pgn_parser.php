@@ -173,8 +173,8 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 			"</p>";
 		echo "<p>white elo: " . $white_elo . "</p><p>black elo: " .
 			$black_elo . "</p>";
-		echo "<p>moves: </p><p>";
 		$num_moves = max(count($moves['white']), count($moves['black']));
+		/*
 		for ($i = 0; $i < $num_moves; $i++) {
 			$move = ($i+1) . ": white: " . $moves['white'][$i];
 			if(isset($moves['black'][$i])) {
@@ -182,8 +182,9 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 			}
 			echo $move;
 		}
+		 */
 		echo "</p><p>move array size: " . count($moves['white']) .
-			", exactly what we expect. :)</p>";
+			", exactly what we expect, " . $num_moves . " :)</p>";
 		echo "<p>-----------------end of entry---------------------</p>";
 		$event_line = $dud_line;
 	}
@@ -192,7 +193,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 }
 
 /* Returns the longest string of chess moves, which will be used to
- * determine the width of the 'moves' column. 
+ * determine the width of the 'moves' column.
  * @param $read_string:		The string containing the tag to be read.
  * @param $start_of_string: The start of the line being scanned.
 */

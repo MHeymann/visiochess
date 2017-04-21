@@ -38,6 +38,7 @@ user=visiochess
 password=$VISIOPW
 mysql_server=127.0.0.1
 php_server=127.0.0.1:8000
+moves_table=flat
 " > ../.my.cnf
 
 # get root passowrd to interact with mysql server
