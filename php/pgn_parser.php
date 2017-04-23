@@ -85,7 +85,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		$result_line = fgets($db_file);
 		$game_result = sscan_tag($result_line, '[Result "');
 
-	/* Harvest ECO and elo's from optional tag data */
+		/* Harvest ECO and elo's from optional tag data */
 		$optional_line = fgets($db_file);
 		while ($optional_line[0] == '[') {
 			$eleven_sub = substr($optional_line, 0, 11);
@@ -106,59 +106,6 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		}
 
 		/*
-		 * TODO: assert that dud_line is now an empty line
-		 * before start of moves.
-		 */
-
-		/*
-		 * Parse moves into array structure.
-		 * DONE: The end of line of the entire moves array still has an extra
-		 * two spaces after processing.  While this does not corrupt the data,
-		 * it does make the count of the moves array misleading.  This is
-		 * complicated by the fact, that the number of non-trivial entries is
-		 * a multiple of 3 when black wins, and one less than a multiple of
-		 * three when white wins.  Note, that, regardless of all of this, the
-		 * move count numbers follow a distinctive pattern:  move i has its
-		 * label i in array position (i - 1) * 3 in the $moves array. It may
-		 * therefore be necessary to make some adjustments here, once the
-		 * database structure has been finalized.
-		 */
-		$moves = "";
-		$dud_line = trim(fgets($db_file));
-		while (!feof($db_file) && !empty($dud_line) && ($dud_line[0] !== '[')) {
-			$moves .= $dud_line . " ";
-			$dud_line = trim(fgets($db_file));
-		}
-
-	/* turn into one huge array */
-		$moves_messy = explode(" ", trim($moves));
-
-	/* removes score from moves */
-		unset($moves_messy[count($moves_messy) - 1]);
-
-	/* sort into two arrays, one for each player */
-		$moves = array("white" => array(), "black" => array());
-		$prev_player = "black"; // set black as initial so that first push is on white
-		foreach($moves_messy as $value) {
-			$value = trim($value);
-			$value = str_replace(".", "", $value);
-			if(!is_numeric($value) && !empty($value) && ($value != $game_result)) {
-				if($prev_player == "black") {
-					array_push($moves["white"], $value);
-					$prev_player = "white";
-				} else {
-					array_push($moves["black"], $value);
-					$prev_player = "black";
-				}
-			}
-		}
-
-	/* get's rid of dud empty lines between games */
-		while (!feof($db_file) && (empty($dud_line) || ($dud_line[0] !== '['))) {
-			$dud_line = trim(fgets($db_file));
-		}
-
-		/*
 		 * TODO: Instead of just echoing back the table entry info, add to
 		 * database table.
 		 */
@@ -173,18 +120,67 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 			"</p>";
 		echo "<p>white elo: " . $white_elo . "</p><p>black elo: " .
 			$black_elo . "</p>";
-		$num_moves = max(count($moves['white']), count($moves['black']));
+
 		/*
-		for ($i = 0; $i < $num_moves; $i++) {
-			$move = ($i+1) . ": white: " . $moves['white'][$i];
-			if(isset($moves['black'][$i])) {
-				$move .= ", black: " . $moves['black'][$i] . "<br>";
-			}
-			echo $move;
-		}
+		 * TODO: assert that dud_line is now an empty line
+		 * before start of moves.
 		 */
-		echo "</p><p>move array size: " . count($moves['white']) .
-			", exactly what we expect, " . $num_moves . " :)</p>";
+
+		/*
+		 * Parse moves into array structure.
+		 */
+		$moves = "";
+		$dud_line = trim(fgets($db_file));
+		while (!feof($db_file) && !empty($dud_line) && ($dud_line[0] !== '[')) {
+			$moves .= $dud_line . " ";
+			$dud_line = trim(fgets($db_file));
+		}
+
+		/* turn into one huge array */
+		$moves_messy = explode(" ", trim($moves));
+		/* removes score from moves */
+		unset($moves_messy[count($moves_messy) - 1]);
+
+
+		$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
+		$moves_approach = $settings['client']['moves_table'];
+		if ($moves_approach == "flat") {
+			$moves = implode(" ", $moves_messy);
+			echo "<p>" . $moves . "</p>";
+			echo "<p> Length: " . strlen($moves) . "</p>";
+		} else {
+			/* sort into two arrays, one for each player */
+			$moves = array("white" => array(), "black" => array());
+			$prev_player = "black"; // set black as initial so that first push is on white
+			foreach($moves_messy as $value) {
+				$value = trim($value);
+				$value = str_replace(".", "", $value);
+				if(!is_numeric($value) && !empty($value) && ($value != $game_result)) {
+					if($prev_player == "black") {
+						array_push($moves["white"], $value);
+						$prev_player = "white";
+					} else {
+						array_push($moves["black"], $value);
+						$prev_player = "black";
+					}
+				}
+			}
+			$num_moves = max(count($moves['white']), count($moves['black']));
+			for ($i = 0; $i < $num_moves; $i++) {
+				$move = ($i+1) . ": white: " . $moves['white'][$i];
+				if(isset($moves['black'][$i])) {
+					$move .= ", black: " . $moves['black'][$i] . "<br>";
+				}
+				echo "<p>" . $move . "</p>";
+			}
+			echo "</p><p>move array size: " . count($moves['white']) .
+				", exactly what we expect, " . $num_moves . " :)</p>";
+		}
+		/* get's rid of dud empty lines between games */
+		while (!feof($db_file) && (empty($dud_line) || ($dud_line[0] !== '['))) {
+			$dud_line = trim(fgets($db_file));
+		}
+
 		echo "<p>-----------------end of entry---------------------</p>";
 		$event_line = $dud_line;
 	}
@@ -237,11 +233,7 @@ function get_longest_moves_string($target_file) {
 		$site_name = sscan_tag($site_line, '[Site "');
 
 		$date_line = fgets($db_file);
-		/*
-		 * TODO: harvest the year out of the date string, as this is the only
-		 * value of interest, in addition to many games in the default database
-		 * being uncomplete beyond the year.
-		 */
+
 		$event_date = sscan_tag($date_line, '[Date "');
 
 		$round_line = fgets($db_file);
