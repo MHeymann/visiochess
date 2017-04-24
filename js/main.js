@@ -89,7 +89,7 @@ function getFormData($form) {
 
 function handle_filter_response(response) {
 	// render results
-	$("#temp_results").html(response);
+	$("#temp_results").append("<p>" + JSON.stringify(response.message) + "</p>");
 }
 
 function handle_filter_submit(event) {
@@ -111,7 +111,7 @@ function handle_filter_submit(event) {
 		url: send_url,
 		type: 'post',
 		data: filters,
-		dataType: 'html',
+		dataType: 'json',
 		success: handle_filter_response,
 		error: function (xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
