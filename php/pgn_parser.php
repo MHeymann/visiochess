@@ -72,6 +72,8 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		 * being uncomplete beyond the year.
 		 */
 		$event_date = sscan_tag($date_line, '[Date "');
+		// extract and keep year, throw away rest
+		$event_date = explode('.', trim($event_date))[0];
 
 		$round_line = fgets($db_file);
 		$event_round = sscan_tag($round_line, '[Round "');
@@ -195,7 +197,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 */
 function get_longest_moves_string($target_file) {
 	$max_move_string = 0;
-	
+
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
 
@@ -298,18 +300,18 @@ function get_longest_moves_string($target_file) {
 
 		/* removes score from moves */
 		unset($moves_messy[count($moves_messy) - 1]);
-		
+
 		/* turn back into atring */
 		$moves_string = implode(" ", $moves_messy);
-		
+
 		/* find longer string */
 		if (strlen($moves_string) > $max_move_string) {
 			$max_move_string = strlen($moves_string);
-		}	 
+		}
 
 	}
 	fclose($db_file);
-	
+
 	return $max_move_string;
 }
 
