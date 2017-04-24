@@ -1,5 +1,6 @@
 <?php
 require_once "pgn_parser.php";
+require_once "mysql_interface.php";
 
 function create_database($db_name, $target_file) {
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
@@ -12,41 +13,36 @@ function create_database($db_name, $target_file) {
 	 * Create connection to the local mysql server
 	 * as provided by the LAMP/MAMP stack.
 	 */
-	$connect = new mysqli($servername, $username, $password);
-
-	/* Check the newly created connection */
-	if ($connect->connect_error) {
-		die("Connection failed: " . $connect->connect_error);
-	}
+	$db = new MySqlPhpInterface(
+		$server=$servername,
+		$user=$username,
+		$password=$password
+	);
+	$db->connect();
 
 	/*
 	 * TODO: make creating of databasis 'n single transaction, with all sql
 	 * queries either succeeding or failing as a unit
 	 */
 	/* create new database */
-	$sql = "CREATE DATABASE `" . $db_name . "`";
-	if ($connect->query($sql) === TRUE) {
-		echo "<p>Database created successfully\n</p>";
-	} else {
-		echo "<p>Error creating database " . $db_name .": " . $connect->error .
-			"</p>";
-	}
+	$db->create_database($name=$db_name, $replace=true);
 
-	$sql = "USE `" . $db_name . "`";
-	if ($connect->query($sql) === TRUE) {
-		echo "<p>Database set to be used successfully\n</p>";
-	} else {
-		echo "<p>Error using database " . $db_name .": " . $connect->error .
-			"</p>";
-	}
+	$db->use_database($db_name);
 
-	$sql = "CREATE TABLE `Tags` (Event VARCHAR(50), Site VARCHAR(50), Date INT, Round INT, White VARCHAR(50), Black VARCHAR(50), Result VARCHAR(10), WhiteElo INT, BlackElo INT, Eco VARCHAR(5))";
-	if ($connect->query($sql) === TRUE) {
-		echo "<p>Tags table created successfully\n</p>";
-	} else {
-		echo "<p>Error creating Tags table for database " . $db_name .": " . $connect->error .
-			"</p>";
-	}
+	$db->create_table(
+	  'tags',
+	  array(
+	    'event' => 'VARCHAR(50)',
+	    'site' => 'VARCHAR(50)',
+			'date' => 'INT(4)',
+			'round' => 'INT(3)', //check this but we assume round <= 999
+			'white' => 'VARCHAR(50)',
+			'black' => 'VARCHAR(50)',
+			'result' => 'VARCHAR(10)',
+			'whiteElo' => 'INT(4)',
+			'blackElo' => 'INT(4)',
+			'eco' => 'VARCHAR(5)'
+	  ));
 
 	if ($moves_approach == "flat") {
 		/* TODO: here the Moves table should be created, based on the longest moves
@@ -66,7 +62,7 @@ function create_database($db_name, $target_file) {
 	 * TODO: create new table in new database.
 	 */
 
-	$connect->close();
+	$db->disconnect();
 }
 
 
