@@ -86,6 +86,11 @@ function getFormData($form) {
     return indexed_array;
 }
 
+function handle_filter_response(response) {
+	// render results
+	$("#temp_results").html(response);
+}
+
 function handle_filter_submit(event) {
 	event.preventDefault();
 
@@ -106,11 +111,7 @@ function handle_filter_submit(event) {
 		type: 'post',
 		data: filters,
 		dataType: 'html',
-		success: function(response) {
-			//console.log(response);
-			// render results
-			$("#temp_results").html(response);
-		},
+		success: handle_filter_response,
 		error: function (xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
 		}
