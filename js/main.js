@@ -1,5 +1,5 @@
 /* Global variables */
-var pgnHashes = [];
+var pgnHashes = {};
 
 function handle_pgn_submit(e) {
 	e.preventDefault();
@@ -15,14 +15,15 @@ function handle_pgn_submit(e) {
 		/* readers load files asyncronously */
 		reader.onload = function(e) {
 			var text = reader.result;
-			var i = pgnHashes.length;
-			pgnHashes[i] = [file.name, hex_sha256(text), file];
-			console.log("New file " + pgnHashes[i][0] + " with hash: " + 
-					pgnHashes[i][1]);
+			//var i = pgnHashes.length;
+			var hash = hex_sha256(text);
+			pgnHashes[hash] = [file.name, file];
+			console.log("New file " + pgnHashes[hash][0] + " with hash: " + 
+					hash);
 			var db_selector = document.getElementById("db_selector");
 			var option = document.createElement("option");
 			option.text = file.name; // set name a clickable display
-			option.value = pgnHashes[i][1]; //set hash as identifiable val
+			option.value = hash; //set hash as identifiable val
 			db_selector.add(option);
 		}
 
@@ -119,16 +120,10 @@ function handle_filter_submit(event) {
 }
 
 function get_file_from_hash(hash) {
-	var i;
-	for (i = 0; i < pgnHashes.length; i++) {
-		if (pgnHashes[i][1] == hash) {
-			break;
-		}
-	}
-	if (i == pgnHashes.length) {
-		return null;
+	if (hash in pgnHashes) {
+		return pgnHashes[hash][1];
 	} else {
-		return pgnHashes[i][2];
+		return null;
 	}
 }
 
@@ -146,13 +141,16 @@ window.onload = function() {
 	$('#filter_form').submit(handle_filter_submit);
 
 	$("#test_reupload").click(function(e) {
-		var i = pgnHashes.length;
-		if (i > 0) {
+		var i = null;
+		for (var hash_a in pgnHashes) {
+			i = hash_a;
+		}
+		if (i != null) {
 			$.ajax({
 				url: "php/reload_pgn_db.php",
 				type: 'post',
 				data: {
-					"hash": pgnHashes[i-1][1]
+					"hash": i,
 				},
 				dataType: "html",
 				success: function(response) {
