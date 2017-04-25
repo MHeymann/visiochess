@@ -15,7 +15,6 @@ function handle_pgn_submit(e) {
 		/* readers load files asyncronously */
 		reader.onload = function(e) {
 			var text = reader.result;
-			//var i = pgnHashes.length;
 			var hash = hex_sha256(text);
 			pgnHashes[hash] = [file.name, file];
 			console.log("New file " + pgnHashes[hash][0] + " with hash: " + 
@@ -96,9 +95,12 @@ function handle_filter_submit(event) {
 	event.preventDefault();
 
 	var $form = $('#filter_form');
+	var db_val = $('#db_selector').val();
 	send_url = $form.attr("action");
 	console.log("action url: ", send_url);
 	var filters = getFormData($form);
+
+	filters.database = db_val;
 
 	console.log(
 		'Sending these filters:\n',
@@ -107,6 +109,11 @@ function handle_filter_submit(event) {
 
 	alert('Sending filters, look at console');
 
+
+	/* check for presence of db syncronously, reloading if necessary */
+	if (db_val != "default") {
+		ensure_database_exists_on_server(db_val);
+	}
 	$.ajax({
 		url: send_url,
 		type: 'post',
@@ -127,8 +134,36 @@ function get_file_from_hash(hash) {
 	}
 }
 
+function ensure_database_exists_on_server(hash) {
+	console.log("checking for presence of " + hash);
+	$.ajax({
+		url: "php/has_db.php",
+		async: false,
+		type: 'post',
+		dataType: 'json',
+		data: {
+			"hash": hash,
+		},
+		success: function(response) {
+			//$("#temp_results").append("<p>" + JSON.stringify(response) + "</p>");
+			if (response.db_present) {
+				$("#temp_results").append("<p>Database " + response.hash + " is present</p>");
+			} else {
+				$("#temp_results").append("<p>Database " + response.hash + " is NOT present</p>");
+				$("#temp_results").append("<p>Database " + response.hash + " being reuploaded</p>");
+				submit_file(get_file_from_hash(hash), "php/user_upload.php");
+				$("#temp_results").append("<p>Database " + response.hash + " reuploaded</p>");
+			}
+		},
+		error: function (xhr, textStatus, errorMessage) {
+			console.log(errorMessage);
+		}
+
+	});
+}
+
 window.onload = function() {
-	/* TODO 
+	/* TODO
 	 * Add function that, when files are selected, checks them for size
 	 * constraints.
 	 */
@@ -136,7 +171,7 @@ window.onload = function() {
 	/* TODO:
 	 * in filter_submitions, look at which database is currently selected
 	 * in the selector form, and send that data to the server along with
-	 * the filters.  
+	 * the filters.
 	 */
 	$('#filter_form').submit(handle_filter_submit);
 
@@ -146,22 +181,7 @@ window.onload = function() {
 			i = hash_a;
 		}
 		if (i != null) {
-			$.ajax({
-				url: "php/reload_pgn_db.php",
-				type: 'post',
-				data: {
-					"hash": i,
-				},
-				dataType: "html",
-				success: function(response) {
-					$("#temp_results").append("<p>--------reload-----------</p>");
-					$("#temp_results").append(response);
-				},
-				error: function (xhr, textStatus, errorMessage) {
-					console.log(errorMessage);
-				}
-
-			});
+			ensure_database_exists_on_server(i);
 		}
 	});
 }
