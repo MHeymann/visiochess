@@ -7,8 +7,8 @@ Comment everything!
 Features:
 Add a verbose mode toggle
 Add fatal params - if fatal is true, program quits on error
-Add insert function
-Add query function
+Add multi insert function
+Add args checks for new functions
 */
 class MySqlPhpInterface
 {
@@ -95,7 +95,7 @@ class MySqlPhpInterface
       if(self::contains($error, "database exists")) {
         if($replace) {
           echo "<p> " . $name .
-            " database already exists, it will be deleted and replaced </p>\n";
+          " database already exists, it will be deleted and replaced </p>\n";
           $this->delete_database($name);
           $this->create_database($name);
           return;
@@ -167,7 +167,7 @@ class MySqlPhpInterface
       if(self::contains($error, "table exists")) {
         if($replace) {
           echo "<p> " . $name .
-            " table already exists, it will be deleted and replaced </p>\n";
+          " table already exists, it will be deleted and replaced </p>\n";
           $this->delete_table($name);
           $this->create_table($name, $structure);
           return;
@@ -201,6 +201,105 @@ class MySqlPhpInterface
     } else {
       echo "<p> " . $name . " table deleted successfully </p>\n";
     }
+  }
+
+  public function insert($table_name, $data) {
+    // construct insert sql statement
+    $insert_statement = "INSERT INTO " . $table_name . " (";
+    $value_placeholder = "";
+    $value_types = "";
+    $values = array();
+
+    foreach ($data as $column => &$value) {
+      $insert_statement .= (string) $column . ", ";
+      $value_placeholder .= "?, ";
+      $values[] = &$value;
+
+      switch(gettype($value)) {
+        case "string":
+          $value_types .= "s";
+          break;
+        case "integer":
+          $value_types .= "i";
+          break;
+        case "double":
+          $value_types .= "d";
+          break;
+        default:
+          // MySQL does not support it, so add it as a blob
+          $value_types .= "b";
+      }
+    }
+
+    $insert_statement = substr($insert_statement, 0, count($insert_statement) - 3);
+    $insert_statement .= ") VALUES (";
+    $insert_statement .= substr($value_placeholder, 0, count($value_placeholder) - 3);
+    $insert_statement .= ")";
+    array_unshift($values, $value_types);
+
+    $statement = $this->connection->prepare($insert_statement);
+    call_user_func_array(array($statement, "bind_param"), $values);
+
+    if($statement->execute()) {
+      echo "<p> Successfully inserted data </p>\n";
+    } else {
+      echo "<p> Could not insert data </p>\n";
+    }
+    $statement->close();
+  }
+
+  public function select_from($table_name, $columns, $conditions) {
+    // construct select sql query
+    $query = "SELECT ";
+    foreach ($columns as $column) {
+      $query .= $column . ", ";
+    }
+    $query = substr($query, 0, count($query) - 3);
+    $query .= " FROM " . $table_name . " WHERE ";
+
+    $values = array();
+    $value_types = "";
+    foreach ($conditions as $column => &$condition) {
+      foreach ($condition as $operation => &$value) {
+        $query .= $column . "$operation? AND ";
+        $values[] = &$value;
+
+        switch(gettype($value)) {
+          case "string":
+            $value_types .= "s";
+            break;
+          case "integer":
+            $value_types .= "i";
+            break;
+          case "double":
+            $value_types .= "d";
+            break;
+          default:
+          // MySQL does not support it, so add it as a blob
+          $value_types .= "b";
+        }
+      }
+    }
+    $query = substr($query, 0, count($query) - 6);
+    array_unshift($values, $value_types);
+
+    $statement = $this->connection->prepare($query);
+    call_user_func_array(array($statement, "bind_param"), $values);
+
+    if($statement->execute()) {
+      echo "<p> Query successful </p>\n";
+    } else {
+      echo "<p> Query unsuccessful </p>\n";
+    }
+
+    $return_data = array();
+    $result = $statement->get_result();
+    while($entry = $result->fetch_assoc()) {
+      $return_data[] = $entry;
+    }
+
+    $statement->close();
+    return $return_data;
   }
 
   // send a sql command to the server
