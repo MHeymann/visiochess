@@ -1,6 +1,6 @@
 <?php
 require_once("define.php");
-
+require_once("mysql_interface.php");
 
 /*
  * Scan a tag as presented in PGN notation and return it's value.
@@ -28,6 +28,17 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
  */
 function parse_pgn_file_to_db($target_file, $db_name) {
 	echo "Database to be parsed to: " . $db_name;
+
+	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
+	$servername = $settings['client']['mysql_server'];
+	$username = $settings['client']['user'];
+	$password = $settings['client']['password'];
+
+	$db = new MySqlPhpInterface(
+		$server=$servername,
+		$user=$username,
+		$password=$password
+	);
 
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
@@ -123,6 +134,25 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		echo "<p>white elo: " . $white_elo . "</p><p>black elo: " .
 			$black_elo . "</p>";
 
+		// add tag details to database
+		$db->connect();
+		$db->use_database($db_name);
+		$db->insert(
+		  'tags',
+		  [
+				'event' => $event_name,
+		    'site' => $site_name,
+				'date' => (int) $event_date,
+				'round' => (int) $event_round,
+				'white' => $white_name,
+				'black' => $black_name,
+				'result' => $game_result,
+				'whiteElo' => (int) $white_elo,
+				'blackElo' => (int) $black_elo,
+				'eco' => $ECO_class
+			]
+		);
+
 		/*
 		 * TODO: assert that dud_line is now an empty line
 		 * before start of moves.
@@ -185,6 +215,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 
 		echo "<p>-----------------end of entry---------------------</p>";
 		$event_line = $dud_line;
+		$db->disconnect();
 	}
 	fclose($db_file);
 
