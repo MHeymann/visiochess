@@ -89,7 +89,12 @@ function getFormData($form) {
 
 function handle_filter_response(response) {
 	// render results
-	$("#temp_results").append("<p>" + JSON.stringify(response.message) + "</p>");
+	if (response.error) {
+		$("#temp_results").append("<p>" + response.error_message + "</p>");
+	} else {
+		/* TODO: display the results, instead of just stringifying the json */
+		$("#temp_results").append("<p>" + JSON.stringify(response) + "</p>");
+	}
 }
 
 function handle_filter_submit(event) {
@@ -105,7 +110,11 @@ function handle_filter_submit(event) {
 		filters
 	);
 
-	alert('Sending filters, look at console');
+	/*
+	 * TODO: send query to some new php script that checks whether the
+	 * database actually has the database in question.  if not, resubmit
+	 * the pgn file as stored in pgn hashes.
+	 */
 
 	$.ajax({
 		url: send_url,
