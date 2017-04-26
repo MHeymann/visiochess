@@ -8,7 +8,7 @@ function handle_pgn_submit(e) {
 	if (('files' in fileSubmitter) && (fileSubmitter.files.length == 1)) {
 		var file = fileSubmitter.files[0];
 		var reader = new FileReader();
-		var $form = $('#up_form');
+		var $form = $('#pgn_up_form');
 		send_url = $form.attr("action");
 		console.log("action url: ", send_url);
 
@@ -17,8 +17,8 @@ function handle_pgn_submit(e) {
 			var text = reader.result;
 			var hash = hex_sha256(text);
 			pgnHashes[hash] = [file.name, file];
-			console.log("New file " + pgnHashes[hash][0] + " with hash: " + 
-					hash);
+			console.log("New file " +
+					pgnHashes[hash][0] + " with hash: " + hash);
 			var db_selector = document.getElementById("db_selector");
 			var option = document.createElement("option");
 			option.text = file.name; // set name a clickable display
@@ -26,7 +26,7 @@ function handle_pgn_submit(e) {
 			db_selector.add(option);
 		}
 
-		/* 
+		/*
 		 * Tell the reader this is a textfile. It will load the file into
 		 * memory, which will then call the onload function fust defined
 		 * above.
@@ -37,7 +37,8 @@ function handle_pgn_submit(e) {
 
 	} else {
 		console.log("Something is wrong with the file input object...");
-		if ('files' in fileSubmitter && (fileSubmitter.files.length <= 0)) {
+		if ('files' in fileSubmitter
+				&& (fileSubmitter.files.length <= 0)) {
 			console.log("No file selected!");
 		}
 		if ('files' in fileSubmitter && (fileSubmitter.files.length > 1)) {
@@ -91,8 +92,12 @@ function handle_filter_response(response) {
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
 	} else {
-		/* TODO: display the results, instead of just stringifying the json */
-		$("#temp_results").append("<p>" + JSON.stringify(response) + "</p>");
+		/*
+		 * TODO: display the results, instead of just stringifying
+		 * the json
+		 */
+		$("#temp_results").append("<p>" + JSON.stringify(response) +
+				"</p>");
 	}
 }
 
@@ -111,13 +116,6 @@ function handle_filter_submit(event) {
 		'Sending these filters:\n',
 		filters
 	);
-
-	/*
-	 * TODO: send query to some new php script that checks whether the
-	 * database actually has the database in question.  if not, resubmit
-	 * the pgn file as stored in pgn hashes.
-	 */
-
 
 	/* check for presence of db syncronously, reloading if necessary */
 	if (db_val != "default") {
@@ -154,20 +152,21 @@ function ensure_database_exists_on_server(hash) {
 			"hash": hash,
 		},
 		success: function(response) {
-			//$("#temp_results").append("<p>" + JSON.stringify(response) + "</p>");
 			if (response.db_present) {
-				$("#temp_results").append("<p>Database " + response.hash + " is present</p>");
+				$("#temp_results").append("<p>Database " + response.hash +
+						" is present</p>");
 			} else {
-				$("#temp_results").append("<p>Database " + response.hash + " is NOT present</p>");
-				$("#temp_results").append("<p>Database " + response.hash + " being reuploaded</p>");
-				submit_file(get_file_from_hash(hash), "php/user_upload.php");
-				$("#temp_results").append("<p>Database " + response.hash + " reuploaded</p>");
+				$("#temp_results").append("<p>Database " + response.hash +
+						" being reuploaded</p>");
+				submit_file(get_file_from_hash(hash),
+						"php/user_upload.php");
+				$("#temp_results").append("<p>Database " + response.hash +
+						" reuploaded</p>");
 			}
 		},
 		error: function (xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
 		}
-
 	});
 }
 
@@ -176,7 +175,7 @@ window.onload = function() {
 	 * Add function that, when files are selected, checks them for size
 	 * constraints.
 	 */
-	$("#up_form").submit(handle_pgn_submit);
+	$("#pgn_up_form").submit(handle_pgn_submit);
 	/* TODO:
 	 * in filter_submitions, look at which database is currently selected
 	 * in the selector form, and send that data to the server along with

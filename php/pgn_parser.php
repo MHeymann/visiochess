@@ -39,6 +39,8 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		$user=$username,
 		$password=$password
 	);
+	$db->connect();
+	$db->use_database($db_name);
 
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
@@ -48,8 +50,8 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 	while (!feof($db_file)) {
 		/*
 		 * Declare variables for this while loop, so that if any variables
-		 * are missing in the PGN file, they are only given the empty string
-		 * as values.
+		 * are missing in the PGN file, they are only given the empty
+		 * string as values.
 		 */
 	/* "Seven for the Dwarf-lords in their halls of stone" */
 		$event_name  = "";
@@ -78,9 +80,9 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 
 		$date_line = fgets($db_file);
 		/*
-		 * TODO: harvest the year out of the date string, as this is the only
-		 * value of interest, in addition to many games in the default database
-		 * being uncomplete beyond the year.
+		 * TODO: harvest the year out of the date string, as this is the
+		 * only value of interest, in addition to many games in the default
+		 * database being uncomplete beyond the year.
 		 */
 		$event_date = sscan_tag($date_line, '[Date "');
 		// extract and keep year, throw away rest
@@ -135,8 +137,6 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 			$black_elo . "</p>";
 
 		// add tag details to database
-		$db->connect();
-		$db->use_database($db_name);
 		$db->insert(
 		  'tags',
 		  [
@@ -163,7 +163,8 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		 */
 		$moves = "";
 		$dud_line = trim(fgets($db_file));
-		while (!feof($db_file) && !empty($dud_line) && ($dud_line[0] !== '[')) {
+		while (!feof($db_file) && !empty($dud_line) &&
+			($dud_line[0] !== '[')) {
 			$moves .= $dud_line . " ";
 			$dud_line = trim(fgets($db_file));
 		}
@@ -183,11 +184,13 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		} else {
 			/* sort into two arrays, one for each player */
 			$moves = array("white" => array(), "black" => array());
-			$prev_player = "black"; // set black as initial so that first push is on white
+			/* set black as initial so that first push is on white */
+			$prev_player = "black";
 			foreach($moves_messy as $value) {
 				$value = trim($value);
 				$value = str_replace(".", "", $value);
-				if(!is_numeric($value) && !empty($value) && ($value != $game_result)) {
+				if(!is_numeric($value) && !empty($value) &&
+					($value != $game_result)) {
 					if($prev_player == "black") {
 						array_push($moves["white"], $value);
 						$prev_player = "white";
@@ -197,7 +200,8 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 					}
 				}
 			}
-			$num_moves = max(count($moves['white']), count($moves['black']));
+			$num_moves = max(count($moves['white']),
+				count($moves['black']));
 			for ($i = 0; $i < $num_moves; $i++) {
 				$move = ($i+1) . ": white: " . $moves['white'][$i];
 				if(isset($moves['black'][$i])) {
@@ -209,14 +213,15 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 				", exactly what we expect, " . $num_moves . " :)</p>";
 		}
 		/* get's rid of dud empty lines between games */
-		while (!feof($db_file) && (empty($dud_line) || ($dud_line[0] !== '['))) {
+		while (!feof($db_file) && (empty($dud_line) ||
+			($dud_line[0] !== '['))) {
 			$dud_line = trim(fgets($db_file));
 		}
 
 		echo "<p>-----------------end of entry---------------------</p>";
 		$event_line = $dud_line;
-		$db->disconnect();
-	}
+	} //while not eof
+	$db->disconnect();
 	fclose($db_file);
 
 }
@@ -237,8 +242,8 @@ function get_longest_moves_string($target_file) {
 	while (!feof($db_file)) {
 		/*
 		 * Declare variables for this while loop, so that if any variables
-		 * are missing in the PGN file, they are only given the empty string
-		 * as values.
+		 * are missing in the PGN file, they are only given the empty 
+		 * string as values.
 		 */
 	/* "Seven for the Dwarf-lords in their halls of stone" */
 		$event_name  = "";
@@ -308,20 +313,22 @@ function get_longest_moves_string($target_file) {
 
 		/*
 		 * Parse moves into array structure.
-		 * DONE: The end of line of the entire moves array still has an extra
-		 * two spaces after processing.  While this does not corrupt the data,
+		 * DONE: The end of line of the entire moves array still has an 
+		 * extra two spaces after processing.  While this does not corrupt
+		 * the data,
 		 * it does make the count of the moves array misleading.  This is
-		 * complicated by the fact, that the number of non-trivial entries is
-		 * a multiple of 3 when black wins, and one less than a multiple of
-		 * three when white wins.  Note, that, regardless of all of this, the
-		 * move count numbers follow a distinctive pattern:  move i has its
-		 * label i in array position (i - 1) * 3 in the $moves array. It may
-		 * therefore be necessary to make some adjustments here, once the
-		 * database structure has been finalized.
+		 * complicated by the fact, that the number of non-trivial entries
+		 * is a multiple of 3 when black wins, and one less than a multiple
+		 * of three when white wins.  Note, that, regardless of all of
+		 * this, the move count numbers follow a distinctive pattern:  move
+		 * i has its label i in array position (i - 1) * 3 in the $moves
+		 * array. It may therefore be necessary to make some adjustments
+		 * here, once the database structure has been finalized.
 		 */
 		$moves = "";
 		$dud_line = trim(fgets($db_file));
-		while (!feof($db_file) && !empty($dud_line) && ($dud_line[0] !== '[')) {
+		while (!feof($db_file) && !empty($dud_line) &&
+			($dud_line[0] !== '[')) {
 			$moves .= $dud_line . " ";
 			$dud_line = trim(fgets($db_file));
 		}
