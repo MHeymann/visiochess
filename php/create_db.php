@@ -24,16 +24,16 @@ function create_database($db_name, $target_file) {
 	 * TODO: make creating of databasis 'n single transaction, with all sql
 	 * queries either succeeding or failing as a unit
 	 */
-	/* create new database */
+/* create new database */
 	$db->create_database($name=$db_name, $replace=true);
 
 	$db->use_database($db_name);
 
 	$db->create_table(
-	  'tags',
-	  array(
-	    'event' => 'VARCHAR(50)',
-	    'site' => 'VARCHAR(50)',
+		'tags',
+		array(
+			'event' => 'VARCHAR(50)',
+			'site' => 'VARCHAR(50)',
 			'date' => 'INT(4)',
 			'round' => 'INT(3)', //check this but we assume round <= 999
 			'white' => 'VARCHAR(50)',
@@ -42,7 +42,16 @@ function create_database($db_name, $target_file) {
 			'whiteElo' => 'INT(4)',
 			'blackElo' => 'INT(4)',
 			'eco' => 'VARCHAR(5)'
-	  ));
+		));
+	$db->create_index(
+		'tag_index',
+		'tags',
+		array(
+			'date',
+			'eco',
+			'whiteElo',
+			'blackElo'
+		));
 
 	if ($moves_approach == "flat") {
 		/* TODO: here the Moves table should be created, based on the longest moves

@@ -33,6 +33,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 	$servername = $settings['client']['mysql_server'];
 	$username = $settings['client']['user'];
 	$password = $settings['client']['password'];
+	$moves_approach = $settings['client']['moves_table'];
 
 	$db = new MySqlPhpInterface(
 		$server=$servername,
@@ -175,8 +176,6 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		unset($moves_messy[count($moves_messy) - 1]);
 
 
-		$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
-		$moves_approach = $settings['client']['moves_table'];
 		if ($moves_approach == "flat") {
 			$moves = implode(" ", $moves_messy);
 			echo "<p>" . $moves . "</p>";
@@ -242,7 +241,7 @@ function get_longest_moves_string($target_file) {
 	while (!feof($db_file)) {
 		/*
 		 * Declare variables for this while loop, so that if any variables
-		 * are missing in the PGN file, they are only given the empty 
+		 * are missing in the PGN file, they are only given the empty
 		 * string as values.
 		 */
 	/* "Seven for the Dwarf-lords in their halls of stone" */
@@ -313,7 +312,7 @@ function get_longest_moves_string($target_file) {
 
 		/*
 		 * Parse moves into array structure.
-		 * DONE: The end of line of the entire moves array still has an 
+		 * DONE: The end of line of the entire moves array still has an
 		 * extra two spaces after processing.  While this does not corrupt
 		 * the data,
 		 * it does make the count of the moves array misleading.  This is

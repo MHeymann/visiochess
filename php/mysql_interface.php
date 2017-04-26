@@ -203,6 +203,71 @@ class MySqlPhpInterface
 		}
 	}
 
+
+		/*_________________________________________________________ */
+		/* remember to add db if using */
+	public function create_index($iname=null, $tname=null, $cols=null, $replace=false) {
+		if(!$tname) {
+			$this->quit("You must enter a name for the table you want to index");
+		}
+		if(!$iname) {
+			$this->quit("You must enter a name for the index you want to create");
+		}
+		if(!$cols) {
+			$this->quit("You must provide the columns for the index you want to create");
+		}
+
+		$sql = "CREATE INDEX `" . $iname. "` ON `" . $tname . "` (" .
+		   	self::stringify_cols($cols) . ");";
+		$error = $this->attempt($sql);
+
+		if($error) {
+			/* this error needs testing */
+			if(self::contains($error, "Duplicate key name")) {
+				if($replace) {
+					echo "<p> index`" . $iname . "` on `" . $tname .
+						"`  already exists, it will be deleted and replaced </p>\n";
+					$this->delete_index($iname, $tname);
+					$this->create_index($iname, $tname, $cols);
+					return;
+				}
+			}
+
+			$this->quit(
+				"Could not create index `" . $iname . "` on: `" . $tname . "`\n" .
+				"Error: " . $error
+			);
+		} else {
+			echo "<p> `" . $iname . "` index on `" . $tname .
+				"` created successfully </p>\n";
+		/* $this->sql("describe `" . $name . "`;"); */
+		}
+	}
+
+		/* remember to add db name is using */
+	public function delete_index($iname=null, $tname=null) {
+		if(!$iname) {
+			$this->quit("You must enter a name for the index you want to delete");
+		}
+		if(!$tname) {
+			$this->quit("You must enter a name for the table you want to delete " .
+			"an index on.");
+		}
+
+		$sql = "DROP INDEX `" . $iname . "` ON `" . $tname . "`;";
+		$error = $this->attempt($sql);
+
+		if($error) {
+			$this->quit(
+				"Could not delete index: `" . $iname . "` on `" . $tname . "`\n" .
+				"Error: " . $error
+			);
+		} else {
+			echo "<p> `" . $iname . "` index on `" . $tname . "` deleted successfully </p>\n";
+		}
+	}
+
+
 	public function insert($table_name, $data) {
 		/* construct insert sql statement */
 		$insert_statement = "INSERT INTO " . $table_name . " (";
@@ -324,11 +389,11 @@ class MySqlPhpInterface
 		}
 	}
 
-	/* 
+	/*
 	 * this really has no busines here, it should actually be in a utils.php
 	 */
 	private static function contains($string, $token) {
-		if(strpos($string, $token)) {
+		if(strpos($string, $token) !== FALSE) {
 			return true;
 		} else {
 			return false;
@@ -339,6 +404,15 @@ class MySqlPhpInterface
 		$string = "";
 		foreach($object as $key => $value) {
 			$string .= $key . " " . $value . ", ";
+		}
+		$string = substr($string, 0, count($string) - 3);
+		return $string;
+	}
+
+	private static function stringify_cols($object) {
+		$string = "";
+		foreach($object as $col) {
+			$string .= $col . ", ";
 		}
 		$string = substr($string, 0, count($string) - 3);
 		return $string;
