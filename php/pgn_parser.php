@@ -54,7 +54,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		 * are missing in the PGN file, they are only given the empty
 		 * string as values.
 		 */
-	/* "Seven for the Dwarf-lords in their halls of stone" */
+		 /* "Seven for the Dwarf-lords in their halls of stone" */
 		$event_name  = "";
 		$site_name   = "";
 		$event_date  = "";
@@ -63,7 +63,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 		$black_name  = "";
 		$game_result = "";
 
-	/* "Three rings for the Elven kings under the sky..." */
+		/* "Three rings for the Elven kings under the sky..." */
 		$ECO_class	 = "";
 		$black_elo	 = "";
 		$white_elo	 = "";
@@ -94,9 +94,13 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 
 		$white_line = fgets($db_file);
 		$white_name = sscan_tag($white_line, '[White "');
+		// remove the "(wh)"
+		$white_name = substr($white_name, 0, count($white_name) - 5);
 
 		$black_line = fgets($db_file);
 		$black_name = sscan_tag($black_line, '[Black "');
+		// remove the "(bl)"
+		$black_name = substr($black_name, 0, count($black_name) - 5);
 
 		$result_line = fgets($db_file);
 		$game_result = sscan_tag($result_line, '[Result "');
@@ -139,10 +143,10 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 
 		// add tag details to database
 		$db->insert(
-		  'tags',
-		  [
+			'tags',
+			[
 				'event' => $event_name,
-		    'site' => $site_name,
+				'site' => $site_name,
 				'date' => (int) $event_date,
 				'round' => (int) $event_round,
 				'white' => $white_name,
@@ -244,7 +248,7 @@ function get_longest_moves_string($target_file) {
 		 * are missing in the PGN file, they are only given the empty
 		 * string as values.
 		 */
-	/* "Seven for the Dwarf-lords in their halls of stone" */
+		 /* "Seven for the Dwarf-lords in their halls of stone" */
 		$event_name  = "";
 		$site_name   = "";
 		$event_date  = "";
@@ -253,7 +257,7 @@ function get_longest_moves_string($target_file) {
 		$black_name  = "";
 		$game_result = "";
 
-	/* "Three rings for the Elven kings under the sky..." */
+		/* "Three rings for the Elven kings under the sky..." */
 		$ECO_class	 = "";
 		$black_elo	 = "";
 		$white_elo	 = "";
@@ -285,7 +289,7 @@ function get_longest_moves_string($target_file) {
 		$result_line = fgets($db_file);
 		$game_result = sscan_tag($result_line, '[Result "');
 
-	/* Harvest ECO and elo's from optional tag data */
+		/* Harvest ECO and elo's from optional tag data */
 		$optional_line = fgets($db_file);
 		while ($optional_line[0] == '[') {
 			$eleven_sub = substr($optional_line, 0, 11);
@@ -351,5 +355,4 @@ function get_longest_moves_string($target_file) {
 
 	return $max_move_string;
 }
-
 ?>

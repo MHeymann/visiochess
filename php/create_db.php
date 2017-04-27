@@ -32,6 +32,7 @@ function create_database($db_name, $target_file) {
 	$db->create_table(
 		'tags',
 		array(
+			'gameID' => 'INT(10) PRIMARY KEY AUTO_INCREMENT',
 			'event' => 'VARCHAR(50)',
 			'site' => 'VARCHAR(50)',
 			'date' => 'INT(4)',
@@ -42,7 +43,9 @@ function create_database($db_name, $target_file) {
 			'whiteElo' => 'INT(4)',
 			'blackElo' => 'INT(4)',
 			'eco' => 'VARCHAR(5)'
-		));
+		),
+		$replace=true
+	);
 	$db->create_index(
 		'tag_index',
 		'tags',
@@ -73,6 +76,4 @@ function create_database($db_name, $target_file) {
 
 	$db->disconnect();
 }
-
-
 ?>

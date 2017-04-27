@@ -105,12 +105,12 @@ function handle_filter_submit(event) {
 	event.preventDefault();
 
 	var $form = $('#filter_form');
-	var db_val = $('#db_selector').val();
+	var db_val = $('#db_selector').val() || "default";
 	send_url = $form.attr("action");
 	console.log("action url: ", send_url);
 	var filters = getFormData($form);
 
-	filters.database = db_val;
+	filters['database'] = db_val;
 
 	console.log(
 		'Sending these filters:\n',

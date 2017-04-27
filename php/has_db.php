@@ -1,4 +1,7 @@
 <?php
+// necessary for testing, not sure if it will be needed in production
+header('Access-Control-Allow-Origin: *');
+
 function has_db_available($name) {
 	/* Get log in details */
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
@@ -7,12 +10,12 @@ function has_db_available($name) {
 	$password = $settings['client']['password'];
 
 	/* Create connection */
-	$conn = new mysqli($severname, $username, $password);
+	$conn = new mysqli($servername, $username, $password);
 
 	/* Check connection */
 	if ($conn->connect_error) {
 		die("Connection failed: " . $conn->connect_error);
-	} 
+	}
 
 	/* Make query */
 	$sql = "SHOW DATABASES LIKE '" . $name . "';";

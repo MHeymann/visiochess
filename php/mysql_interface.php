@@ -5,7 +5,6 @@ Busy but necessary work:
 Comment everything!
 
 Features:
-Add a verbose mode toggle
 Add fatal params - if fatal is true, program quits on error
 Add multi insert function
 Add args checks for new functions
@@ -19,12 +18,14 @@ class MySqlPhpInterface
 	private $database = null;
 	private $table = null;
 	private $connection = null;
+	private $verbose = null;
 
-	public function __construct($server, $user, $password, $port=null) {
+	public function __construct($server, $user, $password, $port=null, $verbose=false) {
 		$this->server = $server;
 		$this->user = $user;
 		$this->password = $password;
 		$this->port = $port;
+		$this->verbose = $verbose;
 	}
 
 	private function quit($error_message = "") {
@@ -52,15 +53,21 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> ----------    CONNECTION OPEN    ---------- </p>\n";
+			if($this->verbose) {
+				echo "<p> ----------    CONNECTION OPEN    ---------- </p>\n";
+			}
 		}
 
-		echo "<p> Successfully connected to: " . $server . " </p>\n";
+		if($this->verbose) {
+			echo "<p> Successfully connected to: " . $server . " </p>\n";
+		}
 	}
 
 	public function disconnect() {
 		$this->connection->close();
-		echo "<p> ----------   CONNECTION CLOSED   ---------- </p>\n";
+		if($this->verbose) {
+			echo "<p> ----------   CONNECTION CLOSED   ---------- </p>\n";
+		}
 	}
 
 	private function attempt($query) {
@@ -94,8 +101,11 @@ class MySqlPhpInterface
 		if($error) {
 			if(self::contains($error, "database exists")) {
 				if($replace) {
-					echo "<p> `" . $name .
-						"` database already exists, it will be deleted and replaced </p>\n";
+					if($this->verbose) {
+						echo "<p> `" . $name .
+							"` database already exists, it will be
+							deleted and replaced </p>\n";
+					}
 					$this->delete_database($name);
 					$this->create_database($name);
 					return;
@@ -107,7 +117,9 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> `" . $name . "` database created successfully </p>\n";
+			if($this->verbose) {
+				echo "<p> `" . $name . "` database created successfully </p>\n";
+			}
 		}
 	}
 
@@ -125,7 +137,9 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> `" . $name . "` database deleted successfully </p>\n";
+			if($this->verbose) {
+				echo "<p> `" . $name . "` database deleted successfully </p>\n";
+			}
 		}
 	}
 
@@ -145,7 +159,9 @@ class MySqlPhpInterface
 			);
 		} else {
 			$this->database = $name;
-			echo "<p> The `" . $name . "` database will now be used </p>\n";
+			if($this->verbose) {
+				echo "<p> The `" . $name . "` database will now be used </p>\n";
+			}
 		}
 	}
 
@@ -166,8 +182,10 @@ class MySqlPhpInterface
 		if($error) {
 			if(self::contains($error, "table exists")) {
 				if($replace) {
-					echo "<p> `" . $name .
-						"` table already exists, it will be deleted and replaced </p>\n";
+					if($this->verbose) {
+						echo "<p> `" . $name .
+							"` table already exists, it will be deleted and replaced </p>\n";
+					}
 					$this->delete_table($name);
 					$this->create_table($name, $structure);
 					return;
@@ -179,7 +197,9 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> `" . $name . "` table created successfully </p>\n";
+			if($this->verbose) {
+				echo "<p> `" . $name . "` table created successfully </p>\n";
+			}
 		/* $this->sql("describe `" . $name . "`;"); */
 		}
 	}
@@ -199,7 +219,9 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> `" . $name . "` table deleted successfully </p>\n";
+			if($this->verbose) {
+				echo "<p> `" . $name . "` table deleted successfully </p>\n";
+			}
 		}
 	}
 
@@ -225,8 +247,10 @@ class MySqlPhpInterface
 			/* this error needs testing */
 			if(self::contains($error, "Duplicate key name")) {
 				if($replace) {
-					echo "<p> index`" . $iname . "` on `" . $tname .
-						"`  already exists, it will be deleted and replaced </p>\n";
+					if($this->verbose) {
+						echo "<p> index`" . $iname . "` on `" . $tname .
+							"`  already exists, it will be deleted and replaced </p>\n";
+					}
 					$this->delete_index($iname, $tname);
 					$this->create_index($iname, $tname, $cols);
 					return;
@@ -238,8 +262,10 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> `" . $iname . "` index on `" . $tname .
+			if($this->verbose) {
+				echo "<p> `" . $iname . "` index on `" . $tname .
 				"` created successfully </p>\n";
+			}
 		/* $this->sql("describe `" . $name . "`;"); */
 		}
 	}
@@ -263,20 +289,22 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> `" . $iname . "` index on `" . $tname . "` deleted successfully </p>\n";
+			if($this->verbose) {
+				echo "<p> `" . $iname . "` index on `" . $tname . "` deleted successfully </p>\n";
+			}
 		}
 	}
 
 
 	public function insert($table_name, $data) {
 		/* construct insert sql statement */
-		$insert_statement = "INSERT INTO " . $table_name . " (";
+		$insert_statement = "INSERT INTO `" . $table_name . "` (";
 		$value_placeholder = "";
 		$value_types = "";
 		$values = array();
 
 		foreach ($data as $column => &$value) {
-			$insert_statement .= (string) $column . ", ";
+			$insert_statement .= "`" . $column . "`, ";
 			$value_placeholder .= "?, ";
 			$values[] = &$value;
 
@@ -306,27 +334,37 @@ class MySqlPhpInterface
 		call_user_func_array(array($statement, "bind_param"), $values);
 
 		if($statement->execute()) {
-			echo "<p> Successfully inserted data </p>\n";
+			if($this->verbose) {
+				echo "<p> Successfully inserted data </p>\n";
+			}
 		} else {
-			echo "<p> Could not insert data </p>\n";
+			if($this->verbose) {
+				echo "<p> Could not insert data </p>\n";
+			}
 		}
 		$statement->close();
 	}
 
-	public function select_from($table_name, $columns, $conditions) {
+	public function select_from($table_name, $columns, $conditions, $extra_arguments=null) {
 		/* construct select sql query */
 		$query = "SELECT ";
+		// I can replace this with $columns.join?
 		foreach ($columns as $column) {
+			// $query .= "`" . $column . "`, ";
 			$query .= $column . ", ";
 		}
 		$query = substr($query, 0, count($query) - 3);
-		$query .= " FROM " . $table_name . " WHERE ";
+		$query .= " FROM `" . $table_name . "` WHERE ";
+
+		if(!$conditions) {
+			$conditions = array('gameID' => array('>' => -1));
+		}
 
 		$values = array();
 		$value_types = "";
 		foreach ($conditions as $column => &$condition) {
 			foreach ($condition as $operation => &$value) {
-				$query .= $column . "$operation? AND ";
+				$query .= "`" . $column . "` $operation ? AND ";
 				$values[] = &$value;
 
 				switch(gettype($value)) {
@@ -348,13 +386,30 @@ class MySqlPhpInterface
 		$query = substr($query, 0, count($query) - 6);
 		array_unshift($values, $value_types);
 
+		if($extra_arguments) {
+			foreach ($extra_arguments as $argument) {
+				$query .= " " . $argument;
+			}
+		}
+
 		$statement = $this->connection->prepare($query);
+		if(!$statement) {
+			if($this->verbose) {
+				echo "Error with prepare statement: " .
+					$this->connection->error . "\n";
+			}
+		}
+
 		call_user_func_array(array($statement, "bind_param"), $values);
 
 		if($statement->execute()) {
-			echo "<p> Query successful </p>\n";
+			if($this->verbose) {
+				echo "<p> Query successful </p>\n";
+			}
 		} else {
-			echo "<p> Query unsuccessful </p>\n";
+			if($this->verbose) {
+				echo "<p> Query unsuccessful </p>\n";
+			}
 		}
 
 		$return_data = array();
@@ -384,7 +439,9 @@ class MySqlPhpInterface
 				"Error: " . $error
 			);
 		} else {
-			echo "<p> The command was successfully executed </p>\n";
+			if($this->verbose) {
+				echo "<p> The command was successfully executed </p>\n";
+			}
 		/* var_dump($this->connection); */
 		}
 	}
@@ -393,7 +450,7 @@ class MySqlPhpInterface
 	 * this really has no busines here, it should actually be in a utils.php
 	 */
 	private static function contains($string, $token) {
-		if(strpos($string, $token) !== FALSE) {
+		if(strpos($string, $token) !== false) {
 			return true;
 		} else {
 			return false;

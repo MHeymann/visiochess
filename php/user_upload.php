@@ -1,5 +1,4 @@
 <?php
-
 require_once "create_db.php";
 require_once "pgn_parser.php";
 require_once "define.php";
@@ -10,7 +9,8 @@ require_once "define.php";
 
 ini_set('display_errors',1); // for the development PC only
 error_reporting(E_ALL); // ALWAYS
-
+// necessary for testing, not sure if it will be needed in production
+header('Access-Control-Allow-Origin: *');
 
 /*
  * site root, ie, where in the broader directory tree
