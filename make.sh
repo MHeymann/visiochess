@@ -51,4 +51,4 @@ else
 	mysql -uroot -p$ROOTPW -sse "FLUSH PRIVILEGES;"
 fi
 
-#TODO: Add visiochess as a mysql user...
+#php -f ../php/create_default_db.php

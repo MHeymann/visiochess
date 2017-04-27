@@ -179,7 +179,7 @@ if($filters['eco-low'] && $filters['eco-high']) {
 }
 
 if(!$filters['database']) {
-	$filters['database'] = 'default';
+	$filters['database'] = 'default_chess_db';
 }
 
 // echo "filters: " . json_encode($filters) . "\n";

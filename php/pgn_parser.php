@@ -26,7 +26,8 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 /*
  * TODO:Parse the entries into a db.
  */
-function parse_pgn_file_to_db($target_file, $db_name) {
+function parse_pgn_file_to_db($target_file, $db_name,
+   	$batch_size=1000, $verbose=true) {
 	echo "Database to be parsed to: " . $db_name;
 
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
@@ -34,6 +35,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 	$username = $settings['client']['user'];
 	$password = $settings['client']['password'];
 	$moves_approach = $settings['client']['moves_table'];
+	$data_batch = array();
 
 	$db = new MySqlPhpInterface(
 		$server=$servername,
@@ -125,38 +127,29 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 			$optional_line = fgets($db_file);
 		}
 
-		/*
-		 * TODO: Instead of just echoing back the table entry info, add to
-		 * database table.
-		 */
-		echo "<p>----------------start of entry---------------------</p>";
-		echo "<p>event: " . $event_name . "</p><p>site: " . $site_name .
-			"</p>";
-		echo "<p>date: " . $event_date . "</p><p>round: " . $event_round .
-			"</p>";
-		echo "<p> white: " . $white_name . "</p><p>black: " . $black_name .
-			"</p>";
-		echo "<p>result: " . $game_result . "</p><p>ECO: " . $ECO_class .
-			"</p>";
-		echo "<p>white elo: " . $white_elo . "</p><p>black elo: " .
-			$black_elo . "</p>";
-
-		// add tag details to database
-		$db->insert(
-			'tags',
-			[
-				'event' => $event_name,
-				'site' => $site_name,
-				'date' => (int) $event_date,
-				'round' => (int) $event_round,
-				'white' => $white_name,
-				'black' => $black_name,
-				'result' => $game_result,
-				'whiteElo' => (int) $white_elo,
-				'blackElo' => (int) $black_elo,
-				'eco' => $ECO_class
-			]
-		);
+		/* add tag details to database */
+		$data_batch[] = [
+			'event' => $event_name,
+			'site' => $site_name,
+			'date' => (int) $event_date,
+			'round' => (int) $event_round,
+			'white' => $white_name,
+			'black' => $black_name,
+			'result' => $game_result,
+			'whiteElo' => (int) $white_elo,
+			'blackElo' => (int) $black_elo,
+			'eco' => $ECO_class
+		];
+		if (count($data_batch) >= $batch_size) {
+			$db->insert_multiple(
+				'tags',
+				$data_batch
+			);
+			$data_batch = array();
+			if ($verbose) {
+				echo "<p>entered batch into db</p>";
+			}
+		}
 
 		/*
 		 * TODO: assert that dud_line is now an empty line
@@ -182,8 +175,6 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 
 		if ($moves_approach == "flat") {
 			$moves = implode(" ", $moves_messy);
-			echo "<p>" . $moves . "</p>";
-			echo "<p> Length: " . strlen($moves) . "</p>";
 		} else {
 			/* sort into two arrays, one for each player */
 			$moves = array("white" => array(), "black" => array());
@@ -210,10 +201,7 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 				if(isset($moves['black'][$i])) {
 					$move .= ", black: " . $moves['black'][$i] . "<br>";
 				}
-				echo "<p>" . $move . "</p>";
 			}
-			echo "</p><p>move array size: " . count($moves['white']) .
-				", exactly what we expect, " . $num_moves . " :)</p>";
 		}
 		/* get's rid of dud empty lines between games */
 		while (!feof($db_file) && (empty($dud_line) ||
@@ -221,9 +209,20 @@ function parse_pgn_file_to_db($target_file, $db_name) {
 			$dud_line = trim(fgets($db_file));
 		}
 
-		echo "<p>-----------------end of entry---------------------</p>";
 		$event_line = $dud_line;
 	} //while not eof
+
+	if (count($data_batch) > 0) {
+		$db->insert_multiple(
+			'tags',
+			$data_batch
+		);
+		$data_batch = array();
+		if ($verbose) {
+			echo "<p>inserted last into db</p>";
+		}
+	}
+
 	$db->disconnect();
 	fclose($db_file);
 

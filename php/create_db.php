@@ -24,8 +24,9 @@ function create_database($db_name, $target_file) {
 	 * TODO: make creating of databasis 'n single transaction, with all sql
 	 * queries either succeeding or failing as a unit
 	 */
-/* create new database */
+	/* create new database */
 	$db->create_database($name=$db_name, $replace=true);
+	echo "<p>Created database " . $db_name . "<p>";
 
 	$db->use_database($db_name);
 
@@ -62,7 +63,7 @@ function create_database($db_name, $target_file) {
 		 */
 
 		$max_move_length = get_longest_moves_string($target_file);
-		echo "<p>The length of the longest move is: ". $max_move_length. "</p>";
+		echo "<p>The length of the longest move is: ". $max_move_length. "</p>\n";
 	} else {
 		/* TODO: here the Moves table should be created, with a foreign key to
 		 * the Tags table's private key.

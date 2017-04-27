@@ -345,6 +345,74 @@ class MySqlPhpInterface
 		$statement->close();
 	}
 
+
+
+	public function insert_multiple($table_name, $data) {
+		/* construct insert sql statement */
+		$insert_statement = "INSERT INTO `" . $table_name . "` (";
+		$value_placeholder = "";
+		$value_types = "";
+		$values = array();
+
+		if (count($data) <= 0) {
+			echo "<p>No data provided to insert</p>\n";
+			return;
+		}
+
+		foreach ($data[0] as $column => &$value) {
+			$insert_statement .= "`" . $column . "`, ";
+		}
+
+		$insert_statement = substr($insert_statement, 0, count($insert_statement) - 3);
+		$insert_statement .= ") VALUES (";
+
+		foreach ($data as $row) {
+			foreach ($row as $column => &$value) {
+				$value_placeholder .= "?, ";
+				$values[] = &$value;
+
+				switch(gettype($value)) {
+				case "string":
+					$value_types .= "s";
+					break;
+				case "integer":
+					$value_types .= "i";
+					break;
+				case "double":
+					$value_types .= "d";
+					break;
+				default:
+					/* MySQL does not support it, so add it as a blob */
+					$value_types .= "b";
+				}
+			}
+
+			$insert_statement .= substr($value_placeholder, 0, count($value_placeholder) - 3);
+			$insert_statement .= "), (";
+			$value_placeholder = "";
+		}
+		$insert_statement = substr($insert_statement, 0, count($insert_statement) - 4);
+		array_unshift($values, $value_types);
+
+		$statement = $this->connection->prepare($insert_statement);
+		if($this->verbose) {
+			echo "<p>" . $insert_statement . "</p>";
+		}
+		call_user_func_array(array($statement, "bind_param"), $values);
+
+		if($statement->execute()) {
+			if($this->verbose) {
+				echo "<p> Successfully inserted multiple data </p>\n";
+			}
+		} else {
+			if($this->verbose) {
+				echo "<p> Could not insert multiple data </p>\n";
+			}
+		}
+		$statement->close();
+	}
+
+
 	public function select_from($table_name, $columns, $conditions, $extra_arguments=null) {
 		/* construct select sql query */
 		$query = "SELECT ";
