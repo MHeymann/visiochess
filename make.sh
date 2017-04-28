@@ -24,6 +24,17 @@ fi
 # database
 cd ..
 
+# check if the user want's to run in developer mode
+echo "Run in developer mode? (y/n): "
+read dev_mode_input
+
+dev_mode=false
+if [ $dev_mode_input == 'y' ]
+then
+	dev_mode=true
+	echo "Will start in developer mode"
+fi
+
 # TODO: Add functionality for a repeated entry of the password and ensure
 # it is the same as the first time
 read -s -p "Enter Password for visiochess mysql: " VISIOPW
@@ -34,7 +45,9 @@ echo "[client]
 user=visiochess
 password=$VISIOPW
 mysql_server=localhost
+php_server=
 moves_table=flat
+dev_mode=$dev_mode
 " > .my.cnf
 
 #echo "Enter root mysql password when probed"

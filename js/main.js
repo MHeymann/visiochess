@@ -53,7 +53,7 @@ function submit_file(file, send_url) {
 	form_data.append("user_db_uploader", file)
 
 	$.ajax({
-		url: send_url,
+		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
 		type: 'post',
 		data: form_data,
 		dataType: 'html',
@@ -122,7 +122,7 @@ function handle_filter_submit(event) {
 		ensure_database_exists_on_server(db_val);
 	}
 	$.ajax({
-		url: send_url,
+		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
 		type: 'post',
 		data: filters,
 		dataType: 'json',
@@ -144,7 +144,7 @@ function get_file_from_hash(hash) {
 function ensure_database_exists_on_server(hash) {
 	console.log("checking for presence of " + hash);
 	$.ajax({
-		url: "php/has_db.php",
+		url: ((config['dev_mode'])?config['php_server']:'') + "php/has_db.php",
 		async: false,
 		type: 'post',
 		dataType: 'json',
@@ -170,7 +170,31 @@ function ensure_database_exists_on_server(hash) {
 	});
 }
 
+// there may be a way to not have this global using closures
+var configTryCount = 0;
+function getConfigSettings(alternateLink=null) {
+	$.ajax({
+		url: (alternateLink || "") + "php/send_config.php",
+		type: 'post',
+		dataType: 'json',
+		success: function(response) {
+			config = response;
+			configTryCount = 0;
+		},
+		error: function (xhr, textStatus, errorMessage) {
+			configTryCount++;
+			if(configTryCount < 10) {
+				getConfigSettings("http://127.0.0.1:8000/");
+			} else {
+				console.log(errorMessage);
+			}
+		}
+	});
+}
+
 window.onload = function() {
+	getConfigSettings();
+
 	/* TODO
 	 * Add function that, when files are selected, checks them for size
 	 * constraints.

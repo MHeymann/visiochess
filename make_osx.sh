@@ -26,6 +26,17 @@ else
   7zr x "MillionBase 2.5 (PGN).7z"
 fi
 
+# check if the user want's to run in developer mode
+echo "Run in developer mode? (y/n): "
+read dev_mode_input
+
+dev_mode=false
+if [ $dev_mode_input == 'y' ]
+then
+	dev_mode=true
+	echo "Will start in developer mode"
+fi
+
 # start mysql server (or restart it if active)
 mysql.server restart
 
@@ -37,8 +48,9 @@ echo "[client]
 user=visiochess
 password=$VISIOPW
 mysql_server=127.0.0.1
-php_server=127.0.0.1:8000
+php_server=http://127.0.0.1:8000/
 moves_table=flat
+dev_mode=$dev_mode
 " > ../.my.cnf
 
 # get root passowrd to interact with mysql server
@@ -71,11 +83,14 @@ else
 fi
 
 # create database and time how long it takes
-time php -f ../php/create_default_db.php
+# time php -f ../php/create_default_db.php
 cd ../
 
 # start php server in seperate window - we could do the same with the mysql server
-# xterm -hold -e "php -S 127.0.0.1:8000" &
+if [ $dev_mode ]
+then
+	xterm -hold -e "php -S 127.0.0.1:8000" &
+fi
 
 # stop mysql server (perhaps we should not stop it..)
 # (we need it up to handle user queries...)
