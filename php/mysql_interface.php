@@ -366,7 +366,7 @@ class MySqlPhpInterface
 		$insert_statement = substr($insert_statement, 0, count($insert_statement) - 3);
 		$insert_statement .= ") VALUES (";
 
-		foreach ($data as $row) {
+		foreach ($data as &$row) {
 			foreach ($row as $column => &$value) {
 				$value_placeholder .= "?, ";
 				$values[] = &$value;

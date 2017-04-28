@@ -70,17 +70,14 @@ else
 	mysql --user=root --password=$ROOTPW -sse "flush privileges;"
 fi
 
-# create database
-# TODO: change names of php script and sql
-# database when we know what they will be
-php -f ../php/create_default_db.php
-#mv ../php/db.sql ./
+# create database and time how long it takes
+time php -f ../php/create_default_db.php
 cd ../
 
 # start php server in seperate window - we could do the same with the mysql server
-xterm -hold -e "php -S 127.0.0.1:8000" &
+# xterm -hold -e "php -S 127.0.0.1:8000" &
 
 # stop mysql server (perhaps we should not stop it..)
 # (we need it up to handle user queries...)
 # (we could just start it before and stop it after every query?)
-mysql.server stop
+# mysql.server stop

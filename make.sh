@@ -51,4 +51,4 @@ else
 	mysql -uroot -p$ROOTPW -sse "FLUSH PRIVILEGES;"
 fi
 
-#php -f ../php/create_default_db.php
+#time php -f ../php/create_default_db.php
