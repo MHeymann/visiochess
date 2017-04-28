@@ -28,7 +28,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
  */
 function parse_pgn_file_to_db($target_file, $db_name,
    	$batch_size=1000, $verbose=true) {
-	echo "Database to be parsed to: " . $db_name;
+	// echo "Database to be parsed to: " . $db_name;
 
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 	$servername = $settings['client']['mysql_server'];
@@ -147,7 +147,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			);
 			$data_batch = array();
 			if ($verbose) {
-				echo "<p>entered batch into db</p>";
+				// echo "<p>entered batch into db</p>";
 			}
 		}
 
@@ -219,7 +219,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		);
 		$data_batch = array();
 		if ($verbose) {
-			echo "<p>inserted last into db</p>";
+			// echo "<p>inserted last into db</p>";
 		}
 	}
 
