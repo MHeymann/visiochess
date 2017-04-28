@@ -1,5 +1,6 @@
 /* Global variables */
 var pgnHashes = {};
+var mainJSON;
 
 function handle_pgn_submit(e) {
 	e.preventDefault();
@@ -18,7 +19,7 @@ function handle_pgn_submit(e) {
 			var hash = hex_sha256(text);
 			pgnHashes[hash] = [file.name, file];
 			console.log("New file " +
-					pgnHashes[hash][0] + " with hash: " + hash);
+				pgnHashes[hash][0] + " with hash: " + hash);
 			var db_selector = document.getElementById("db_selector");
 			var option = document.createElement("option");
 			option.text = file.name; // set name a clickable display
@@ -35,10 +36,11 @@ function handle_pgn_submit(e) {
 
 		submit_file(file, send_url);
 
-	} else {
+	}
+	else {
 		console.log("Something is wrong with the file input object...");
-		if ('files' in fileSubmitter
-				&& (fileSubmitter.files.length <= 0)) {
+		if ('files' in fileSubmitter &&
+			(fileSubmitter.files.length <= 0)) {
 			console.log("No file selected!");
 		}
 		if ('files' in fileSubmitter && (fileSubmitter.files.length > 1)) {
@@ -69,7 +71,7 @@ function submit_file(file, send_url) {
 			// render results
 			$("#temp_results").append(response);
 		},
-		error: function (xhr, textStatus, errorMessage) {
+		error: function(xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
 		}
 	});
@@ -77,27 +79,28 @@ function submit_file(file, send_url) {
 }
 
 function getFormData($form) {
-    var unindexed_array = $form.serializeArray();
-    var indexed_array = {};
+	var unindexed_array = $form.serializeArray();
+	var indexed_array = {};
 
-    $.map(unindexed_array, function(n, i){
-        indexed_array[n['name']] = n['value'];
-    });
+	$.map(unindexed_array, function(n, i) {
+		indexed_array[n['name']] = n['value'];
+	});
 
-    return indexed_array;
+	return indexed_array;
 }
 
 function handle_filter_response(response) {
 	// render results
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
-	} else {
-		/*
-		 * TODO: display the results, instead of just stringifying
-		 * the json
-		 */
+	}
+	else {
+		mainJSON = response;
+		$("#display_svg").empty();
+		draw(response);
+
 		$("#temp_results").append("<p>" + JSON.stringify(response) +
-				"</p>");
+			"</p>");
 	}
 }
 
@@ -127,7 +130,7 @@ function handle_filter_submit(event) {
 		data: filters,
 		dataType: 'json',
 		success: handle_filter_response,
-		error: function (xhr, textStatus, errorMessage) {
+		error: function(xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
 		}
 	});
@@ -136,7 +139,8 @@ function handle_filter_submit(event) {
 function get_file_from_hash(hash) {
 	if (hash in pgnHashes) {
 		return pgnHashes[hash][1];
-	} else {
+	}
+	else {
 		return null;
 	}
 }
@@ -154,20 +158,28 @@ function ensure_database_exists_on_server(hash) {
 		success: function(response) {
 			if (response.db_present) {
 				$("#temp_results").append("<p>Database " + response.hash +
-						" is present</p>");
-			} else {
+					" is present</p>");
+			}
+			else {
 				$("#temp_results").append("<p>Database " + response.hash +
-						" being reuploaded</p>");
+					" being reuploaded</p>");
 				submit_file(get_file_from_hash(hash),
-						"php/user_upload.php");
+					"php/user_upload.php");
 				$("#temp_results").append("<p>Database " + response.hash +
-						" reuploaded</p>");
+					" reuploaded</p>");
 			}
 		},
-		error: function (xhr, textStatus, errorMessage) {
+		error: function(xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
 		}
 	});
+}
+
+function handle_window_resize(e) {
+	if (mainJSON != null) {
+		$("#display_svg").empty();
+		draw(mainJSON);
+	}
 }
 
 window.onload = function() {
@@ -182,6 +194,8 @@ window.onload = function() {
 	 * the filters.
 	 */
 	$('#filter_form').submit(handle_filter_submit);
+
+	$(window).resize(handle_window_resize);
 
 	$("#test_reupload").click(function(e) {
 		var i = null;
