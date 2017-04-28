@@ -83,8 +83,8 @@ else
 fi
 
 # create database and time how long it takes
-# time php -f ../php/create_default_db.php
 cd ../
+time php -f ./php/create_default_db.php
 
 # start php server in seperate window - we could do the same with the mysql server
 if [ $dev_mode ]
