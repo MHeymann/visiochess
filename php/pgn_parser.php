@@ -1,6 +1,7 @@
 <?php
 require_once("define.php");
 require_once("mysql_interface.php");
+require_once("eco_category.php");
 
 
 /*
@@ -124,7 +125,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 				$ECO_class = sscan_tag($optional_line, '[ECO "');
 				$ECO_alpha = substr($ECO_class, 0, 1);
 				$ECO_numero = intval(substr($ECO_class, 1, 2));
-				$ECO_category = "blamo";
+				$ECO_category = get_eco_category($ECO_alpha, $ECO_numero);
 				if ($verbose) {
 //					echo "<p>Scanned ECO: " . $ECO_alpha . $ECO_numero .
 //						" which really should be " . $ECO_class . "</p>\n";
