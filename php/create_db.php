@@ -43,7 +43,9 @@ function create_database($db_name, $target_file) {
 			'result' => 'VARCHAR(10)',
 			'whiteElo' => 'INT(4)',
 			'blackElo' => 'INT(4)',
-			'eco' => 'VARCHAR(5)'
+			'eco_alpha' => 'CHAR(1)',
+			'eco_numero' => 'INT(2)',
+			'eco_category' => 'VARCHAR(5)'
 		),
 		$replace=true
 	);
@@ -52,7 +54,12 @@ function create_database($db_name, $target_file) {
 		'tags',
 		array(
 			'date',
-			'eco',
+			/* first by broadest */
+			'eco_alpha',
+			/* then by one of 13 */
+			'eco_category',
+			/* then by specific number */
+			'eco_numero',
 			'whiteElo',
 			'blackElo'
 		));

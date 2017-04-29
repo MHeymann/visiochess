@@ -234,30 +234,21 @@ foreach ($filter_on as $field) {
 			}
 		}
 	} else if(contains($field, 'eco')) {
-		if(!$query['eco']) {
-			$query['eco'] = array();
-		}
-
-		/* think about changing database structure to have: */
-		/* ECO catagory, ECO code, this would make filtering on full eco, easier */
 		if(contains($field, 'type')) {
-			$query['eco']['LIKE'] = $filters['eco-type'] . '%';
+			if(!$query['eco_alpha']) {
+				$query['eco_alpha'] = array();
+			}
+			$query['eco_alpha']['LIKE'] = $filters['eco-type'];
 		} else if(contains($field, 'low')) {
-			$prefix = '%';
-			$operation = 'LIKE';
-			if($filters['eco-type']) {
-				$prefix = $filters['eco-type'];
-				$operation = '>=';
+			if(!$query['eco_numero']) {
+				$query['eco_numero'] = array();
 			}
-			$query['eco'][$operation] = $prefix . $filters['eco-low'];
+			$query['eco_numero'][">="] = $filters['eco-low'];
 		} else {
-			$prefix = '%';
-			$operation = 'LIKE';
-			if($filters['eco-type']) {
-				$prefix = $filters['eco-type'];
-				$operation = '<=';
+			if(!$query['eco_numero']) {
+				$query['eco_numero'] = array();
 			}
-			$query['eco'][$operation] = $prefix . $filters['eco-high'];
+			$query['eco_numero']["<="] = $filters['eco-high'];
 		}
 	}
 
@@ -270,7 +261,7 @@ foreach ($filter_on as $field) {
 
 $result = $db->select_from(
 	'tags',
-	['`date`', '`eco`', 'COUNT(*) AS `popularity`'],
+	['`date`', 'CONCAT(`eco_alpha`, `eco_numero`) as eco', 'COUNT(*) AS `popularity`'],
 	$query,
 	['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
 );

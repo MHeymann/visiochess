@@ -2,6 +2,7 @@
 require_once("define.php");
 require_once("mysql_interface.php");
 
+
 /*
  * Scan a tag as presented in PGN notation and return it's value.
  * @param $read_string:		The string containing the tag to be read.
@@ -29,6 +30,8 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 function parse_pgn_file_to_db($target_file, $db_name,
    	$batch_size=1000, $verbose=true) {
 	// echo "Database to be parsed to: " . $db_name;
+
+	$global_batch_count = 0;
 
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 	$servername = $settings['client']['mysql_server'];
@@ -66,7 +69,12 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		$game_result = "";
 
 		/* "Three rings for the Elven kings under the sky..." */
+		/* This LOR quote is still applicable if you consider ECO
+		 * as part of one category of optional tag :P */
 		$ECO_class	 = "";
+		$ECO_alpha	 = "";
+		$ECO_numero	 = -1;
+		$ECO_category = "";
 		$black_elo	 = "";
 		$white_elo	 = "";
 
@@ -114,6 +122,14 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 			if (substr($optional_line, 0, 6) == '[ECO "') {
 				$ECO_class = sscan_tag($optional_line, '[ECO "');
+				$ECO_alpha = substr($ECO_class, 0, 1);
+				$ECO_numero = intval(substr($ECO_class, 1, 2));
+				$ECO_category = "blamo";
+				if ($verbose) {
+//					echo "<p>Scanned ECO: " . $ECO_alpha . $ECO_numero .
+//						" which really should be " . $ECO_class . "</p>\n";
+//					echo "<p>Category: " . $ECO_category . "</p>\n";
+				}
 			}
 
 			if ($eleven_sub == '[BlackElo "') {
@@ -138,7 +154,9 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			'result' => $game_result,
 			'whiteElo' => (int) $white_elo,
 			'blackElo' => (int) $black_elo,
-			'eco' => $ECO_class
+			'eco_alpha' => $ECO_alpha,
+			'eco_numero' => (int) $ECO_numero,
+			'eco_category' => $ECO_category
 		];
 		if (count($data_batch) >= $batch_size) {
 			$db->insert_multiple(
@@ -146,8 +164,10 @@ function parse_pgn_file_to_db($target_file, $db_name,
 				$data_batch
 			);
 			$data_batch = array();
+			$global_batch_count += 1;
 			if ($verbose) {
-				// echo "<p>entered batch into db</p>";
+				echo "<p>entered batch into db, total_count " . $global_batch_count
+				   	* $batch_size . "</p>\n";
 			}
 		}
 
@@ -217,10 +237,11 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			'tags',
 			$data_batch
 		);
-		$data_batch = array();
 		if ($verbose) {
-			// echo "<p>inserted last into db</p>";
+			echo "<p>inserted last into db, total now " .
+				(count($data_batch) + $global_batch_count * $batch_size) . "</p>";
 		}
+		$data_batch = array();
 	}
 
 	$db->disconnect();
