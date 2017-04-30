@@ -26,7 +26,8 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 }
 
 /*
- * TODO:Parse the entries into a db.
+ * DONE:Parse the entries into a db.
+ * TODO: document this function properly in javadoc style
  */
 function parse_pgn_file_to_db($target_file, $db_name,
    	$batch_size=200, $verbose=true) {
@@ -52,9 +53,11 @@ function parse_pgn_file_to_db($target_file, $db_name,
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
 
+	echo "<p>Starting parsing of data</p>\n";
 
 	$event_line = fgets($db_file);
 	while (!feof($db_file)) {
+		/* A boolean variable for some basic syntax validation */
 		$entry_error = false;
 		/*
 		 * Declare variables for this while loop, so that if any variables
@@ -130,8 +133,6 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		/* Harvest ECO and elo's from optional tag data */
 		$optional_line = fgets($db_file);
 		while ($optional_line[0] == '[') {
-			$eleven_sub = substr($optional_line, 0, 11);
-
 			if (substr($optional_line, 0, 6) == '[ECO "') {
 				$ECO_class = sscan_tag($optional_line, '[ECO "');
 				$ECO_alpha = substr($ECO_class, 0, 1);
@@ -144,6 +145,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 				}
 			}
 
+			$eleven_sub = substr($optional_line, 0, 11);
 			if ($eleven_sub == '[BlackElo "') {
 				$black_elo = sscan_tag($optional_line, '[BlackElo "');
 			}
@@ -153,6 +155,14 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			}
 
 			$optional_line = fgets($db_file);
+		}
+
+		if ($ECO_class === "") {
+			$entry_error = true;
+			echo "<p>vvvvvvvvv---info---vvvvvvvvvv<p>\n";
+			echo "<p>No ECO tag was provided.<p>\n";
+			echo "<p>this is critical info, so this game is omitted.<p>\n";
+			echo "<p>^^^^^^^^^---info---^^^^^^^^^^<p>\n";
 		}
 
 		if (!$entry_error) {
@@ -251,10 +261,8 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			'tags',
 			$data_batch
 		);
-		if ($verbose) {
-			echo "<p>inserted last into db, total now " .
-				(count($data_batch) + $global_batch_count * $batch_size) . "</p>\n";
-		}
+		echo "<p>inserted last into db, total now " .
+			(count($data_batch) + $global_batch_count * $batch_size) . "</p>\n";
 		$data_batch = array();
 	}
 
