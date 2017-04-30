@@ -259,14 +259,34 @@ foreach ($filter_on as $field) {
 // for testing
 // echo "\nquery: ". json_encode($query) . "\n";
 
-$result = $db->select_from(
-	'tags',
-	['`date`', 'CONCAT(`eco_alpha`, `eco_numero`) as eco', 'COUNT(*) AS `popularity`'],
-	$query,
-	['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
-);
-// testing
-// echo "result: " . json_encode($result) . "\n";
+if (!$filters['query_type']) {
+	echo json_encode(array(
+		'error'=>true,
+		'error_message'=>"Query type not specified on client side."
+	));
+	die();
+} else if ($filters['query_type'] === 'category') {
+	$result = $db->select_from(
+		'tags',
+		['`date`', 'eco_category as eco', 'COUNT(*) AS `popularity`'],
+		$query,
+		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
+	);
+} else if ($filters['query_type'] === 'tag') {
+	/* filter on finely grained tag data */
+	$result = $db->select_from(
+		'tags',
+		['`date`', 'CONCAT(eco_alpha, eco_numero) as `eco`', 'COUNT(*) AS `popularity`'],
+		$query,
+		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
+	);
+} else {
+	echo json_encode(array(
+		'error'=>true,
+		'error_message'=>"Query type not correctly specified on client side."
+	));
+	die();
+}
 
 $db->disconnect();
 

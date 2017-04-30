@@ -29,7 +29,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
  * TODO:Parse the entries into a db.
  */
 function parse_pgn_file_to_db($target_file, $db_name,
-   	$batch_size=1000, $verbose=true) {
+   	$batch_size=200, $verbose=true) {
 	// echo "Database to be parsed to: " . $db_name;
 
 	$global_batch_count = 0;
@@ -55,6 +55,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 	$event_line = fgets($db_file);
 	while (!feof($db_file)) {
+		$entry_error = false;
 		/*
 		 * Declare variables for this while loop, so that if any variables
 		 * are missing in the PGN file, they are only given the empty
@@ -92,13 +93,23 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 		$date_line = fgets($db_file);
 		/*
-		 * TODO: harvest the year out of the date string, as this is the
+		 * DONE: harvest the year out of the date string, as this is the
 		 * only value of interest, in addition to many games in the default
 		 * database being uncomplete beyond the year.
 		 */
 		$event_date = sscan_tag($date_line, '[Date "');
 		// extract and keep year, throw away rest
 		$event_date = explode('.', trim($event_date))[0];
+		if (strlen($event_date) < 4) {
+			$entry_error = true;
+			echo "<p>vvvv---------vvvv</p>\n";
+			echo "<p>Error with data for entry:</p>\n";
+			echo "<p> Event date: '" . $event_date . "'</p>\n";
+			echo "<p> length: '" . strlen($event_date) . "'</p>\n";
+			echo "<p>Event name: " . $event_name . "</p>\n";
+			echo "<p>This event will not be parsed into the database</p>\n";
+			echo "<p>^^^^---------^^^^</p>\n";
+		}
 
 		$round_line = fgets($db_file);
 		$event_round = sscan_tag($round_line, '[Round "');
@@ -144,21 +155,23 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			$optional_line = fgets($db_file);
 		}
 
-		/* add tag details to database */
-		$data_batch[] = [
-			'event' => $event_name,
-			'site' => $site_name,
-			'date' => (int) $event_date,
-			'round' => (int) $event_round,
-			'white' => $white_name,
-			'black' => $black_name,
-			'result' => $game_result,
-			'whiteElo' => (int) $white_elo,
-			'blackElo' => (int) $black_elo,
-			'eco_alpha' => $ECO_alpha,
-			'eco_numero' => (int) $ECO_numero,
-			'eco_category' => $ECO_category
-		];
+		if (!$entry_error) {
+			/* add tag details to database */
+			$data_batch[] = [
+				'event' => $event_name,
+				'site' => $site_name,
+				'date' => (int) $event_date,
+				'round' => (int) $event_round,
+				'white' => $white_name,
+				'black' => $black_name,
+				'result' => $game_result,
+				'whiteElo' => (int) $white_elo,
+				'blackElo' => (int) $black_elo,
+				'eco_alpha' => $ECO_alpha,
+				'eco_numero' => (int) $ECO_numero,
+				'eco_category' => $ECO_category
+			];
+		}
 		if (count($data_batch) >= $batch_size) {
 			$db->insert_multiple(
 				'tags',
@@ -240,7 +253,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		);
 		if ($verbose) {
 			echo "<p>inserted last into db, total now " .
-				(count($data_batch) + $global_batch_count * $batch_size) . "</p>";
+				(count($data_batch) + $global_batch_count * $batch_size) . "</p>\n";
 		}
 		$data_batch = array();
 	}
