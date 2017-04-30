@@ -228,6 +228,9 @@ window.onload = function() {
 	 * in the selector form, and send that data to the server along with
 	 * the filters.
 	 */
+	 
+	 add_max_year_attr();
+	 
 	$('#filter_form').submit(handle_filter_submit);
 
 	$(window).resize(handle_window_resize);
@@ -242,3 +245,12 @@ window.onload = function() {
 		}
 	});
 }
+
+function add_max_year_attr() {
+	var date = new Date();
+	var year = date.getFullYear();
+	
+	$("input[name=eco-low]").attr("max", year);
+	$("input[name=eco-high]").attr("max", year);
+}
+
