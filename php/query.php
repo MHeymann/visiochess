@@ -202,7 +202,7 @@ $db->use_database($filters['database']);
 $query = array();
 foreach ($filter_on as $field) {
 	if(contains($field, 'year')) {
-		if(!$query['date']) {
+		if(!isset($query['date'])) {
 			$query['date'] = array();
 		}
 
@@ -213,7 +213,7 @@ foreach ($filter_on as $field) {
 		}
 	} else if(contains($field, 'elo')) {
 		if(contains($field, 'black')) {
-			if(!$query['blackElo']) {
+			if(!isset($query['blackElo'])) {
 				$query['blackElo'] = array();
 			}
 
@@ -223,7 +223,7 @@ foreach ($filter_on as $field) {
 				$query['blackElo']['<='] = (int) $filters['black-elo-high'];
 			}
 		} else {
-			if(!$query['whiteElo']) {
+			if(!isset($query['whiteElo'])) {
 				$query['whiteElo'] = array();
 			}
 
@@ -235,17 +235,17 @@ foreach ($filter_on as $field) {
 		}
 	} else if(contains($field, 'eco')) {
 		if(contains($field, 'type')) {
-			if(!$query['eco_alpha']) {
+			if(!isset($query['eco_alpha'])) {
 				$query['eco_alpha'] = array();
 			}
 			$query['eco_alpha']['LIKE'] = $filters['eco-type'];
 		} else if(contains($field, 'low')) {
-			if(!$query['eco_numero']) {
+			if(!isset($query['eco_numero'])) {
 				$query['eco_numero'] = array();
 			}
 			$query['eco_numero'][">="] = $filters['eco-low'];
 		} else {
-			if(!$query['eco_numero']) {
+			if(!isset($query['eco_numero'])) {
 				$query['eco_numero'] = array();
 			}
 			$query['eco_numero']["<="] = $filters['eco-high'];
@@ -295,14 +295,14 @@ $db->disconnect();
 $data_by_date = array();
 $total_popularities = array();
 foreach ($result as $entry) {
-	if(!$data_by_date[$entry['date']]) {
+	if(!isset($data_by_date[$entry['date']])) {
 		$data_by_date[$entry['date']] = array();
 		$data_by_date[$entry['date']]['total'] = 0;
 	}
 	$data_by_date[$entry['date']][$entry['eco']] = $entry['popularity'];
 	$data_by_date[$entry['date']]['total'] += $entry['popularity'];
 
-	if(!$total_popularities[$entry['eco']]) {
+	if(!isset($total_popularities[$entry['eco']])) {
 		$total_popularities[$entry['eco']] = 0;
 	}
 	$total_popularities[$entry['eco']] += $entry['popularity'];
@@ -366,7 +366,7 @@ if($num_ecos > 9) {
 }
 
 $json = array();
-if($error) {
+if(isset($error) && $error) {
 	$json['error'] = true;
 	$json['error_message'] = "MySQL server could not process request";
 } else {
