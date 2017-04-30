@@ -29,13 +29,15 @@ function draw(json_data) {
 
   var disp_w = $("#display_svg").width();
   var disp_h = $("#display_svg").height();
+  var width = 0;
+  var height = 0;
   if (disp_h * 1.5 < disp_w) {
-    var width = disp_h * 1.5 - margin.left - margin.right;
-    var height = disp_h - margin.top - margin.bottom;
+    width = disp_h * 1.5 - margin.left - margin.right;
+    height = disp_h - margin.top - margin.bottom;
   }
   else {
-    var width = disp_w - margin.left - margin.right;
-    var height = disp_w * 0.66667 - margin.top - margin.bottom;
+    width = disp_w - margin.left - margin.right;
+    height = disp_w * 0.66667 - margin.top - margin.bottom;
   }
 
 

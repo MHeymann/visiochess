@@ -1,3 +1,9 @@
+/* global $ */
+/* global hex_sha256 */
+/* global send_url */
+/* global config */
+/* global draw */
+
 /* Global variables */
 var pgnHashes = {};
 var mainJSON;
@@ -25,7 +31,7 @@ function handle_pgn_submit(e) {
 			option.text = file.name; // set name a clickable display
 			option.value = hash; //set hash as identifiable val
 			db_selector.add(option);
-		}
+		};
 
 		/*
 		 * Tell the reader this is a textfile. It will load the file into
@@ -52,7 +58,7 @@ function handle_pgn_submit(e) {
 function submit_file(file, send_url) {
 
 	var form_data = new FormData();
-	form_data.append("user_db_uploader", file)
+	form_data.append("user_db_uploader", file);
 
 	$.ajax({
 		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
