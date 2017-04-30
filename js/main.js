@@ -114,6 +114,11 @@ function handle_filter_submit(event) {
 	var filters = getFormData($form);
 
 	filters['database'] = db_val;
+	if ((filters['eco-low'] != '') || (filters['eco-high'] != '')) {
+		filters['query_type'] = 'tag';
+	} else {
+		filters['query_type'] = 'category';
+	}
 
 	console.log(
 		'Sending these filters:\n',
