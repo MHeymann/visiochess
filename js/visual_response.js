@@ -6,6 +6,11 @@ var parseDate = d3.timeParse("%Y");
 var currentJSONHash = null;
 var currentData = null;
 
+
+/**
+ * Draws the graph using the d3 library and data from the database
+ * @param json_data A JSON object of the data generated in php/query.php
+ */
 function draw(json_data) {
 
   /* area in html for graph */
@@ -45,43 +50,26 @@ function draw(json_data) {
 
   /* creates the area on the graph for each category */
   var area = d3.area()
-    //.x(function(d, i) { return x(d.data.date); })
-    .x(function(d, i) {
+    .x(function(d, i) { // x-coordinates of the shape
       return x(parseDate(d.data.year));
-    }) // returns the years
-    .y0(function(d, i) {
+    })
+    .y0(function(d, i) { // bottom y-coordinates of the shape
       return y(d[0]);
     })
-    //.y0(function(d) { return y(d.) })
-    .y1(function(d) {
+    .y1(function(d) { //top y-coordinates of the shape
       return y(d[1]);
     });
 
 
+/* group in html to place resulting graph in */
   var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   /* the categories */
   var keys = json_data.pop;
 
-  var data = [];
-  if (hex_sha256(JSON.stringify(json_data)) == currentJSONHash) {
-    data = currentData;
-  }
-  else {
-    /* 'data' from json (would be better if array received from php)*/
-
-    Object.keys(json_data.data).forEach(function(key, i) {
-      var entry = {};
-      entry['year'] = parseInt(key);
-      json_data.data[key].forEach(function(v, i) {
-        entry[keys[i]] = v;
-      });
-      data.push(entry);
-    });
-    currentData = data;
-    currentJSONHash = hex_sha256(JSON.stringify(json_data));
-  }
+  /* the data */
+  var data = process_JSON_to_D3(json_data, keys);
 
   /* the years */
   x.domain(d3.extent(data, function(d, i) {
@@ -94,6 +82,7 @@ function draw(json_data) {
   /* creates a stack consisting of the different categories */
   stack.keys(keys);
 
+  /* creates layers consisting of each area graph for the different categories */
   var layer = g.selectAll(".layer")
     .data(stack(data))
     .enter().append("g")
@@ -129,6 +118,35 @@ function draw(json_data) {
   g.append("g")
     .attr("class", "axis axis--y")
     .call(d3.axisLeft(y).ticks(10, "%"));
+}
 
+/**
+ * Processes the received JSON object into a new object of which the data will
+ * be used to draw the graph
+ * @param json_data The json object that was generated in php/query.php
+ * @param keys An array of 9 categories and 1 'other'
+ * @return data The generated JSON object
+ */
+function process_JSON_to_D3(json_data, keys) {
+  var data = [];
 
+  if (hex_sha256(JSON.stringify(json_data)) == currentJSONHash) {
+    data = currentData;
+  }
+  else {
+    /* 'data' from json (would be better if array received from php)*/
+
+    Object.keys(json_data.data).forEach(function(key, i) {
+      var entry = {};
+      entry['year'] = parseInt(key);
+      json_data.data[key].forEach(function(v, i) {
+        entry[keys[i]] = v;
+      });
+      data.push(entry);
+    });
+    currentData = data;
+    currentJSONHash = hex_sha256(JSON.stringify(json_data));
+  }
+
+  return data;
 }
