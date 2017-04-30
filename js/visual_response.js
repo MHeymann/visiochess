@@ -12,7 +12,6 @@ var currentData = null;
  * @param json_data A JSON object of the data generated in php/query.php
  */
 function draw(json_data) {
-
   /* area in html for graph */
 
   var svg = d3.select("#display_svg").append("svg")

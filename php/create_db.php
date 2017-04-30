@@ -43,6 +43,7 @@ function create_database($db_name, $target_file) {
 			'result' => 'VARCHAR(10)',
 			'whiteElo' => 'INT(4)',
 			'blackElo' => 'INT(4)',
+			'minElo' => 'INT(4)',
 			'eco_alpha' => 'CHAR(1)',
 			'eco_numero' => 'INT(2)',
 			'eco_category' => 'VARCHAR(5)'
@@ -60,6 +61,7 @@ function create_database($db_name, $target_file) {
 			'eco_category',
 			/* then by specific number */
 			'eco_numero',
+			'minElo',
 			'whiteElo',
 			'blackElo'
 		));

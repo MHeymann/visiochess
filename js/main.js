@@ -336,13 +336,31 @@ window.onload = function() {
 	$(window).resize(handle_window_resize);
 
 	$("#test_reupload").click(function(e) {
-		var i = null;
-		for (var hash_a in pgnHashes) {
-			i = hash_a;
-		}
-		if (i != null) {
-			ensure_database_exists_on_server(i);
-		}
+		$.ajax({
+			url: ((config['dev_mode'])?config['php_server']:'') + "php/elo_query.php",
+			type: 'post',
+			data: {
+				'year': 2014,
+				'query_type': 'elo_histo'
+			},
+			dataType: 'json',
+			success: function (response) {
+				if (response.error) {
+					$("#temp_results").append("<p>" + response.error_message + "</p>");
+				}
+				else {
+					mainJSON = response;
+					$("#display_svg").empty();
+					draw(response);
+
+					$("#temp_results").append("<p>" + JSON.stringify(response) +
+							"</p>");
+				}
+			},
+			error: function(xhr, textStatus, errorMessage) {
+				console.log(errorMessage);
+			}
+		});
 	});
 
 	$('div[name=eco-filters] input[type=radio]')

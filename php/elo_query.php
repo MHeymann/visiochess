@@ -1,8 +1,9 @@
 <?php
 require_once "mysql_interface.php";
-require_once "eco_category.php";
 // this is actually still just a check to see if it works
 
+error_reporting(E_ALL);
+ini_set('display_errors', 'on');
 // necessary for testing, not sure if it will be needed in production
 header('Access-Control-Allow-Origin: *');
 date_default_timezone_set('Africa/Johannesburg');
@@ -11,48 +12,30 @@ foreach($_POST as $filter_field => $value) {
 	$filters[$filter_field] = trim($value);
 }
 
+
 /* filter validation checks */
 $filter_on = array();
 
-if($filters['year-low']) {
-	$filter_on[] = 'year-low';
-	$year_low_ok = is_numeric($filters['year-low']) &&
-		((int) $filters['year-low']) >= 0 &&
-		((int) $filters['year-low']) <= date("Y");
-	if(!$year_low_ok) {
+if(!isset($filters['year'])) {
+	echo json_encode(array(
+		'error' => true,
+		'error_message' => "No year supplied for filtering"
+	));
+} else {
+	$filter_on[] = 'year';
+	$year_ok = is_numeric($filters['year']) &&
+		((int) $filters['year']) >= 0 &&
+		((int) $filters['year']) <= date("Y");;
+	if(!$year_ok) {
 		echo json_encode(array(
 			'error' => true,
-			'error_message' => "year-low"
+			'error_message' => "Invalid year provided"
 		));
 		die();
 	}
 }
 
-if($filters['year-high']) {
-	$filter_on[] = 'year-high';
-	$year_high_ok = is_numeric($filters['year-high']) &&
-		((int) $filters['year-high']) <= (int) date("Y") &&
-		((int) $filters['year-high']) >= 0;
-	if(!$year_high_ok) {
-		echo json_encode(array(
-			'error' => true,
-			'error_message' => "year-high"
-		));
-		die();
-	}
-}
-
-if($filters['year-low'] && $filters['year-high']) {
-	if($filters['year-low'] > $filters['year-high']) {
-		echo json_encode(array(
-			'error' => true,
-			'error_message' => "year"
-		));
-		die();
-	}
-}
-
-if($filters['black-elo-low']) {
+if(isset($filters['black-elo-low'])) {
 	$filter_on[] = 'black-elo-low';
 	$black_elo_low_ok = is_numeric($filters['black-elo-low']) &&
 		((int) $filters['black-elo-low']) >= 0 &&
@@ -66,7 +49,7 @@ if($filters['black-elo-low']) {
 	}
 }
 
-if($filters['black-elo-high']) {
+if(isset($filters['black-elo-high'])) {
 	$filter_on[] = 'black-elo-high';
 	$black_elo_high_ok = is_numeric($filters['black-elo-high']) &&
 		((int) $filters['black-elo-high']) <= 9999 &&
@@ -80,7 +63,7 @@ if($filters['black-elo-high']) {
 	}
 }
 
-if($filters['black-elo-low'] && $filters['black-elo-high']) {
+if(isset($filters['black-elo-low']) && isset($filters['black-elo-high'])) {
 	if($filters['black-elo-low'] > $filters['black-elo-high']) {
 		echo json_encode(array(
 			'error' => true,
@@ -90,7 +73,7 @@ if($filters['black-elo-low'] && $filters['black-elo-high']) {
 	}
 }
 
-if($filters['white-elo-low']) {
+if(isset($filters['white-elo-low'])) {
 	$filter_on[] = 'white-elo-low';
 	$white_elo_low_ok = is_numeric($filters['white-elo-low']) &&
 		((int) $filters['white-elo-low']) >= 0 &&
@@ -104,7 +87,7 @@ if($filters['white-elo-low']) {
 	}
 }
 
-if($filters['white-elo-high']) {
+if(isset($filters['white-elo-high'])) {
 	$filter_on[] = 'white-elo-high';
 	$white_elo_high_ok = is_numeric($filters['white-elo-high']) &&
 		((int) $filters['white-elo-high']) <= 9999 &&
@@ -118,7 +101,7 @@ if($filters['white-elo-high']) {
 	}
 }
 
-if($filters['white-elo-low'] && $filters['white-elo-high']) {
+if(isset($filters['white-elo-low']) && isset($filters['white-elo-high'])) {
 	if($filters['white-elo-low'] > $filters['white-elo-high']) {
 		echo json_encode(array(
 			'error' => true,
@@ -128,19 +111,20 @@ if($filters['white-elo-low'] && $filters['white-elo-high']) {
 	}
 }
 
-if(isset($filters['eco-category']) && $filters['eco-category']) {
-	$filter_on[] = 'eco-category';
-	$eco_type_ok = preg_match("/^[A-E]$/", $filters['eco-category']);
+/*
+if(isset($filters['eco-type'])) {
+	$filter_on[] = 'eco-type';
+	$eco_type_ok = preg_match("/^[A-E]$/", $filters['eco-type']);
 	if(!$eco_type_ok) {
 		echo json_encode(array(
 			'error' => true,
-			'error_message' => "eco-category"
+			'error_message' => "eco-type"
 		));
 		die();
 	}
 }
 
-if(isset($filters['eco-low']) && $filters['eco-low']) {
+if(isset($filters['eco-low'])) {
 	$filter_on[] = 'eco-low';
 	$eco_low_ok = is_numeric($filters['eco-low']) &&
 		((int) $filters['eco-low']) >= 0 &&
@@ -154,7 +138,7 @@ if(isset($filters['eco-low']) && $filters['eco-low']) {
 	}
 }
 
-if(isset($filters['eco-high']) && $filters['eco-high']) {
+if(isset($filters['eco-high'])) {
 	$filter_on[] = 'eco-high';
 	$eco_high_ok = is_numeric($filters['eco-high']) &&
 		((int) $filters['eco-high']) <= 999 && // perhaps this value needs to be checked
@@ -168,8 +152,7 @@ if(isset($filters['eco-high']) && $filters['eco-high']) {
 	}
 }
 
-if(isset($filters['eco-low']) && $filters['eco-low'] &&
-	isset($filters['eco-high']) && $filters['eco-high']) {
+if(isset($filters['eco-low']) && isset($filters['eco-high'])) {
 	if($filters['eco-low'] > $filters['eco-high']) {
 		echo json_encode(array(
 			'error' => true,
@@ -178,24 +161,11 @@ if(isset($filters['eco-low']) && $filters['eco-low'] &&
 		die();
 	}
 }
+*/
 
-if(!$filters['database']) {
+if(!isset($filters['database'])) {
 	$filters['database'] = 'default_chess_db';
 }
-
-if($filters['eco-filter-type'] == 'class') {
-	$eco_filters = get_eco_class($filters['eco-class']);
-	if($eco_filters) {
-		$filter_on[] = 'eco-category';
-		$filter_on[] = 'eco-low';
-		$filter_on[] = 'eco-high';
-		$filters['eco-category'] = $eco_filters['category'];
-		$filters['eco-low'] = $eco_filters['low'];
-		$filters['eco-high'] = $eco_filters['high'];
-	}
-}
-
-// echo "filters: " . json_encode($filters) . "\n";
 
 /* query sql using those filters */
 $settings = parse_ini_file(__DIR__."/../.my.cnf", true);
@@ -213,17 +183,12 @@ $db->connect();
 $db->use_database($filters['database']);
 
 $query = array();
+$query['minElo'] = array();
+$query['minElo']['>'] = 0;
 foreach ($filter_on as $field) {
 	if(contains($field, 'year')) {
-		if(!isset($query['date'])) {
-			$query['date'] = array();
-		}
-
-		if(contains($field, 'low')) {
-			$query['date']['>='] = (int) $filters['year-low'];
-		} else {
-			$query['date']['<='] = (int) $filters['year-high'];
-		}
+		$query['date'] = array();
+		$query['date']['='] = (int) $filters['year'];
 	} else if(contains($field, 'elo')) {
 		if(contains($field, 'black')) {
 			if(!isset($query['blackElo'])) {
@@ -247,11 +212,11 @@ foreach ($filter_on as $field) {
 			}
 		}
 	} else if(contains($field, 'eco')) {
-		if(contains($field, 'category')) {
+		if(contains($field, 'type')) {
 			if(!isset($query['eco_alpha'])) {
 				$query['eco_alpha'] = array();
 			}
-			$query['eco_alpha']['LIKE'] = $filters['eco-category'];
+			$query['eco_alpha']['LIKE'] = $filters['eco-type'];
 		} else if(contains($field, 'low')) {
 			if(!isset($query['eco_numero'])) {
 				$query['eco_numero'] = array();
@@ -272,27 +237,18 @@ foreach ($filter_on as $field) {
 // for testing
 // echo "\nquery: ". json_encode($query) . "\n";
 
-if (!$filters['eco-filter-type']) {
+if (!$filters['query_type']) {
 	echo json_encode(array(
 		'error'=>true,
 		'error_message'=>"Query type not specified on client side."
 	));
 	die();
-} else if ($filters['eco-filter-type'] === 'category') {
+} else if ($filters['query_type'] === 'elo_histo') {
 	$result = $db->select_from(
 		'tags',
-		['`date`', 'eco_category as eco', 'COUNT(*) AS `popularity`'],
+		['`date`', '`eco_category` as eco', '`minElo`', 'COUNT(*) AS `popularity`'],
 		$query,
-		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
-	);
-} else if ($filters['eco-filter-type'] === 'class' ||
-		$filters['eco-filter-type'] === 'code') {
-	/* filter on finely grained tag data */
-	$result = $db->select_from(
-		'tags',
-		['`date`', 'CONCAT(eco_alpha, eco_numero) as `eco`', 'COUNT(*) AS `popularity`'],
-		$query,
-		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
+		['GROUP BY `minElo`, `eco_category`', 'ORDER BY `minElo` ASC']
 	);
 } else {
 	echo json_encode(array(
@@ -306,15 +262,15 @@ $db->disconnect();
 
 /* create json that we will send to client for visualization */
 /* split into years first */
-$data_by_date = array();
+$data_by_min_elo = array();
 $total_popularities = array();
 foreach ($result as $entry) {
-	if(!isset($data_by_date[$entry['date']])) {
-		$data_by_date[$entry['date']] = array();
-		$data_by_date[$entry['date']]['total'] = 0;
+	if(!isset($data_by_min_elo[$entry['minElo']])) {
+		$data_by_min_elo[$entry['minElo']] = array();
+		$data_by_min_elo[$entry['minElo']]['total'] = 0;
 	}
-	$data_by_date[$entry['date']][$entry['eco']] = $entry['popularity'];
-	$data_by_date[$entry['date']]['total'] += $entry['popularity'];
+	$data_by_min_elo[$entry['minElo']][$entry['eco']] = $entry['popularity'];
+	$data_by_min_elo[$entry['minElo']]['total'] += $entry['popularity'];
 
 	if(!isset($total_popularities[$entry['eco']])) {
 		$total_popularities[$entry['eco']] = 0;
@@ -323,7 +279,7 @@ foreach ($result as $entry) {
 }
 
 // testing
-// echo "by date: " . json_encode($data_by_date) . "\n";
+// echo "by date: " . json_encode($data_by_min_elo) . "\n";
 
 /* sort from most popular to least popular */
 arsort($total_popularities);
@@ -346,10 +302,31 @@ foreach ($total_popularities as $eco => $total) {
 		break;
 	}
 }
-// echo "top ecos: " . json_encode($top_ecos) . "\n";
+
+$arr_keys = array_keys($data_by_min_elo);
+$smallest_min_elo = $arr_keys[0];
+$largest_min_elo = end($arr_keys);
+
+
+$data_by_groups = array();
+$offset = 30;
+for ($i = $smallest_min_elo; $i < $largest_min_elo; $i += $offset) {
+	$data_by_groups[($i + $offset)] = array();
+	for ($j = 0; $j < 10; $j++) {
+		if (isset($data_by_min_elo[$i + $j])) {
+			foreach($data_by_min_elo[$i + $j] as $eco=>$pop) {
+				if (!isset($data_by_groups[($i + $offset)][$eco])) {
+					$data_by_groups[($i + $offset)][$eco] = 0;
+				}
+				$data_by_groups[($i + $offset)][$eco] += $pop;
+			}
+
+		}
+	}
+}
 
 $json_data = array();
-foreach ($data_by_date as $year => &$ecos) {
+foreach ($data_by_groups as $minElo => &$ecos) {
 	/* get percentage for each opening */
 	foreach ($ecos as $eco => $pop) {
 		if($eco !== 'total') {
@@ -358,19 +335,19 @@ foreach ($data_by_date as $year => &$ecos) {
 	}
 
 	/* put relavant pops into the array */
-	$json_data[$year] = array();
+	$json_data[$minElo] = array();
 	$sum = 0;
 	foreach ($top_ecos as $eco) {
 		$value = 0;
 		if(isset($ecos[$eco])) {
 			$value = $ecos[$eco];
 		}
-		$json_data[$year][] = $value;
+		$json_data[$minElo][] = $value;
 		$sum += $value;
 	}
 
-	if($sum < 1) {
-		$json_data[$year][] = 1 - $sum;
+	if($sum < 0.9999) {
+		$json_data[$minElo][] = 1 - $sum;
 	}
 }
 // echo "json data: " . json_encode($json_data) . "\n";
@@ -389,31 +366,6 @@ if(isset($error) && $error) {
 	$json['pop'] = $top_ecos;
 }
 echo json_encode($json);
-
-// $data = array();
-// $data["1990"] = [48.09, 24.14, 18.82, 7.46, 0.03, 1.32, 0, 0, 0, 0];
-// $data["1991"] = [48, 24.19, 18.96, 7.36, 0.03, 1.32, 0.12, 0.01, 0, 0, 0, 0];
-// $data["1992"] = [47.87, 24.44, 18.91, 7.27, 0.03, 1.36, 0.12, 0.01, 0, 0, 0, 0];
-// $data["1993"] = [48.22, 23.83, 19.16, 7.24, 0.04, 1.39, 0.12, 0.01, 0, 0, 0, 0];
-// $data["1994"] = [47.91, 23.86, 19.35, 7.31, 0.04, 1.41, 0.12, 0.01, 0, 0, 0, 0];
-// $data["1995"] = [48.78, 21.14, 19.66, 8.42, 0.05, 1.83, 0.1 ,0.01, 0, 0, 0, 0];
-// $data["1996"] = [49.43, 20.55, 19.42, 8.66, 0.05, 1.75, 0.12, 0.01, 0, 0, 0, 0];
-// $data["1997"] = [48.98, 23.47, 18.84, 7.25, 0.04, 1.28, 0.12, 0.01, 0, 0, 0, 0];
-// $data["1998"] = [48.69, 23.76, 18.89, 7.22, 0.04, 1.27, 0.11, 0.01, 0, 0, 0, 0];
-// $data["1999"] = [49.17, 23.35, 18.91, 7.09, 0.04, 1.32, 0.12, 0.01, 0, 0, 0, 0];
-// $data["2000"] = [49.32, 23.39, 18.76, 7.03, 0.04, 1.34, 0.11, 0, 0, 0, 0, 0];
-// $data["2001"] = [49.39, 23.11, 18.84, 7.14, 0.04, 1.37, 0.1, 0, 0, 0, 0, 0];
-// $data["2002"] = [49.77, 20.68, 19.23, 8.46, 0.05, 1.71, 0.09, 0.01, 0, 0, 0, 0];
-// $data["2003"] = [50.07, 20.41, 18.91, 8.77, 0.05, 1.69, 0.1, 0.01, 0, 0, 0, 0];
-// $data["2004"] = [49.32, 23.3, 18.54, 7.4, 0.04, 1.27, 0.11, 0.01, 0, 0, 0, 0];
-//
-// $json = array(
-// 	'error' => false,
-// 	'error_message' => "Some error message here.",
-// 	'pop' => ["A10", "B20", "C30", "D40", "E50", "A13", "B18", "C19", "D10", "other"],
-// 	'data' => $data
-// );
-// echo  json_encode($json);
 
 /*
  * this really has no busines here, it should actually be in a utils.php

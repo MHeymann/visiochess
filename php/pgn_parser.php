@@ -177,6 +177,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 				'result' => $game_result,
 				'whiteElo' => (int) $white_elo,
 				'blackElo' => (int) $black_elo,
+				'minElo' => min((int) $white_elo, (int) $black_elo),
 				'eco_alpha' => $ECO_alpha,
 				'eco_numero' => (int) $ECO_numero,
 				'eco_category' => $ECO_category
