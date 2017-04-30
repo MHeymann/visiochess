@@ -1,5 +1,6 @@
 <?php
 require_once "mysql_interface.php";
+require_once "eco_category.php";
 // this is actually still just a check to see if it works
 
 // necessary for testing, not sure if it will be needed in production
@@ -9,7 +10,6 @@ $filters = array();
 foreach($_POST as $filter_field => $value) {
 	$filters[$filter_field] = trim($value);
 }
-
 
 /* filter validation checks */
 $filter_on = array();
@@ -128,19 +128,19 @@ if($filters['white-elo-low'] && $filters['white-elo-high']) {
 	}
 }
 
-if($filters['eco-type']) {
-	$filter_on[] = 'eco-type';
-	$eco_type_ok = preg_match("/^[A-E]$/", $filters['eco-type']);
+if(isset($filters['eco-category']) && $filters['eco-category']) {
+	$filter_on[] = 'eco-category';
+	$eco_type_ok = preg_match("/^[A-E]$/", $filters['eco-category']);
 	if(!$eco_type_ok) {
 		echo json_encode(array(
 			'error' => true,
-			'error_message' => "eco-type"
+			'error_message' => "eco-category"
 		));
 		die();
 	}
 }
 
-if($filters['eco-low']) {
+if(isset($filters['eco-low']) && $filters['eco-low']) {
 	$filter_on[] = 'eco-low';
 	$eco_low_ok = is_numeric($filters['eco-low']) &&
 		((int) $filters['eco-low']) >= 0 &&
@@ -154,7 +154,7 @@ if($filters['eco-low']) {
 	}
 }
 
-if($filters['eco-high']) {
+if(isset($filters['eco-high']) && $filters['eco-high']) {
 	$filter_on[] = 'eco-high';
 	$eco_high_ok = is_numeric($filters['eco-high']) &&
 		((int) $filters['eco-high']) <= 999 && // perhaps this value needs to be checked
@@ -168,7 +168,8 @@ if($filters['eco-high']) {
 	}
 }
 
-if($filters['eco-low'] && $filters['eco-high']) {
+if(isset($filters['eco-low']) && $filters['eco-low'] &&
+	isset($filters['eco-high']) && $filters['eco-high']) {
 	if($filters['eco-low'] > $filters['eco-high']) {
 		echo json_encode(array(
 			'error' => true,
@@ -180,6 +181,18 @@ if($filters['eco-low'] && $filters['eco-high']) {
 
 if(!$filters['database']) {
 	$filters['database'] = 'default_chess_db';
+}
+
+if($filters['eco-filter-type'] == 'class') {
+	$eco_filters = get_eco_class($filters['eco-class']);
+	if($eco_filters) {
+		$filter_on[] = 'eco-category';
+		$filter_on[] = 'eco-low';
+		$filter_on[] = 'eco-high';
+		$filters['eco-category'] = $eco_filters['category'];
+		$filters['eco-low'] = $eco_filters['low'];
+		$filters['eco-high'] = $eco_filters['high'];
+	}
 }
 
 // echo "filters: " . json_encode($filters) . "\n";
@@ -234,11 +247,11 @@ foreach ($filter_on as $field) {
 			}
 		}
 	} else if(contains($field, 'eco')) {
-		if(contains($field, 'type')) {
+		if(contains($field, 'category')) {
 			if(!isset($query['eco_alpha'])) {
 				$query['eco_alpha'] = array();
 			}
-			$query['eco_alpha']['LIKE'] = $filters['eco-type'];
+			$query['eco_alpha']['LIKE'] = $filters['eco-category'];
 		} else if(contains($field, 'low')) {
 			if(!isset($query['eco_numero'])) {
 				$query['eco_numero'] = array();
@@ -259,20 +272,21 @@ foreach ($filter_on as $field) {
 // for testing
 // echo "\nquery: ". json_encode($query) . "\n";
 
-if (!$filters['query_type']) {
+if (!$filters['eco-filter-type']) {
 	echo json_encode(array(
 		'error'=>true,
 		'error_message'=>"Query type not specified on client side."
 	));
 	die();
-} else if ($filters['query_type'] === 'category') {
+} else if ($filters['eco-filter-type'] === 'category') {
 	$result = $db->select_from(
 		'tags',
 		['`date`', 'eco_category as eco', 'COUNT(*) AS `popularity`'],
 		$query,
 		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
 	);
-} else if ($filters['query_type'] === 'tag') {
+} else if ($filters['eco-filter-type'] === 'class' ||
+		$filters['eco-filter-type'] === 'code') {
 	/* filter on finely grained tag data */
 	$result = $db->select_from(
 		'tags',

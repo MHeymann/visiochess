@@ -51,7 +51,7 @@
 											Start Year:
 										</label>
 										<input type="number" name="year-low" placeholder="Low"
-										min="0"  class="control-label col-xs-12">
+										min="0" class="control-label col-xs-12">
 										<input type="number" name="year-high" placeholder="High"
 										min="0" class="control-label col-xs-12">
 
@@ -60,36 +60,56 @@
 											Black Elo:
 										</label>
 										<input type="number" name="black-elo-low" placeholder="Low"
-										min="0" max="3000" class="control-label col-xs-12">
+										min="0" max="3400" class="control-label col-xs-12">
 										<input type="number" name="black-elo-high" placeholder="High"
-										min="0" max="3000" class="control-label col-xs-12">
+										min="0" max="3400" class="control-label col-xs-12">
 
 										<label name="whileelo"
 											class="control-label col-xs-12">
 											White Elo:
 										</label>
 										<input type="number" name="white-elo-low" placeholder="Low"
-										min="0" max="3000" class="control-label col-xs-12">
+
+										min="0" max="3400" class="control-label col-xs-12">
 										<input type="number" name="white-elo-high" placeholder="High"
-										min="0" max="3000" class="control-label col-xs-12">
+										min="0" max="3400" class="control-label col-xs-12">
 
 										<label name="eco"
 											class="control-label col-xs-12">
 											ECO Code:
 										</label>
-										<select name="eco-type" class="control-label col-xs-12">
-											<option value="" selected disabled>[choose a category]</option>
-											<option value="A" >A</option>
-											<option value="B" >B</option>
-											<option value="C" >C</option>
-											<option value="D" >D</option>
-											<option value="E" >E</option>
-										</select>
-										<input type="number" name="eco-low" placeholder="Low"
-										min="0" max="99" class="control-label col-xs-12">
-										<input type="number" name="eco-high" placeholder="High"
-										min="0" max="99" class="control-label col-xs-12">
-								
+
+										<div name="eco-filters" class="radio col-xs-12">
+											<label class="col-xs-12">
+												<input type="radio" name="eco-filter-type"
+												value="category" checked></input>
+												eco category
+											</label>
+
+											<label class="col-xs-12">
+												<input type="radio" name="eco-filter-type"
+												value="class"></input>
+												eco class
+											</label>
+
+											<label class="col-xs-12">
+												<input type="radio" name="eco-filter-type"
+												value="code"></input>
+												eco code
+											</label>
+
+											<div class="current-eco-filter">
+												<select name="eco-category" class="control-label col-xs-12">
+													<option value="" selected>Filter by eco category...</option>
+													<option value="A" >A</option>
+													<option value="B" >B</option>
+													<option value="C" >C</option>
+													<option value="D" >D</option>
+													<option value="E" >E</option>
+												</select>
+											</div>
+										</div>
+
 										<input type="submit" value="Apply" name="submit"
 										class="col-xs-12">
 									</form>

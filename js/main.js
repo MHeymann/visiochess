@@ -120,11 +120,6 @@ function handle_filter_submit(event) {
 	var filters = getFormData($form);
 
 	filters['database'] = db_val;
-	if ((filters['eco-low'] != '') || (filters['eco-high'] != '')) {
-		filters['query_type'] = 'tag';
-	} else {
-		filters['query_type'] = 'category';
-	}
 
 	console.log(
 		'Sending these filters:\n',
@@ -215,6 +210,111 @@ function getConfigSettings(alternateLink=null) {
 	});
 }
 
+function handleEcoFilterChange() {
+	radioButton = $(this);
+	// console.log(radio_button);
+	$currentFilter = $('div.current-eco-filter');
+	$currentFilter.empty();
+
+	switch(radioButton.val()) {
+		case 'category':
+			$categorySelect = $('<select />').attr({
+				'class': 'control-label col-xs-12',
+				'name': 'eco-category'// NB this may break some things!
+			});
+
+			$categorySelect.append($('<option />').attr({
+				'value': ''
+			}).text(
+				'Filter by eco category...'
+			));
+
+			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
+				$option = $('<option />').attr({
+					'value': letter
+				}).text(letter);
+				$categorySelect.append($option);
+			});
+
+			$currentFilter.append($categorySelect);
+
+			break;
+		case 'class':
+			$classSelect = $('<select />').attr({
+				'class': 'control-label col-xs-12',
+				'name': 'eco-class'
+			});
+
+			$classSelect.append($('<option />').attr({
+				'value': ''
+			}).text(
+				'Filter by eco class...'
+			));
+
+			$.each(['A', 'B', 'C', 'D', 'E'], function(index_let, letter) {
+				$optGroup = $('<optgroup />').attr({
+					'label': letter
+				});
+
+				decimal = (letter == 'A')?[1.1, 1.2, 1.3, 1.4, 1.5]:[1.1, 1.2];
+				$.each(decimal, function(index_dec, value) {
+					num = value + index_let;
+					label = letter + num;
+
+					$optGroup.append($('<option />').attr({
+						'value': label
+					}).text(label));
+				});
+
+				$classSelect.append($optGroup);
+			});
+
+			$currentFilter.append($classSelect);
+
+			break;
+		case 'code':
+			$categorySelect = $('<select />').attr({
+				'class': 'control-label col-xs-12',
+				'name': 'eco-category'// NB this may break some things!
+			});
+
+			$categorySelect.append($('<option />').attr({
+				'value': ''
+			}).text(
+				'Filter by eco category...'
+			));
+
+			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
+				$option = $('<option />').attr({
+					'value': letter
+				}).text(letter);
+				$categorySelect.append($option);
+			});
+
+			$currentFilter.append($categorySelect);
+
+			$currentFilter.append($('<input />').attr({
+				'type': 'number',
+				'min': 0,
+				'max': 99,
+				'name': 'eco-low',
+				'placeholder': 'Low',
+				'class': 'control-label col-xs-12'
+			}));
+
+			$currentFilter.append($('<input />').attr({
+				'type': 'number',
+				'min': 0,
+				'max': 99,
+				'name': 'eco-high',
+				'placeholder': 'High',
+				'class': 'control-label col-xs-12'
+			}));
+
+			break;
+	}
+}
+
 window.onload = function() {
 	getConfigSettings();
 
@@ -228,9 +328,9 @@ window.onload = function() {
 	 * in the selector form, and send that data to the server along with
 	 * the filters.
 	 */
-	 
+
 	 add_max_year_attr();
-	 
+
 	$('#filter_form').submit(handle_filter_submit);
 
 	$(window).resize(handle_window_resize);
@@ -244,13 +344,23 @@ window.onload = function() {
 			ensure_database_exists_on_server(i);
 		}
 	});
+
+	$('div[name=eco-filters] input[type=radio]')
+		.change(handleEcoFilterChange);
 }
 
 function add_max_year_attr() {
 	var date = new Date();
 	var year = date.getFullYear();
-	
+
 	$("input[name=eco-low]").attr("max", year);
 	$("input[name=eco-high]").attr("max", year);
 }
 
+function add_max_year_attr() {
+	var date = new Date();
+	var year = date.getFullYear();
+
+	$("input[name=eco-low]").attr("max", year);
+	$("input[name=eco-high]").attr("max", year);
+}

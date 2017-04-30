@@ -51,4 +51,84 @@ function get_eco_category($ECO_alpha, $ECO_numero) {
 	return $class;
 }
 
+function get_eco_class($category) {
+	$eco_details = array(
+		'category' => null,
+		'low' => null,
+		'high' => null
+	);
+
+	switch($category) {
+		case "A1.1":
+			$eco_details['category'] = 'A';
+			$eco_details['low'] = 0;
+			$eco_details['high'] = 39;
+			break;
+		case "A1.2":
+			$eco_details['category'] = 'A';
+			$eco_details['low'] = 40;
+			$eco_details['high'] = 44;
+			break;
+		case "A1.3":
+			$eco_details['category'] = 'A';
+			$eco_details['low'] = 45;
+			$eco_details['high'] = 49;
+			break;
+		case "A1.4":
+			$eco_details['category'] = 'A';
+			$eco_details['low'] = 50;
+			$eco_details['high'] = 79;
+			break;
+		case "A1.5":
+			$eco_details['category'] = 'A';
+			$eco_details['low'] = 80;
+			$eco_details['high'] = 99;
+			break;
+		case "B2.1":
+			$eco_details['category'] = 'B';
+			$eco_details['low'] = 0;
+			$eco_details['high'] = 19;
+			break;
+		case "B2.2":
+			$eco_details['category'] = 'B';
+			$eco_details['low'] = 20;
+			$eco_details['high'] = 99;
+			break;
+		case "C3.1":
+			$eco_details['category'] = 'C';
+			$eco_details['low'] = 0;
+			$eco_details['high'] = 19;
+			break;
+		case "C3.2":
+			$eco_details['category'] = 'C';
+			$eco_details['low'] = 20;
+			$eco_details['high'] = 99;
+			break;
+		case "D4.1":
+			$eco_details['category'] = 'D';
+			$eco_details['low'] = 0;
+			$eco_details['high'] = 69;
+			break;
+		case "D4.2":
+			$eco_details['category'] = 'D';
+			$eco_details['low'] = 70;
+			$eco_details['high'] = 99;
+			break;
+		case "E5.1":
+			$eco_details['category'] = 'E';
+			$eco_details['low'] = 0;
+			$eco_details['high'] = 59;
+			break;
+		case "E5.2":
+			$eco_details['category'] = 'E';
+			$eco_details['low'] = 60;
+			$eco_details['high'] = 99;
+			break;
+		default:
+			return null;
+	}
+
+	return $eco_details;
+}
+
 ?>
