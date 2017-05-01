@@ -10,22 +10,24 @@
 		<column>result</column>
 		<column>whiteElo</column>
 		<column>blackElo</column>
+		<column>minElo</column>
 		<column>eco_alpha</column>
 		<column>eco_numero</column>
 		<column>eco_category</column>
 		<row>
-			<value>Spring</value>
-			<value>Budapest open</value>
-			<value>1996</value>
+			<value>Masters</value>
+			<value>Hampstead</value>
+			<value>1998</value>
 			<value>1</value>
-			<value>Aadrians, M.</value>
-			<value>Dekic, J.</value>
-			<value>0-1</value>
-			</NULL>
-			<value>2320</value>
-			<value>D</value>
-			<value>82</value>
-			<value>D4.2</value>
+			<value>Aagaard, J.</value>
+			<value>Panczyk, K.</value>
+			<value>1/2-1/2</value>
+			<value>2395</value>
+			<value>2390</value>
+			<value>2390</value>
+			<value>A</value>
+			<value>32</value>
+			<value>A1.1</value>
 		</row>
 	</table>
 </dataset>
