@@ -322,6 +322,50 @@ function handleEcoFilterChange() {
 			}));
 
 			break;
+		case 'year-eco-analysis':
+			/*
+			$categorySelect = $('<select />').attr({
+				'class': 'control-label col-xs-12',
+				'name': 'eco-class'// NB this may again break some things!
+			});
+
+			$categorySelect.append($('<option />').attr({
+				'value': ''
+			}).text(
+				'Filter by eco category...'
+			));
+
+			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
+				$option = $('<option />').attr({
+					'value': letter
+				}).text(letter);
+				$categorySelect.append($option);
+			});
+
+			$currentFilter.append($categorySelect);
+			*/
+
+			$currentFilter.append($('<input />').attr({
+				'type': 'number',
+				'min': 0,
+				'max': 3000,
+				'name': 'year',
+				'placeholder': 'Select a year',
+				'class': 'control-label col-xs-12'
+			}));
+
+			/*
+			$currentFilter.append($('<input />').attr({
+				'type': 'number',
+				'min': 0,
+				'max': 99,
+				'name': 'eco-high',
+				'placeholder': 'High',
+				'class': 'control-label col-xs-12'
+			}));
+			*/
+
+			break;
 	}
 }
 
@@ -347,14 +391,17 @@ window.onload = function() {
 
 	$("#test_reupload").click(function(e) {
 		$.ajax({
-			url: ((config['dev_mode'])?config['php_server']:'') + "php/elo_query.php",
+			url: ((config['dev_mode'])?config['php_server']:'') + "php/query.php",
 			type: 'post',
 			data: {
 				'year': 2014,
-				'query_type': 'elo_histo'
+				'query_type': 'elo_histo',
+				'eco-filter-type':'year-eco-analysis'
 			},
 			dataType: 'json',
 			success: function (response) {
+				$("#temp_results").append("<p>" + JSON.stringify(response) +
+						"</p>");
 				if (response.error) {
 					$("#temp_results").append("<p>" + response.error_message + "</p>");
 				}

@@ -24,16 +24,22 @@ function validate_year($filters, $response=null) {
 	}
 
 
-	$year_low = $filters['year-low'];
-	if($year_low) {
-		$response = add_filter('year-low', $response);
-		$response = validate_year_low($year_low, $response);
+	$year_low = null;
+	$year_high = null;
+	if (isset($filters['year-low'])) {
+		$year_low = $filters['year-low'];
+		if($year_low) {
+			$response = add_filter('year-low', $response);
+			$response = validate_year_low($year_low, $response);
+		}
 	}
 
-	$year_high = $filters['year-high'];
-	if($year_high) {
-		$response = add_filter('year-high', $response);
-		$response = validate_year_high($year_high, $response);
+	if (isset($filters['year-high'])) {
+		$year_high = $filters['year-high'];
+		if($year_high) {
+			$response = add_filter('year-high', $response);
+			$response = validate_year_high($year_high, $response);
+		}
 	}
 
 	if($year_low && $year_high) {
@@ -50,7 +56,7 @@ function validate_given_year($year, $response=null) {
 		((int) $year) >= 0 &&
 		((int) $year) <= (int)date("Y");
 
-	if(!$year__ok) {
+	if(!$year_ok) {
 		$response = add_error('year', $response);
 	}
 
@@ -89,16 +95,22 @@ function validate_elos($filters, $response=null) {
 }
 
 function validate_elo($filters, $type, $response=null) {
-	$elo_low = $filters["$type-elo-low"];
-	if($elo_low) {
-		$response = add_filter("$type-elo-low", $response);
-		$response = validate_elo_low($elo_low, $type, $response);
+	$elo_low = null;
+	$elo_high = null;
+	if (isset($filters["$type-elo-low"])) {
+		$elo_low = $filters["$type-elo-low"];
+		if($elo_low) {
+			$response = add_filter("$type-elo-low", $response);
+			$response = validate_elo_low($elo_low, $type, $response);
+		}
 	}
 
-	$elo_high = $filters["$type-elo-high"];
-	if($elo_high) {
-		$response = add_filter("$type-elo-high", $response);
-		$response = validate_elo_high($elo_high, $type, $response);
+	if (isset($filters["$type-elo-high"])) {
+		$elo_high = $filters["$type-elo-high"];
+		if($elo_high) {
+			$response = add_filter("$type-elo-high", $response);
+			$response = validate_elo_high($elo_high, $type, $response);
+		}
 	}
 
 	if($elo_low && $elo_high) {

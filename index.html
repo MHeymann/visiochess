@@ -80,16 +80,17 @@
 										</label>
 
 										<div name="eco-filters" class="radio col-xs-12">
+
 											<label class="col-xs-12">
 												<input type="radio" name="eco-filter-type"
-												value="class" checked></input>
-												eco class
+												value="category" checked></input>
+												eco category
 											</label>
 
 											<label class="col-xs-12">
 												<input type="radio" name="eco-filter-type"
-												value="category"></input>
-												eco category
+												value="class"></input>
+												eco class
 											</label>
 
 											<label class="col-xs-12">
@@ -98,14 +99,38 @@
 												eco code
 											</label>
 
+											<label class="col-xs-12">
+												<input type="radio" name="eco-filter-type"
+												value="year-eco-analysis"></input>
+												Year Analysis
+											</label>
+
 											<div class="current-eco-filter">
 												<select name="eco-category" class="control-label col-xs-12">
 													<option value="" selected>Filter by eco category...</option>
-													<option value="A" >A</option>
-													<option value="B" >B</option>
-													<option value="C" >C</option>
-													<option value="D" >D</option>
-													<option value="E" >E</option>
+													<optgroup label="A"
+														>A</optgroup>
+														<option value="A1.1">A1.1</option>
+														<option value="A1.2">A1.2</option>
+														<option value="A1.3">A1.3</option>
+														<option value="A1.4">A1.4</option>
+														<option value="A1.5">A1.5</option>
+													<optgroup label="B"
+														>B</optgroup>
+														<option value="B2.1">B2.1</option>
+														<option value="B2.2">B2.2</option>
+													<optgroup label="C"
+														>C</optgroup>
+														<option value="C3.1">C3.1</option>
+														<option value="C3.2">C3.2</option>
+													<optgroup label="D"
+														>D</optgroup>
+														<option value="D4.1">D4.1</option>
+														<option value="D4.2">D4.2</option>
+													<optgroup label="E"
+														>E</optgroup>
+														<option value="E5.1">E5.1</option>
+														<option value="E5.2">E5.2</option>
 												</select>
 											</div>
 										</div>
