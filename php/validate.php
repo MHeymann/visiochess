@@ -20,7 +20,7 @@ function validate_year($filters, $response=null) {
 	$year = $filters['year'];
 	if($year) {
 		$response = add_filter('year', $response);
-		$response = validate_year($year, $response);
+		$response = validate_given_year($year, $response);
 	}
 
 
@@ -45,7 +45,7 @@ function validate_year($filters, $response=null) {
 	return $response;
 }
 
-function validate_year($year, $response=null) {
+function validate_given_year($year, $response=null) {
 	$year_ok = is_numeric($year) &&
 		((int) $year) >= 0 &&
 		((int) $year) <= (int)date("Y");
@@ -138,9 +138,17 @@ function validate_eco($filters, $response=null) {
 		/*
 		 * Category does not need to be validated as the user
 		 * may only select one of a few predetermined options
+		 *
+		 * While this is true, the error messages logged does
+		 * serve as good sanity checks.  -- murray
 		 */
 		if($filters['eco-category']) {
 			$response = add_filter('eco-category', $response);
+			$response = validate_eco_cat($filters['eco-category'], $response);
+		}
+		if($filters['eco-class']) {
+			$response = add_filter('eco-class', $response);
+			$response = validate_eco_class($filters['eco-class'], $response);
 		}
 
 		$eco_low = $filters['eco-low'];
@@ -160,6 +168,27 @@ function validate_eco($filters, $response=null) {
 				$eco_low, $eco_high, "eco", $response
 			);
 		}
+	}
+
+	return $response;
+}
+
+function validate_eco_cat($eco_category, $response=null) {
+	$eco_type_ok = preg_match("/^[A-E][1-5].[1-5]$/", $eco_category);
+	if(!$eco_type_ok) {
+		$response = add_error("eco-category: given " . $eco_category,
+			$response);
+	}
+
+	return $response;
+}
+
+
+function validate_eco_class($eco_class, $response=null) {
+	$eco_type_ok = preg_match("/^[A-E]$/", $eco_class);
+	if(!$eco_type_ok) {
+		$response = add_error("eco-class: given " . $eco_class,
+			$response);
 	}
 
 	return $response;

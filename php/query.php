@@ -23,19 +23,21 @@ if(!$filters['database']) {
 }
 
 if($filters['eco-filter-type'] == 'category') {
-	if($filters['eco-category']) {
-		$filter_on[] = 'eco-category';
-	}
-} if($filters['eco-filter-type'] == 'class') {
-	$eco_filters = get_eco_class($filters['eco-class']);
+	$eco_filters = get_eco_class_ranges($filters['eco-category']);
 	if($eco_filters) {
 		$filter_on[] = 'eco-category';
 		$filter_on[] = 'eco-low';
 		$filter_on[] = 'eco-high';
-		$filters['eco-category'] = $eco_filters['category'];
+		$filters['eco-class'] = $eco_filters['class'];
 		$filters['eco-low'] = $eco_filters['low'];
 		$filters['eco-high'] = $eco_filters['high'];
-	}
+	} //else don't set
+} else if($filters['eco-filter-type'] == 'class') {
+	$eco_filters = $filters['eco-class'];
+	if($eco_filters) {
+		$filter_on[] = 'eco-class';
+		$filters['eco-class'] = $eco_filters['class'];
+	} //else don't set
 }
 
 /* query sql using those filters */
@@ -94,17 +96,23 @@ foreach ($filter_on as $field) {
 			if(!isset($query['eco_alpha'])) {
 				$query['eco_alpha'] = array();
 			}
-			$query['eco_alpha']['LIKE'] = $filters['eco-category'];
+			$query['eco_alpha']['LIKE'] = $filters['eco-class'];
 		} else if(contains($field, 'low')) {
 			if(!isset($query['eco_numero'])) {
 				$query['eco_numero'] = array();
 			}
 			$query['eco_numero'][">="] = $filters['eco-low'];
-		} else {
+		} else if(contains($field, 'high')) {
 			if(!isset($query['eco_numero'])) {
 				$query['eco_numero'] = array();
 			}
 			$query['eco_numero']["<="] = $filters['eco-high'];
+		} else if(contains($field, 'class')) {
+			if(!isset($query['eco_alpha'])) {
+				$query['eco_alpha'] = array();
+			}
+			$query['eco_alpha']['LIKE'] = $filters['eco-class'];
+		} else {
 		}
 	}
 }
@@ -116,21 +124,42 @@ if (!$filters['eco-filter-type']) {
 	));
 	die();
 } else if ($filters['eco-filter-type'] === 'category') {
+	$eco_filters = get_eco_class_ranges($filters['eco-category']);
+	if ($eco_filters) {
+		$select = ['`date`', 'CONCAT(eco_alpha, eco_numero) as `eco`', 'COUNT(*) AS `popularity`'];
+	} else {
+		$select = ['`date`', 'eco_category as eco', 'COUNT(*) AS `popularity`'];
+	}
 	$result = $db->select_from(
 		'tags',
-		['`date`', 'eco_category as eco', 'COUNT(*) AS `popularity`'],
+		$select,
 		$query,
 		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
 	);
-} else if ($filters['eco-filter-type'] === 'class' ||
-		$filters['eco-filter-type'] === 'code') {
+} else if ($filters['eco-filter-type'] === 'class') {
+	$eco_filters = $filters['eco-class'];
+	if($eco_filters) {
+		$select = ['`date`', 'eco_category as eco', 'COUNT(*) AS `popularity`'];
+	} else {
+		$select = ['`date`', 'eco_alpha as `eco`', 'COUNT(*) AS `popularity`'];
+	}
 	/* filter on finely grained tag data */
 	$result = $db->select_from(
 		'tags',
-		['`date`', 'CONCAT(eco_alpha, eco_numero) as `eco`', 'COUNT(*) AS `popularity`'],
+		$select,
 		$query,
 		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
 	);
+} else if ($filters['eco-filter-type'] === 'code') {
+	$select = ['`date`', 'CONCAT(eco_alpha, eco_numero) as `eco`', 'COUNT(*) AS `popularity`'];
+	/* filter on finely grained tag data */
+	$result = $db->select_from(
+		'tags',
+		$select,
+		$query,
+		['GROUP BY `eco`, `date`', 'ORDER BY `date`, `popularity` DESC']
+	);
+
 } else {
 	echo json_encode(array(
 		'error'=>true,

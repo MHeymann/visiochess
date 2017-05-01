@@ -105,8 +105,8 @@ function handle_filter_response(response) {
 		$("#display_svg").empty();
 		draw(response);
 
-		$("#temp_results").append("<p>" + JSON.stringify(response) +
-			"</p>");
+		//$("#temp_results").append("<p>" + JSON.stringify(response) +
+		//	"</p>");
 	}
 }
 
@@ -127,7 +127,7 @@ function handle_filter_submit(event) {
 	);
 
 	/* check for presence of db syncronously, reloading if necessary */
-	if (db_val != "default") {
+	if (db_val != "default_chess_db") {
 		ensure_database_exists_on_server(db_val);
 	}
 	$.ajax({
@@ -142,6 +142,14 @@ function handle_filter_submit(event) {
 	});
 }
 
+/**
+ * Takes a hash as argument, looks it up in the pgnHashes structure and
+ * returns if found.
+ *
+ * @param hash The hash to look up
+ *
+ * @return The file, if present in the pgnHashes structure, or null if not.
+ */
 function get_file_from_hash(hash) {
 	if (hash in pgnHashes) {
 		return pgnHashes[hash][1];
@@ -212,7 +220,6 @@ function getConfigSettings(alternateLink=null) {
 
 function handleEcoFilterChange() {
 	radioButton = $(this);
-	// console.log(radio_button);
 	$currentFilter = $('div.current-eco-filter');
 	$currentFilter.empty();
 
@@ -229,27 +236,6 @@ function handleEcoFilterChange() {
 				'Filter by eco category...'
 			));
 
-			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
-				$option = $('<option />').attr({
-					'value': letter
-				}).text(letter);
-				$categorySelect.append($option);
-			});
-
-			$currentFilter.append($categorySelect);
-
-			break;
-		case 'class':
-			$classSelect = $('<select />').attr({
-				'class': 'control-label col-xs-12',
-				'name': 'eco-class'
-			});
-
-			$classSelect.append($('<option />').attr({
-				'value': ''
-			}).text(
-				'Filter by eco class...'
-			));
 
 			$.each(['A', 'B', 'C', 'D', 'E'], function(index_let, letter) {
 				$optGroup = $('<optgroup />').attr({
@@ -266,8 +252,32 @@ function handleEcoFilterChange() {
 					}).text(label));
 				});
 
-				$classSelect.append($optGroup);
+				$categorySelect.append($optGroup);
 			});
+
+
+			$currentFilter.append($categorySelect);
+
+			break;
+		case 'class':
+			$classSelect = $('<select />').attr({
+				'class': 'control-label col-xs-12',
+				'name': 'eco-class'
+			});
+
+			$classSelect.append($('<option />').attr({
+				'value': ''
+			}).text(
+				'Filter by eco class...'
+			));
+
+			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
+				$option = $('<option />').attr({
+					'value': letter
+				}).text(letter);
+				$classSelect.append($option);
+			});
+
 
 			$currentFilter.append($classSelect);
 
@@ -275,7 +285,7 @@ function handleEcoFilterChange() {
 		case 'code':
 			$categorySelect = $('<select />').attr({
 				'class': 'control-label col-xs-12',
-				'name': 'eco-category'// NB this may break some things!
+				'name': 'eco-class'// NB this may again break some things!
 			});
 
 			$categorySelect.append($('<option />').attr({
