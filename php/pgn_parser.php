@@ -22,6 +22,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 			$i++) {
 		$ret_string .= $read_string[$i];
 	}
+	$ret_string = rtrim($ret_string, ' ');
 	return $ret_string;
 }
 

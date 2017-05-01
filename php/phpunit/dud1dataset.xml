@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<dataset>
+	<table name="tags">
+		<column>event</column>
+		<column>site</column>
+		<column>date</column>
+		<column>round</column>
+		<column>white</column>
+		<column>black</column>
+		<column>result</column>
+		<column>whiteElo</column>
+		<column>blackElo</column>
+		<column>eco_alpha</column>
+		<column>eco_numero</column>
+		<column>eco_category</column>
+		<row>
+			<value>Spring</value>
+			<value>Budapest open</value>
+			<value>1996</value>
+			<value>1</value>
+			<value>Aadrians, M.</value>
+			<value>Dekic, J.</value>
+			<value>0-1</value>
+			</NULL>
+			<value>2320</value>
+			<value>D</value>
+			<value>82</value>
+			<value>D4.2</value>
+		</row>
+	</table>
+</dataset>

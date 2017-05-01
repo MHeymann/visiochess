@@ -4,6 +4,7 @@ require_once 'pgn_parser.php';
 use PHPUnit\Framework\TestCase;
 
 class Test extends TestCase {
+
 	// all functions with the "test_" prefix are automatically run
 	public function test_sscan_tag() {
 		$this->sscan_tag_trailing_space();
@@ -33,6 +34,17 @@ class Test extends TestCase {
 		$correct_output = "Budapest open";
 
 		$this->assertEquals($correct_output, $output);
+	}
+
+	public function test_get_longest_moves_string() {
+		$this->get_longest_moves_string_dud1();
+	}
+
+	function get_longest_moves_string_dud1() {
+		$file = '/test/dud1.pgn';
+		$result = get_longest_moves_string($file);
+		$expect = 481;
+		$this->assertEquals($expect, $result);
 	}
 }
 ?>
