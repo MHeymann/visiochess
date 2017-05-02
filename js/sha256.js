@@ -21,14 +21,6 @@ var b64pad  = ""; /* base-64 pad character. "=" for strict RFC compliance   */
  */
 function hex_sha256(s)    { return rstr2hex(rstr_sha256(str2rstr_utf8(s))); }
 
-/*
- * Perform a simple self-test to see if the VM is working
- */
-function sha256_vm_test()
-{
-  return hex_sha256("abc").toLowerCase() ==
-            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
-}
 
 /*
  * Calculate the sha256 of a raw string
@@ -208,6 +200,3 @@ function safe_add (x, y)
   var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
   return (msw << 16) | (lsw & 0xFFFF);
 }
-
-myhash = sha256_vm_test();
-console.log("result: " + myhash);

@@ -8,6 +8,61 @@
 var pgnHashes = {};
 var mainJSON;
 
+/**
+ * Set up the necessary parameters and event handlers as soon as the html
+ * form is loaded.
+ */
+window.onload = function() {
+	getConfigSettings();
+	add_max_year_attr();
+
+	$("#pgn_up_form").submit(handle_pgn_submit);
+	$('#filter_form').submit(handle_filter_submit);
+	$('div[name=eco-filters] input[type=radio]')
+		.change(handleEcoFilterChange);
+	$(window).resize(handle_window_resize);
+
+}
+
+/**
+ * Query the current year and set it as a maximum on the year filter
+ * options.
+ */
+function add_max_year_attr() {
+	var date = new Date();
+	var year = date.getFullYear();
+
+	$("input[name=year-low]").attr("max", year);
+	$("input[name=year-high]").attr("max", year);
+}
+
+// there may be a way to not have this global using closures
+var configTryCount = 0;
+function getConfigSettings(alternateLink=null) {
+	$.ajax({
+		url: (alternateLink || "") + "php/send_config.php",
+		type: 'post',
+		dataType: 'json',
+		success: function(response) {
+			config = response;
+			configTryCount = 0;
+		},
+		error: function (xhr, textStatus, errorMessage) {
+			configTryCount++;
+			if(configTryCount < 10) {
+				getConfigSettings("http://127.0.0.1:8000/");
+			} else {
+				console.log(errorMessage);
+			}
+		}
+	});
+}
+
+/**
+ * Event handle for processing the uploading of pgn files
+ *
+ * @param e the event object of the event that triggered this function.
+ */
 function handle_pgn_submit(e) {
 	e.preventDefault();
 	var fileSubmitter = document.getElementById("user_db_uploader");
@@ -19,6 +74,10 @@ function handle_pgn_submit(e) {
 		var send_url = $form.attr("action");
 		var hash = "";
 
+		if (file.size > 10000000) {
+			alert("only file sizes up to 10Mb allowed");
+			return;
+		}
 
 		/* readers load files asyncronously */
 		reader.onload = function(e) {
@@ -40,10 +99,9 @@ function handle_pgn_submit(e) {
 			}
 		};
 
-
 		/* send to server */
-		//TODO: this testing for successful upload has not been tested 
-		//in case where server fails to receive.  
+		//TODO: this testing for successful upload has not been tested
+		//in case where server fails to receive.
 		if (!submit_file(file, send_url)) {
 			console.log("failed to upload to server");
 		} else {
@@ -55,9 +113,7 @@ function handle_pgn_submit(e) {
 			*/
 			reader.readAsText(file);
 		}
-		
-	}
-	else {
+	} else {
 		console.log("Something is wrong with the file input object...");
 		if ('files' in fileSubmitter &&
 			(fileSubmitter.files.length <= 0)) {
@@ -69,6 +125,14 @@ function handle_pgn_submit(e) {
 	}
 }
 
+/**
+ * Submit a file to the server synchronously using an ajax post.
+ *
+ * @param file		The file being submitted.
+ * @param send_url	he URL of the script handling the submission on the
+ *					server
+ * @return true if successful upload, false otherwise.
+ */
 function submit_file(file, send_url) {
 
 	var form_data = new FormData();
@@ -102,28 +166,13 @@ function submit_file(file, send_url) {
 	return retval;
 }
 
-function getFormData($form) {
-	var unindexed_array = $form.serializeArray();
-	var indexed_array = {};
-
-	$.map(unindexed_array, function(n, i) {
-		indexed_array[n['name']] = n['value'];
-	});
-
-	return indexed_array;
-}
-
-function handle_filter_response(response) {
-	if (response.error) {
-		$("#temp_results").append("<p>" + response.error_message + "</p>");
-	}
-	else {
-		mainJSON = response;
-		$("#display_svg").empty();
-		draw(response);
-	}
-}
-
+/**
+ * Process the filter form into a json object and send to the server to
+ * perform the appropriate query. Successful submission sends the response
+ * the the appropriate function.
+ *
+ * @param event A json object of he event that triggered this subbmission.
+ */
 function handle_filter_submit(event) {
 	event.preventDefault();
 
@@ -157,6 +206,72 @@ function handle_filter_submit(event) {
 }
 
 /**
+ * Take a form and process it's data into a json object for submission.
+ *
+ * @param $form The form to processed.
+ * @return The json object containing the form data.
+ */
+function getFormData($form) {
+	var unindexed_array = $form.serializeArray();
+	var indexed_array = {};
+
+	$.map(unindexed_array, function(n, i) {
+		indexed_array[n['name']] = n['value'];
+	});
+
+	return indexed_array;
+}
+
+/**
+ * A Function asking the server whether a certain database is present.  If
+ * not, the appropriate file is uploaded to the server.
+ *
+ * @param hash	The hash of the file that is being inquired about.
+ */
+function ensure_database_exists_on_server(hash) {
+	console.log("Checking for presence of " + hash);
+	$.ajax({
+		url: ((config['dev_mode'])?config['php_server']:'') + "php/has_db.php",
+		async: false,
+		type: 'post',
+		dataType: 'json',
+		data: {
+			"hash": hash,
+		},
+		success: function(response) {
+			if (!response.db_present) {
+				$("#temp_results").append("<p>Database " + response.hash +
+					" being reuploaded</p>");
+				submit_file(get_file_from_hash(hash),
+					"php/user_upload.php");
+				$("#temp_results").append("<p>Database " + response.hash +
+					" reuploaded</p>");
+			}
+		},
+		error: function(xhr, textStatus, errorMessage) {
+			console.log(errorMessage);
+		}
+	});
+}
+
+/**
+ * Check the response json object sent from the server for errors, and draw
+ * the necessary graph if no errors occured.
+ * @param	response The json object sent for the server containing either
+ *			error information or the data to graph.
+ */
+function handle_filter_response(response) {
+	if (response.error) {
+		$("#temp_results").append("<p>" + response.error_message + "</p>");
+	}
+	else {
+		mainJSON = response;
+		$("#display_svg").empty();
+		draw(response);
+	}
+}
+
+/**
  * Takes a hash as argument, looks it up in the pgnHashes structure and
  * returns if found.
  *
@@ -173,36 +288,13 @@ function get_file_from_hash(hash) {
 	}
 }
 
-function ensure_database_exists_on_server(hash) {
-	console.log("checking for presence of " + hash);
-	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + "php/has_db.php",
-		async: false,
-		type: 'post',
-		dataType: 'json',
-		data: {
-			"hash": hash,
-		},
-		success: function(response) {
-			if (response.db_present) {
-				$("#temp_results").append("<p>Database " + response.hash +
-					" is present</p>");
-			}
-			else {
-				$("#temp_results").append("<p>Database " + response.hash +
-					" being reuploaded</p>");
-				submit_file(get_file_from_hash(hash),
-					"php/user_upload.php");
-				$("#temp_results").append("<p>Database " + response.hash +
-					" reuploaded</p>");
-			}
-		},
-		error: function(xhr, textStatus, errorMessage) {
-			console.log(errorMessage);
-		}
-	});
-}
-
+/**
+ * Everytime the window size changes, redraw the graph to ensure it is the
+ * appropriate size for the new browser window shape.
+ *
+ * @param e	A json object of the event that triggered this, that is, the
+ *			resize event of the window.
+ */
 function handle_window_resize(e) {
 	if (mainJSON != null) {
 		$("#display_svg").empty();
@@ -210,28 +302,10 @@ function handle_window_resize(e) {
 	}
 }
 
-// there may be a way to not have this global using closures
-var configTryCount = 0;
-function getConfigSettings(alternateLink=null) {
-	$.ajax({
-		url: (alternateLink || "") + "php/send_config.php",
-		type: 'post',
-		dataType: 'json',
-		success: function(response) {
-			config = response;
-			configTryCount = 0;
-		},
-		error: function (xhr, textStatus, errorMessage) {
-			configTryCount++;
-			if(configTryCount < 10) {
-				getConfigSettings("http://127.0.0.1:8000/");
-			} else {
-				console.log(errorMessage);
-			}
-		}
-	});
-}
-
+/**
+ * When a eco filter option is chosen, repopulate the options that follow,
+ * according to the requirements of the filter option.
+ */
 function handleEcoFilterChange() {
 	radioButton = $(this);
 	$currentFilter = $('div.current-eco-filter');
@@ -295,25 +369,25 @@ function handleEcoFilterChange() {
 
 			break;
 		case 'code':
-			$categorySelect = $('<select />').attr({
+			$codeSelect = $('<select />').attr({
 				'class': 'control-label col-xs-12',
 				'name': 'eco-class'// NB this may again break some things!
 			});
 
-			$categorySelect.append($('<option />').attr({
+			$codeSelect.append($('<option />').attr({
 				'value': ''
 			}).text(
-				'Filter by eco category...'
+				'Filter by eco class (and number)...'
 			));
 
 			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
 				$option = $('<option />').attr({
 					'value': letter
 				}).text(letter);
-				$categorySelect.append($option);
+				$codeSelect.append($option);
 			});
 
-			$currentFilter.append($categorySelect);
+			$currentFilter.append($codeSelect);
 
 			$currentFilter.append($('<input />').attr({
 				'type': 'number',
@@ -347,70 +421,4 @@ function handleEcoFilterChange() {
 
 			break;
 	}
-}
-
-window.onload = function() {
-	getConfigSettings();
-
-	/* TODO
-	 * Add function that, when files are selected, checks them for size
-	 * constraints.
-	 */
-	$("#pgn_up_form").submit(handle_pgn_submit);
-
-	add_max_year_attr();
-
-	$('#filter_form').submit(handle_filter_submit);
-
-	$(window).resize(handle_window_resize);
-
-	$("#test_reupload").click(function(e) {
-		$.ajax({
-			url: ((config['dev_mode'])?config['php_server']:'') + "php/query.php",
-			type: 'post',
-			data: {
-				'year': 2014,
-				'query_type': 'elo_histo',
-				'eco-filter-type':'year-eco-analysis'
-			},
-			dataType: 'json',
-			success: function (response) {
-				$("#temp_results").append("<p>" + JSON.stringify(response) +
-						"</p>");
-				if (response.error) {
-					$("#temp_results").append("<p>" + response.error_message + "</p>");
-				}
-				else {
-					mainJSON = response;
-					$("#display_svg").empty();
-					draw(response);
-
-					$("#temp_results").append("<p>" + JSON.stringify(response) +
-							"</p>");
-				}
-			},
-			error: function(xhr, textStatus, errorMessage) {
-				console.log(errorMessage);
-			}
-		});
-	});
-
-	$('div[name=eco-filters] input[type=radio]')
-		.change(handleEcoFilterChange);
-}
-
-function add_max_year_attr() {
-	var date = new Date();
-	var year = date.getFullYear();
-
-	$("input[name=eco-low]").attr("max", year);
-	$("input[name=eco-high]").attr("max", year);
-}
-
-function add_max_year_attr() {
-	var date = new Date();
-	var year = date.getFullYear();
-
-	$("input[name=eco-low]").attr("max", year);
-	$("input[name=eco-high]").attr("max", year);
 }
