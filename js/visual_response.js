@@ -14,10 +14,11 @@ var currentData = null;
 function draw(json_data) {
   /* area in html for graph */
 
+
   var svg = d3.select("#display_svg").append("svg")
     .style("width", 960)
-    .style("height", 500)
-    .attr("viewBox", "0 0 960 500")
+    .style("height", ($("#display_svg").width() * 0.666))
+    .attr("viewBox", "0 0 960 " + ($("#display_svg").width() * 0.666))
     .attr("preserveAspectRatio", "xMinYMin meet"),
     margin = {
       top: 20,
@@ -28,6 +29,7 @@ function draw(json_data) {
 
   var disp_w = $("#display_svg").width();
   var disp_h = $("#display_svg").height();
+
   var width = 0;
   var height = 0;
   if (disp_h * 1.5 < disp_w) {

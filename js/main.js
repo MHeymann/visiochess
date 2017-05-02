@@ -16,32 +16,46 @@ function handle_pgn_submit(e) {
 		var file = fileSubmitter.files[0];
 		var reader = new FileReader();
 		var $form = $('#pgn_up_form');
-		send_url = $form.attr("action");
-		console.log("action url: ", send_url);
+		var send_url = $form.attr("action");
+		var hash = "";
+
 
 		/* readers load files asyncronously */
 		reader.onload = function(e) {
 			var text = reader.result;
-			var hash = hex_sha256(text);
-			pgnHashes[hash] = [file.name, file];
-			console.log("New file " +
-				pgnHashes[hash][0] + " with hash: " + hash);
-			var db_selector = document.getElementById("db_selector");
-			var option = document.createElement("option");
-			option.text = file.name; // set name a clickable display
-			option.value = hash; //set hash as identifiable val
-			db_selector.add(option);
+			hash = hex_sha256(text);
+
+			if (pgnHashes[hash]) {
+				console.log("file with hash " + hash + " already exists!");
+			} else {
+				pgnHashes[hash] = [file.name, file];
+				console.log("New file " +
+					pgnHashes[hash][0] + " with hash: " + hash);
+				var db_selector = $("#db_selector");
+				db_selector.append($('<option/>', {
+					value : hash,
+					text : file.name,
+					selected : "selected"
+				}));
+			}
 		};
 
-		/*
-		 * Tell the reader this is a textfile. It will load the file into
-		 * memory, which will then call the onload function fust defined
-		 * above.
-		 */
-		reader.readAsText(file);
 
-		submit_file(file, send_url);
+		/* send to server */
+		//TODO: this testing for successful upload has not been tested 
+		//in case where server fails to receive.  
+		if (!submit_file(file, send_url)) {
+			console.log("failed to upload to server");
+		} else {
 
+			/*
+			 * Tell the reader this is a textfile. It will load the file into
+			* memory, which will then call the onload function fust defined
+			 * above.
+			*/
+			reader.readAsText(file);
+		}
+		
 	}
 	else {
 		console.log("Something is wrong with the file input object...");
@@ -58,6 +72,7 @@ function handle_pgn_submit(e) {
 function submit_file(file, send_url) {
 
 	var form_data = new FormData();
+	var retval = false;
 	form_data.append("user_db_uploader", file);
 
 	$.ajax({
@@ -76,12 +91,15 @@ function submit_file(file, send_url) {
 		success: function(response) {
 			// render results
 			$("#temp_results").append(response);
+			retval = true;
 		},
 		error: function(xhr, textStatus, errorMessage) {
 			console.log(errorMessage);
+			retval = false;
 		}
 	});
 
+	return retval;
 }
 
 function getFormData($form) {
@@ -96,7 +114,6 @@ function getFormData($form) {
 }
 
 function handle_filter_response(response) {
-	// render results
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
 	}
@@ -104,9 +121,6 @@ function handle_filter_response(response) {
 		mainJSON = response;
 		$("#display_svg").empty();
 		draw(response);
-
-		//$("#temp_results").append("<p>" + JSON.stringify(response) +
-		//	"</p>");
 	}
 }
 
@@ -236,7 +250,6 @@ function handleEcoFilterChange() {
 				'Filter by eco category...'
 			));
 
-
 			$.each(['A', 'B', 'C', 'D', 'E'], function(index_let, letter) {
 				$optGroup = $('<optgroup />').attr({
 					'label': letter
@@ -254,7 +267,6 @@ function handleEcoFilterChange() {
 
 				$categorySelect.append($optGroup);
 			});
-
 
 			$currentFilter.append($categorySelect);
 
@@ -323,27 +335,6 @@ function handleEcoFilterChange() {
 
 			break;
 		case 'year-eco-analysis':
-			/*
-			$categorySelect = $('<select />').attr({
-				'class': 'control-label col-xs-12',
-				'name': 'eco-class'// NB this may again break some things!
-			});
-
-			$categorySelect.append($('<option />').attr({
-				'value': ''
-			}).text(
-				'Filter by eco category...'
-			));
-
-			$.each(['A', 'B', 'C', 'D', 'E'], function(index, letter) {
-				$option = $('<option />').attr({
-					'value': letter
-				}).text(letter);
-				$categorySelect.append($option);
-			});
-
-			$currentFilter.append($categorySelect);
-			*/
 
 			$currentFilter.append($('<input />').attr({
 				'type': 'number',
@@ -353,17 +344,6 @@ function handleEcoFilterChange() {
 				'placeholder': 'Select a year',
 				'class': 'control-label col-xs-12'
 			}));
-
-			/*
-			$currentFilter.append($('<input />').attr({
-				'type': 'number',
-				'min': 0,
-				'max': 99,
-				'name': 'eco-high',
-				'placeholder': 'High',
-				'class': 'control-label col-xs-12'
-			}));
-			*/
 
 			break;
 	}
@@ -377,13 +357,8 @@ window.onload = function() {
 	 * constraints.
 	 */
 	$("#pgn_up_form").submit(handle_pgn_submit);
-	/* TODO:
-	 * in filter_submitions, look at which database is currently selected
-	 * in the selector form, and send that data to the server along with
-	 * the filters.
-	 */
 
-	 add_max_year_attr();
+	add_max_year_attr();
 
 	$('#filter_form').submit(handle_filter_submit);
 
