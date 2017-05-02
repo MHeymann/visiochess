@@ -170,7 +170,7 @@ if (!isset($filters['eco-filter-type']) ||
 	if (!isset($query['minElo']['>'])){
 		$query['minElo']['>'] = 0;
 	}
-	$select = ['`date`', '`eco_category` as eco', '`minElo`', 'COUNT(*) AS `popularity`'];
+	$select = ['`eco_category` as eco', '`minElo`', 'COUNT(*) AS `popularity`'];
 	/* filter on finely grained tag data */
 	$result = $db->select_from(
 		'tags',
