@@ -184,6 +184,8 @@ function handle_filter_submit(event) {
 
 	filters['database'] = db_val;
 
+	// TODO: vaidation: ensure low year less than high year.
+
 	console.log(
 		'Sending these filters:\n',
 		filters
