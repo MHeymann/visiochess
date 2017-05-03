@@ -1,4 +1,6 @@
 <?php
+
+require_once "utils.php";
 /*
 TODO:
 Busy but necessary work:
@@ -517,6 +519,7 @@ class MySqlPhpInterface
 	/*
 	 * this really has no busines here, it should actually be in a utils.php
 	 */
+	/*
 	private static function contains($string, $token) {
 		if(strpos($string, $token) !== false) {
 			return true;
@@ -524,16 +527,7 @@ class MySqlPhpInterface
 			return false;
 		}
 	}
-
-	private static function stringify($object) {
-		$string = "";
-		foreach($object as $key => $value) {
-			$string .= $key . " " . $value . ", ";
-		}
-		$string = substr($string, 0, count($string) - 3);
-		return $string;
-	}
-
+	 */
 	private static function stringify_cols($object) {
 		$string = "";
 		foreach($object as $col) {

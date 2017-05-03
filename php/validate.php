@@ -4,7 +4,7 @@ date_default_timezone_set('Africa/Johannesburg');
 
 /*
  * If a value is not valid, a error object is returned
- * If a valie is valid, null is returned
+ * If a value is valid, null is returned
  */
 
 function validate_filters($filters) {
@@ -17,12 +17,14 @@ function validate_filters($filters) {
 }
 
 function validate_year($filters, $response=null) {
-	$year = $filters['year'];
-	if($year) {
-		$response = add_filter('year', $response);
-		$response = validate_given_year($year, $response);
-	}
 
+	if (isset($filters['year'])) {
+		$year = $filters['year'];
+		if($year) {
+			$response = add_filter('year', $response);
+			$response = validate_given_year($year, $response);
+		}
+	}
 
 	$year_low = null;
 	$year_high = null;
@@ -152,7 +154,8 @@ function validate_eco($filters, $response=null) {
 		 * may only select one of a few predetermined options
 		 *
 		 * While this is true, the error messages logged does
-		 * serve as good sanity checks.  -- murray
+		 * serve as good sanity checks, and aids in debugging.
+		 * --> murray
 		 */
 		if($filters['eco-category']) {
 			$response = add_filter('eco-category', $response);

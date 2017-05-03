@@ -2,6 +2,10 @@
 require_once "mysql_interface.php";
 require_once "eco_category.php";
 require_once "validate.php";
+require_once "utils.php";
+
+//error_reporting(E_ALL);
+//ini_set('display_errors', 1);
 
 // necessary for testing, not sure if it will be needed in production
 header('Access-Control-Allow-Origin: *');
@@ -18,10 +22,13 @@ if($validation['error']) {
 }
 $filter_on = $validation['filter_on'];
 
+/* if no database set, set default */
 if(!$filters['database']) {
 	$filters['database'] = 'default_chess_db';
 }
 
+
+/* preset certain fields to filter on based on filter type */
 if($filters['eco-filter-type'] == 'category') {
 	$eco_filters = get_eco_class_ranges($filters['eco-category']);
 	if($eco_filters) {
@@ -40,12 +47,13 @@ if($filters['eco-filter-type'] == 'category') {
 	} //else don't set
 }
 
-/* query sql using those filters */
+/* get login details */
 $settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 $servername = $settings['client']['mysql_server'];
 $username = $settings['client']['user'];
 $password = $settings['client']['password'];
 
+/* setup database interface connection */
 $db = new MySqlPhpInterface(
 	$server=$servername,
 	$user=$username,
@@ -55,6 +63,7 @@ $db->connect();
 
 $db->use_database($filters['database']);
 
+/* set up the query "WHERE" fields */
 $query = array();
 foreach ($filter_on as $field) {
 	if(contains($field, 'year')) {
@@ -120,6 +129,7 @@ foreach ($filter_on as $field) {
 	}
 }
 
+/* Here the actual queries get performed */
 if (!isset($filters['eco-filter-type']) ||
    	!$filters['eco-filter-type']) {
 	echo json_encode(array(
@@ -188,6 +198,10 @@ if (!isset($filters['eco-filter-type']) ||
 
 $db->disconnect();
 
+/* if some error occured, the program would have exited, so we can assume
+ * we are in normal functioning. */
+
+/* process returned data */
 $num_ecos = 0;
 $top_ecos = array();
 $json_data = array();
@@ -213,12 +227,8 @@ if ($filters['eco-filter-type'] === 'year-eco-analysis') {
 
 	/* sort from most popular to least popular */
 	arsort($total_popularities);
-	// testing
-	// echo "total pop: " . json_encode($total_popularities) . "\n";
 
 	$num_ecos = count($total_popularities);
-	// testing
-	// echo "num ecos: " . $num_ecos . "\n";
 
 	/* divide into top 9 (and other) or less openings */
 	$num_pops = min($num_ecos, 9);
@@ -238,7 +248,6 @@ if ($filters['eco-filter-type'] === 'year-eco-analysis') {
 	$smallest_min_elo = $arr_keys[0];
 	$largest_min_elo = end($arr_keys);
 
-
 	$data_by_groups = array();
 	$offset = 30;
 	for ($i = $smallest_min_elo; $i < $largest_min_elo; $i += $offset) {
@@ -251,7 +260,6 @@ if ($filters['eco-filter-type'] === 'year-eco-analysis') {
 					}
 					$data_by_groups[($i + $offset)][$eco] += $pop;
 				}
-
 			}
 		}
 	}
@@ -361,14 +369,5 @@ if(isset($error) && $error) {
 }
 echo json_encode($json);
 
-/*
- * this really has no busines here, it should actually be in a utils.php
- */
-function contains($string, $token) {
-	if(strpos($string, $token) !== false) {
-		return true;
-	} else {
-		return false;
-	}
-}
+
 ?>
