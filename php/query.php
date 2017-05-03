@@ -277,7 +277,7 @@ if ($filters['eco-filter-type'] === 'year-eco-analysis') {
 			$sum += $value;
 		}
 
-		if($sum < 0.9999) {
+		if ($sum < 1) {
 			$json_data[$minElo][] = 1 - $sum;
 		}
 	}
