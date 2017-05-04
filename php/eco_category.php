@@ -1,4 +1,16 @@
 <?php
+
+/**
+ * Given an ECO class and subclass number, determine what ECO category this
+ * falls into
+ *
+ * @param $ECO_alpha The ECO class this falls into
+ * @param $ECO_numero The number specifying in which subclass the eco code
+ * falls.
+ *
+ * @return The string value of the ECO category in which this ECO code
+ * falls.
+ */
 function get_eco_category($ECO_alpha, $ECO_numero) {
 	$class = "blamo";
 	switch ($ECO_alpha) {
@@ -51,6 +63,15 @@ function get_eco_category($ECO_alpha, $ECO_numero) {
 	return $class;
 }
 
+/**
+ * Given an ECO category, return the ECO Class and numeric ranges of the
+ * category.  Essentially the inverse of get_eco_category.
+ *
+ * @param $category A string value of the category being looked up.
+ *
+ * @return an associative array with the class and numeric ranges of the
+ * given category.
+ */
 function get_eco_class_ranges($category) {
 	$eco_details = array(
 		'class' => null,
