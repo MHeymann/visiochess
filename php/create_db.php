@@ -2,6 +2,14 @@
 require_once "pgn_parser.php";
 require_once "mysql_interface.php";
 
+/**
+ * Create a database with the required fields for this project, and an
+ * index to help with queries on large databases.
+ *
+ * @param $db_name The name of the database to create
+ * @param $target_file The path to the pgn file for getting information on
+ * the longest move sequence.
+ */
 function create_database($db_name, $target_file) {
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 
@@ -20,16 +28,13 @@ function create_database($db_name, $target_file) {
 	);
 	$db->connect();
 
-	/*
-	 * TODO: make creating of databasis 'n single transaction, with all sql
-	 * queries either succeeding or failing as a unit
-	 */
 	/* create new database */
 	$db->create_database($name=$db_name, $replace=true);
-	// echo "<p>Created database " . $db_name . "<p>";
 
+	/* select the new database for querying */
 	$db->use_database($db_name);
 
+	/* create a table with the required fields */
 	$db->create_table(
 		'tags',
 		array(
@@ -50,6 +55,11 @@ function create_database($db_name, $target_file) {
 		),
 		$replace=true
 	);
+
+	/*
+	 * create an index on the most important fields for querying more
+	 * efficiently
+	 */
 	$db->create_index(
 		'tag_index',
 		'tags',
@@ -66,12 +76,16 @@ function create_database($db_name, $target_file) {
 			'blackElo'
 		));
 
+	/*
+	 * What follows was meant for the heat map. May still be used for our
+	 * additional work
+	 */
 	if ($moves_approach == "flat") {
 		/* TODO: here the Moves table should be created, based on the longest moves
 		 * sequence in the in the database
 		 */
 
-		$max_move_length = get_longest_moves_string($target_file);
+		//$max_move_length = get_longest_moves_string($target_file);
 		// echo "<p>The length of the longest move is: ". $max_move_length. "</p>\n";
 	} else {
 		/* TODO: here the Moves table should be created, with a foreign key to
@@ -79,10 +93,6 @@ function create_database($db_name, $target_file) {
 		 */
 	}
 
-
-	/*
-	 * TODO: create new table in new database.
-	 */
 
 	$db->disconnect();
 }
