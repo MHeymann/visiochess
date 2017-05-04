@@ -18,6 +18,7 @@ window.onload = function() {
 
 	$("#pgn_up_form").submit(handle_pgn_submit);
 	$('#filter_form').submit(handle_filter_submit);
+	$('#clear_filters').click(handle_filter_clear);
 	$('div[name=eco-filters] input[type=radio]')
 		.change(handleEcoFilterChange);
 	$(window).resize(handle_window_resize);
@@ -288,6 +289,12 @@ function get_file_from_hash(hash) {
 	else {
 		return null;
 	}
+}
+
+function handle_filter_clear(e) {
+	e.preventDefault();
+	console.log("clearing filters");
+	//TODO: clear filter fields
 }
 
 /**
