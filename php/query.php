@@ -198,6 +198,14 @@ if (!isset($filters['eco-filter-type']) ||
 
 $db->disconnect();
 
+if(!count($result)) {
+	echo json_encode(array(
+		'error'=>true,
+		'error_message' => "No data exists that satisfy these filters."
+	));
+	die();
+}
+
 /* if some error occured, the program would have exited, so we can assume
  * we are in normal functioning. */
 
