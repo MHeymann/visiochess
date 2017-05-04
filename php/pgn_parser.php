@@ -2,6 +2,7 @@
 require_once("define.php");
 require_once("mysql_interface.php");
 require_once("eco_category.php");
+require_once("utils.php");
 
 
 /*
@@ -26,12 +27,69 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 	return $ret_string;
 }
 
+/**
+ * Validate that a given line starts with the specified characters.
+ * TODO or not TODO?: This can be made more robust by not only checking for
+ * "contains" but also that the string the line should start with actually
+ * occurs at the start of the line. Currently, a line such as "your mother"
+ * and a start value of "our m" would evaluate as valid. However, this
+ * would need proper further testing.
+ *
+ * @param $line The string that is being evaluated.
+ * @param $should_start The characters that the line should start with.
+ *
+ * @return true if the line does contain with expected start character
+ * sequence, false otherwise.
+ */
+function evaluate_line($line, $should_start) {
+	if (contains("$line", $should_start)) {
+		return true;
+	} else {
+		echo "<p>vvvv---------vvvv</p>\n";
+		echo "<p>Error with data for entry with line:</p>\n";
+		echo "<p>'" . $line . "'</p>\n";
+		echo "<p>Should start with: " . $should_start . "</p>\n";
+		echo "<p>This event will not be parsed into the database</p>\n";
+		echo "<p>^^^^---------^^^^</p>\n";
+		return false;
+	}
+}
+
+/**
+ * Parse Through the lines until a non trivial line that does not only
+ * contain whitespace is found. Note, this function assumes that dud_line
+ * has already been read into once, but most likely would still work as
+ * expected if this is not the case.
+ *
+ * @param $db_file A file object of the file being read.
+ * @param $dud_line.  The current status of the line.
+ */
+function parse_white_space($db_file, $dud_line) {
+	while (!feof($db_file) && (empty(trim($dud_line)))) {
+		$dud_line = trim(fgets($db_file));
+	}
+	return $dud_line;
+}
+
 /*
- * DONE:Parse the entries into a db.
- * TODO: document this function properly in javadoc style
+ * This function parses a pgn file and inserts its entries into the
+ * database one by one.  It does some loose syntax validation of the pgn
+ * file provided; if a serious error is found, the game is not parsed into
+ * the database.
+ *
+ * Data is inserted into the database in batches, as this is more efficient
+ * than simply entering the data one database row at a time.
+ *
+ * @param $target_file The path to the file that is to be parsed.
+ * @param $db_name The name of the database into which to insert the data.
+ * @param $batch_size The number of games to insert in one query. Default
+ * value is 200, as this has been found experimentally to be around the
+ * "sweet spot".
+ * @param $verbose Boolean value, if set to true, will print out more
+ * information than normally.  False by default.
  */
 function parse_pgn_file_to_db($target_file, $db_name,
-   	$batch_size=200, $verbose=true) {
+   	$batch_size=200, $verbose=false) {
 	// echo "Database to be parsed to: " . $db_name;
 
 	$global_batch_count = 0;
@@ -54,9 +112,12 @@ function parse_pgn_file_to_db($target_file, $db_name,
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
 
-	echo "<p>Starting parsing of data</p>\n";
+	if ($verbose) {
+		echo "<p>Starting parsing of data</p>\n";
+	}
 
-	$event_line = fgets($db_file);
+	$event_line = trim(fgets($db_file));
+	$event_line = parse_white_space($db_file, $event_line);
 	while (!feof($db_file)) {
 		/* A boolean variable for some basic syntax validation */
 		$entry_error = false;
@@ -87,20 +148,22 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		if (feof($db_file)) {
 			break;
 		}
-		/*
-		 * TODO: add some validation for syntax of file
-		 */
+		$entry_error = $entry_error || !evaluate_line($event_line, '[Event "');
 		$event_name = sscan_tag($event_line, '[Event "');
 
-		$site_line = fgets($db_file);
+		$site_line = trim(fgets($db_file));
+		$site_line = parse_white_space($db_file, $site_line);
+		$entry_error = $entry_error || !evaluate_line($site_line, '[Site "');
 		$site_name = sscan_tag($site_line, '[Site "');
 
-		$date_line = fgets($db_file);
+		$date_line = trim(fgets($db_file));
+		$date_line = parse_white_space($db_file, $date_line);
 		/*
 		 * DONE: harvest the year out of the date string, as this is the
 		 * only value of interest, in addition to many games in the default
 		 * database being uncomplete beyond the year.
 		 */
+		$entry_error = $entry_error || !evaluate_line($date_line, '[Date "');
 		$event_date = sscan_tag($date_line, '[Date "');
 		// extract and keep year, throw away rest
 		$event_date = explode('.', trim($event_date))[0];
@@ -115,49 +178,50 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			echo "<p>^^^^---------^^^^</p>\n";
 		}
 
-		$round_line = fgets($db_file);
+		$round_line = trim(fgets($db_file));
+		$round_line = parse_white_space($db_file, $round_line);
+		$entry_error = $entry_error || !evaluate_line($round_line, '[Round "');
 		$event_round = sscan_tag($round_line, '[Round "');
 
-		$white_line = fgets($db_file);
+		$white_line = trim(fgets($db_file));
+		$white_line = parse_white_space($db_file, $white_line);
+		$entry_error = $entry_error || !evaluate_line($white_line, '[White "');
 		$white_name = sscan_tag($white_line, '[White "');
-		// remove the "(wh)"
+		/* remove the "(wh)" */
 		$white_name = substr($white_name, 0, count($white_name) - 5);
 
-		$black_line = fgets($db_file);
+		$black_line = trim(fgets($db_file));
+		$black_line = parse_white_space($db_file, $black_line);
+		$entry_error = $entry_error || !evaluate_line($black_line, '[Black "');
 		$black_name = sscan_tag($black_line, '[Black "');
-		// remove the "(bl)"
+		/* remove the "(bl)" */
 		$black_name = substr($black_name, 0, count($black_name) - 5);
 
-		$result_line = fgets($db_file);
+		$result_line = trim(fgets($db_file));
+		$result_line = parse_white_space($db_file, $result_line);
+		$entry_error = $entry_error || !evaluate_line($result_line, '[Result "');
 		$game_result = sscan_tag($result_line, '[Result "');
 
 		/* Harvest ECO and elo's from optional tag data */
-		$optional_line = fgets($db_file);
+		$optional_line = trim(fgets($db_file));
+		$optional_line = parse_white_space($db_file, $optional_line);
 		while ($optional_line[0] == '[') {
-			if (substr($optional_line, 0, 6) == '[ECO "') {
+			if (contains($optional_line, '[ECO "')) {
 				$ECO_class = sscan_tag($optional_line, '[ECO "');
 				$ECO_alpha = substr($ECO_class, 0, 1);
 				$ECO_numero = intval(substr($ECO_class, 1, 2));
 				$ECO_category = get_eco_category($ECO_alpha, $ECO_numero);
-				if ($verbose) {
-//					echo "<p>Scanned ECO: " . $ECO_alpha . $ECO_numero .
-//						" which really should be " . $ECO_class . "</p>\n";
-//					echo "<p>Category: " . $ECO_category . "</p>\n";
-				}
-			}
-
-			$eleven_sub = substr($optional_line, 0, 11);
-			if ($eleven_sub == '[BlackElo "') {
+			} else if (contains($optional_line, '[BlackElo "')) {
 				$black_elo = sscan_tag($optional_line, '[BlackElo "');
-			}
-
-			if ($eleven_sub == '[WhiteElo "') {
+			} if (contains($optional_line, '[WhiteElo "')) {
 				$white_elo = sscan_tag($optional_line, '[WhiteElo "');
 			}
 
-			$optional_line = fgets($db_file);
+			$optional_line = trim(fgets($db_file));
+			$optional_line = parse_white_space($db_file, $optional_line);
 		}
 
+		/* This project is very dependent on the presence of the ECO tag. */
 		if ($ECO_class === "") {
 			$entry_error = true;
 			echo "<p>vvvvvvvvv---info---vvvvvvvvvv<p>\n";
@@ -183,6 +247,19 @@ function parse_pgn_file_to_db($target_file, $db_name,
 				'eco_numero' => (int) $ECO_numero,
 				'eco_category' => $ECO_category
 			];
+		} else {
+			echo "<p>vvvvvvvvv---Chess pgn notation error---vvvvvvvvvv<p>\n";
+			echo "<p>Error while parsing chess game, game will be omitted.</p>\n";
+			echo "<p>The data recorded for this game looks as follows:</p>\n";
+			echo "<p>Event name: " . $event_name . "</p>\n";
+			echo "<p>Event date: " . $event_date . "</p>\n";
+			echo "<p>White player: " . $white_name . "</p>\n";
+			echo "<p>Black player: " . $black_name . "</p>\n";
+			echo "<p>White ELO: " . $white_elo . "</p>\n";
+			echo "<p>Black ELO: " . $black_elo . "</p>\n";
+			echo "<p>Result: " . $game_result . "</p>\n";
+			echo "<p>ECO tag: " . $ECO_alpha . $ECO_numero . "</p>\n";
+			echo "<p>^^^^^^^^^---Chess pgn notation error---^^^^^^^^^^<p>\n";
 		}
 		if (count($data_batch) >= $batch_size) {
 			$db->insert_multiple(
@@ -197,20 +274,18 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			}
 		}
 
-		/*
-		 * TODO: assert that dud_line is now an empty line
-		 * before start of moves.
-		 */
-
-		/*
-		 * Parse moves into array structure.
-		 */
+		/* Parse moves into array structure. */
 		$moves = "";
-		$dud_line = trim(fgets($db_file));
-		while (!feof($db_file) && !empty($dud_line) &&
+		$dud_line = $optional_line;
+		if ($dud_line[0] != '1') {
+			echo "<p>first moves are weird</p>\n";
+			echo "<p>" . $dud_line . "</p>\n";
+		}
+		while (!feof($db_file) && !empty(trim($dud_line)) &&
 			($dud_line[0] !== '[')) {
 			$moves .= $dud_line . " ";
 			$dud_line = trim(fgets($db_file));
+			$dud_line = parse_white_space($db_file, $dud_line);
 		}
 
 		/* turn into one huge array */
@@ -249,13 +324,10 @@ function parse_pgn_file_to_db($target_file, $db_name,
 				}
 			}
 		}
-		/* get's rid of dud empty lines between games */
-		while (!feof($db_file) && (empty($dud_line) ||
-			($dud_line[0] !== '['))) {
-			$dud_line = trim(fgets($db_file));
-		}
 
 		$event_line = $dud_line;
+		/* gets rid of dud empty lines between games */
+		$event_line = parse_white_space($db_file, $event_line);
 	} //while not eof
 
 	if (count($data_batch) > 0) {
@@ -263,8 +335,11 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			'tags',
 			$data_batch
 		);
-		echo "<p>inserted last into db, total now " .
-			(count($data_batch) + $global_batch_count * $batch_size) . "</p>\n";
+		if ($verbose) {
+			echo "<p>inserted last into db, total now " .
+				(count($data_batch) + $global_batch_count * $batch_size) .
+			   	"</p>\n";
+		}
 		$data_batch = array();
 	}
 
