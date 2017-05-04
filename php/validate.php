@@ -7,6 +7,15 @@ date_default_timezone_set('Africa/Johannesburg');
  * If a value is valid, null is returned
  */
 
+/**
+ * Check if the filters submitted for a query is of valid datatypes and
+ * ranges.
+ *
+ * @param $filters an associative array of filters posted by the user.
+ * @return A response datastructure, that has an error field set if an
+ * error was picked up, and the data to filter on collected in a useful new
+ * array structure.
+ */
 function validate_filters($filters) {
 	$response = new_response();
 	$response = validate_year($filters, $response);
@@ -16,6 +25,17 @@ function validate_filters($filters) {
 	return $response;
 }
 
+/**
+ * Check if the give $filters structure has a year field or fields for year
+ * ranges.  If any of them are set, run tests to see if the data is
+ * numeric.  If both range fields are set, check that the lower range is
+ * lower than the higher range.
+ *
+ * @param $filters The filters supplied by the user that is to be
+ * validated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_year($filters, $response=null) {
 
 	if (isset($filters['year'])) {
@@ -53,6 +73,14 @@ function validate_year($filters, $response=null) {
 	return $response;
 }
 
+/**
+ * Check if a year is field is a number and whether it is within realistic
+ * ranges.
+ *
+ * @param $year The year to validate.
+ * @param $response The datastructure on which valid filter data is
+ * collected and on which errors are set.
+ */
 function validate_given_year($year, $response=null) {
 	$year_ok = is_numeric($year) &&
 		((int) $year) >= 0 &&
@@ -65,6 +93,14 @@ function validate_given_year($year, $response=null) {
 	return $response;
 }
 
+/**
+ * Check if a year is field is a number and whether it is within realistic
+ * ranges. If so, set a year-low filter field in response.
+ *
+ * @param $year The year to validate.
+ * @param $response The datastructure on which valid filter data is
+ * collected and on which errors are set.
+ */
 function validate_year_low($year, $response=null) {
 	$year_low_ok = is_numeric($year) &&
 		((int) $year) >= 0 &&
@@ -76,7 +112,14 @@ function validate_year_low($year, $response=null) {
 
 	return $response;
 }
-
+/**
+ * Check if a year is field is a number and whether it is within realistic
+ * ranges. If so, set a year-high filter field in response.
+ *
+ * @param $year The year to validate.
+ * @param $response The datastructure on which valid filter data is
+ * collected and on which errors are set.
+ */
 function validate_year_high($year, $response=null) {
 	$year_high_ok = is_numeric($year) &&
 		((int) $year) <= (int) date("Y") &&
@@ -89,6 +132,15 @@ function validate_year_high($year, $response=null) {
 	return $response;
 }
 
+/**
+ * Check if the elo range filters are present and whether they are
+ * realistic and valid numbers.
+ *
+ * @param $filters The filters supplied by the user that is to be
+ * validated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_elos($filters, $response=null) {
 	$response = validate_elo($filters, 'black', $response);
 	$response = validate_elo($filters, 'white', $response);
@@ -96,6 +148,15 @@ function validate_elos($filters, $response=null) {
 	return $response;
 }
 
+/**
+ * Validate the elo range filter values for a given player colour.
+ *
+ * @param $filters The filters supplied by the user that is to be
+ * validated.
+ * @param $type Indicates the colour of the elo being checked for.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_elo($filters, $type, $response=null) {
 	$elo_low = null;
 	$elo_high = null;
@@ -124,6 +185,14 @@ function validate_elo($filters, $type, $response=null) {
 	return $response;
 }
 
+/**
+ * Check whether an elo lower range is valid  for a given player colour.
+ *
+ * @param $elo The range value being checked for validity.
+ * @param $type Indicates the colour of the elo being checked for.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_elo_low($elo, $type, $response=null) {
 	$elo_low_ok = is_numeric($elo) &&
 		((int) $elo) >= 0 &&
@@ -134,6 +203,14 @@ function validate_elo_low($elo, $type, $response=null) {
 
 	return $response;
 }
+/**
+ * Check whether an elo upper range is valid  for a given player colour.
+ *
+ * @param $elo The range value being checked for validity.
+ * @param $type Indicates the colour of the elo being checked for.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 
 function validate_elo_high($elo, $type, $response=null) {
 	$elo_high_ok = is_numeric($elo) &&
@@ -146,6 +223,19 @@ function validate_elo_high($elo, $type, $response=null) {
 	return $response;
 }
 
+/**
+ * Check whether a given eco value filter is correct. This depends on the
+ * exact eco filter being set.  For ECO categories, the correct format must
+ * be in place.  For eco class, there may only be exactly one character in
+ * the range between A-E.  If ECO code numeric ranges are set, they may
+ * only be between 0 and 99, both included, and the lower bound must be
+ * less than or equal to the upper bound.
+ *
+ * @param $filters The filters supplied by the user that is to be
+ * validated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_eco($filters, $response=null) {
 	/* This is the only case that needs validation */
 	if($filters['eco-filter-type'] == 'code') {
@@ -188,6 +278,13 @@ function validate_eco($filters, $response=null) {
 	return $response;
 }
 
+/**
+ * Validate the correctness of an eco category specification.
+ *
+ * @param $eco_category The category field that is being vaidated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_eco_cat($eco_category, $response=null) {
 	$eco_type_ok = preg_match("/^[A-E][1-5].[1-5]$/", $eco_category);
 	if(!$eco_type_ok) {
@@ -198,7 +295,13 @@ function validate_eco_cat($eco_category, $response=null) {
 	return $response;
 }
 
-
+/**
+ * validate the correctness of an eco class specification.
+ *
+ * @param $eco_category The category field that is being vaidated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_eco_class($eco_class, $response=null) {
 	$eco_type_ok = preg_match("/^[A-E]$/", $eco_class);
 	if(!$eco_type_ok) {
@@ -209,6 +312,14 @@ function validate_eco_class($eco_class, $response=null) {
 	return $response;
 }
 
+/**
+ * Validate if a filter for eco tag numeric values are numeric and within
+ * the range of 0-99, both included.
+ *
+ * @param $eco The eco numeric filter being validated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_eco_low($eco, $response=null) {
 	$eco_low_ok = is_numeric($eco) &&
 		((int) $eco) >= 0 &&
@@ -220,6 +331,14 @@ function validate_eco_low($eco, $response=null) {
 	return $response;
 }
 
+/**
+ * Validate if a filter for eco tag numeric values are numeric and within
+ * the range of 0-99, both included.
+ *
+ * @param $eco The eco numeric filter being validated.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ */
 function validate_eco_high($eco, $response=null) {
 	$eco_high_ok = is_numeric($eco) &&
 		((int) $eco) >= 0 &&
@@ -231,6 +350,9 @@ function validate_eco_high($eco, $response=null) {
 	return $response;
 }
 
+/**
+ * @return A new instance of the response datastructure with clear fields.
+ */
 function new_response() {
 	return array(
 		'error' => false,
@@ -240,6 +362,15 @@ function new_response() {
 	);
 }
 
+/**
+ * Log an error to the response datastructure.  If it doesn't yet exist,
+ * create a new one.
+ *
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ *
+ * @return The response datastructure with the error added.
+ */
 function add_error($error, $response=null) {
 	if(!isset($response) || !$response) {
 		$response = new_response();
@@ -252,6 +383,16 @@ function add_error($error, $response=null) {
 	return $response;
 }
 
+/**
+ * Add a new filter tot the return datastructure.  If the datastructure
+ * doesn't yeat exist, create one.
+ *
+ * @param $filter The name of the filter being set.
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ *
+ * @return The response datastructure with the filter added.
+ */
 function add_filter($filter, $response=null) {
 	if(!isset($response) || !$response) {
 		$response = new_response();
@@ -262,6 +403,17 @@ function add_filter($filter, $response=null) {
 	return $response;
 }
 
+/**
+ * Check if two numeric boundaries are valid, in that the lower bound may
+ * not be strictly greater than the upper bound.
+ *
+ * @param $low The lower bound number being checked
+ * @param $high The upper bound number being checked
+ * @param filter The name of the filter the bounds are for
+ * @param $response The response structure on which valid filters are
+ * collected and on which errors are indicated when picked up.
+ * @return The response datastructure.
+ */
 function low_greater_than_high($low, $high, $filter, $response=null) {
 	if(!isset($response) || !$response) {
 		$response = new_response();
