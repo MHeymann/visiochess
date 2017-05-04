@@ -101,7 +101,7 @@ class MySqlPhpInterface
 		$error = $this->attempt($sql);
 
 		if($error) {
-			if(self::contains($error, "database exists")) {
+			if(contains($error, "database exists")) {
 				if($replace) {
 					if($this->verbose) {
 						echo "<p> `" . $name .
@@ -178,11 +178,11 @@ class MySqlPhpInterface
 			$this->quit("You must define a structure for the table you want to create");
 		}
 
-		$sql = "CREATE TABLE `" . $name . "`(" . self::stringify($structure) . ");";
+		$sql = "CREATE TABLE `" . $name . "`(" . stringify($structure) . ");";
 		$error = $this->attempt($sql);
 
 		if($error) {
-			if(self::contains($error, "table exists")) {
+			if(contains($error, "table exists")) {
 				if($replace) {
 					if($this->verbose) {
 						echo "<p> `" . $name .
@@ -247,7 +247,7 @@ class MySqlPhpInterface
 
 		if($error) {
 			/* this error needs testing */
-			if(self::contains($error, "Duplicate key name")) {
+			if(contains($error, "Duplicate key name")) {
 				if($replace) {
 					if($this->verbose) {
 						echo "<p> index`" . $iname . "` on `" . $tname .
