@@ -20,18 +20,16 @@ else
 	7z x MillionBase\ 2.5\ \(PGN\).7z
 fi
 
-# TODO: somehow call the php functions that converts the png file into a mysql
-# database
 cd ..
 
-# check if the user want's to run in developer mode
+# check if the user wants to run in developer mode
 echo "Run in developer mode? (y/n): "
-read dev_mode_input
+read DEV_MODE_INPUT
 
-dev_mode=false
-if [ $dev_mode_input == 'y' ]
+DEV_MODE=false
+if [ $DEV_MODE_INPUT == 'y' ]
 then
-	dev_mode=true
+	DEV_MODE=true
 	echo "Will start in developer mode"
 fi
 
@@ -47,11 +45,18 @@ password=$VISIOPW
 mysql_server=localhost
 php_server=
 moves_table=flat
-dev_mode=$dev_mode
+dev_mode=$DEV_MODE
 " > .my.cnf
 
 #echo "Enter root mysql password when probed"
 read -s -p "Enter the root mysql password: " ROOTPW
+
+# NOTE:
+# While it is less secure to use the `--password=` argument
+# but it does prevent multiple password promts to the user
+# the output can be suppressed by storing it in a variable
+
+# check if the visiochess user is already in the database
 HAS_VISIO_USER="$(mysql -uroot -p$ROOTPW -sse "SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = 'visiochess')")"
 
 if [ $HAS_VISIO_USER == 1 ]
