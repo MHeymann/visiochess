@@ -3,22 +3,13 @@ require_once "create_db.php";
 require_once "pgn_parser.php";
 require_once "define.php";
 
-/* TODO:
- * remove the following line, as this is for development purposes only
- */
+/* Keep the commented out version here, as this makes potential debugging
+ * easier, negating the need to first google it :) */
+//ini_set('display_errors',1); // for the development PC only
+//error_reporting(E_ALL); // ALWAYS
 
-ini_set('display_errors',1); // for the development PC only
-error_reporting(E_ALL); // ALWAYS
 // necessary for testing, not sure if it will be needed in production
 header('Access-Control-Allow-Origin: *');
-
-/*
- * site root, ie, where in the broader directory tree
- * this site is hosted.  the Double dirname is to not
- * have the path end with php, as we want the actual
- * site root.
- */
-/* define ('SITE_ROOT', realpath(dirname(dirname(__FILE__)))); */
 
 $target_dir = "/data/";
 
@@ -27,8 +18,6 @@ $target_dir = "/data/";
 /* Calculate hash */
 $hash = hash_file("sha256", $_FILES["user_db_uploader"]["tmp_name"]);
 
-/* TODO: get hash from user as well and compare to our hash */
-
 /*Set up the target file name */
 $target_file = $target_dir . $hash . "." . pathinfo(basename(
 	$_FILES["user_db_uploader"]["name"]), PATHINFO_EXTENSION);
@@ -36,16 +25,13 @@ $target_file = $target_dir . $hash . "." . pathinfo(basename(
 $uploadOk = true;
 
 /* Check if file already exists */
-/* Commented out for testing purposes */
-/* TODO: put this test back in */
-/* if (file_exists(SITE_ROOT.$target_file)) {
+if (file_exists(SITE_ROOT.$target_file)) {
     echo "<p>file exists.\n</p>";
-    $uploadOk = false;
-} */
+  //  $uploadOk = false;
+}
 
 /* Check file size */
-/* TODO: this limit must be revised for realistic db sizes */
-if ($_FILES["user_db_uploader"]["size"] > 5000000) {
+if ($_FILES["user_db_uploader"]["size"] > 10000000) {
     echo "<p>File too large.\n</p>";
     $uploadOk = false;
 }
@@ -64,14 +50,11 @@ if ($uploadOk == false) {
 } else {
 	if (move_uploaded_file($_FILES["user_db_uploader"]["tmp_name"], SITE_ROOT .
 		$target_file)) {
-		echo "<p>The file " . basename( $_FILES["user_db_uploader"]["name"]) .
-			" has been uploaded.\n</p>";
     } else {
         echo "<p>Upload failed.\n</p>";
 		exit ("Upload failed.\n");
     }
 }
-
 
 /*
  * Create a new database for this user. as we already checked for the
