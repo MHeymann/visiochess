@@ -42,7 +42,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
  * sequence, false otherwise.
  */
 function evaluate_line($line, $should_start) {
-	if (contains("$line", $should_start)) {
+	if (contains($line, $should_start)) {
 		return true;
 	} else {
 		echo "<p>vvvv---------vvvv</p>\n";
