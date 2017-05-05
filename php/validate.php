@@ -247,10 +247,6 @@ function validate_eco($filters, $response=null) {
 		 * serve as good sanity checks, and aids in debugging.
 		 * --> murray
 		 */
-		if($filters['eco-category']) {
-			$response = add_filter('eco-category', $response);
-			$response = validate_eco_cat($filters['eco-category'], $response);
-		}
 		if($filters['eco-class']) {
 			$response = add_filter('eco-class', $response);
 			$response = validate_eco_class($filters['eco-class'], $response);

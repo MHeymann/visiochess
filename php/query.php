@@ -43,7 +43,6 @@ if($filters['eco-filter-type'] == 'category') {
 	$eco_filters = $filters['eco-class'];
 	if($eco_filters) {
 		$filter_on[] = 'eco-class';
-		$filters['eco-class'] = $eco_filters['class'];
 	} //else don't set
 }
 
