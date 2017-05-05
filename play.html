@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-		<title>VisioChess</title>
+		<title>VisioChess Play</title>
 
 		<link rel="stylesheet" type="text/css"
 		href="https://fonts.googleapis.com/css?family=Pangolin">
@@ -13,10 +13,12 @@
 		<!-- Bootstrap -->
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 
+		<link href="css/chessboard-0.3.0.min.css" rel="stylesheet">
 		<link href="css/style.css" rel="stylesheet">
 		<script src="https://d3js.org/d3.v4.min.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
-		<script type="text/javascript" src="js/visual_response.js"></script>
+		<script type="text/javascript" src="js/chess.min.js"></script>
+		<script type="text/javascript" src="js/chessboard-0.3.0.min.js"></script>
+		<script type="text/javascript" src="js/main_play.js"></script>
 		<script type="text/javascript" src="js/sha256.js"></script>
 
 		<link rel="icon" href="http://www.favicon.cc/logo3d/45728.png">
@@ -24,39 +26,25 @@
 	</head>
 	<body>
 		<header id="top" class="container">
-			<h1>VisioChess!</h1>
-			<h4>Graphical representation of chess openings through the years.</h4>
+			<h1>VisioChess Play :)</h1>
+			<h4>Graphical Chess game frequency analyser</h4>
 		</header>
 
 		<div class="container">
 			<div class="row">
-
 				<div class="col-xs-12 col-md-8 col-lg-9" id="display_svg">
-					<h1>Please set the filters you want and click "apply"
-						to graph.</h1>
-						<p>To display a graph of the default data set,
-							simply press the apply button.</p>
-						<p>To filter over a range of years, white elo
-							and/or black elo values, type the values
-							between which to display in the appropriate
-							fields.</p>
-						<p>To display only one year by ECO codes, select the low
-							value and select a high value at least 1 higher
-							than the low.</p>
-						<p>To display 1 year by elo codes, select "Year
-							Analysis" and select the wanted year.</p>
-						<p>To display games played over years by single
-							elo value, select low and high to be the same.
-						</p>
-						<p>To upload a different data set, click on
-							"Choose file" and select the wanted PGN file.
-							Click "upload". To display the new data set,
-							click "Apply".</p>
-						<p>To view a previously uploaded file, select the
-							desired file in the list of data sets.</p>
-						<p>For a more detailed description, select "About"
-							at the bottom of the page.</p>
-							<h4>No file larger than 10MB can be uploaded.</h4>
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div class="panel panel-default">
+								<div class="panel-body">
+									<div id="board">
+									</div>
+									<p>Status: <span id="status"></span></p>
+									<p>PGN: <span id="pgn"></span></p>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<div class="col-xs-12 col-sm-4 col-lg-3">
@@ -66,8 +54,6 @@
 								<div class="panel-body">
 									<form action="php/query.php" id="filter_form"
 										method="post" enctype="multipart/form-data">
-
-
 
 										<h3>Select filters:</h3>
 
@@ -100,67 +86,6 @@
 										<input type="number" name="white-elo-high" placeholder="High"
 										min="0" max="3400" class="control-label col-xs-12">
 
-										<label name="eco"
-											class="control-label col-xs-12">
-											ECO Code:
-										</label>
-
-										<div name="eco-filters" class="radio col-xs-12">
-
-											<label class="col-xs-12">
-												<input type="radio" name="eco-filter-type"
-												value="category" checked></input>
-												eco category
-											</label>
-
-											<label class="col-xs-12">
-												<input type="radio" name="eco-filter-type"
-												value="class"></input>
-												eco class
-											</label>
-
-											<label class="col-xs-12">
-												<input type="radio" name="eco-filter-type"
-												value="code"></input>
-												eco code
-											</label>
-
-											<label class="col-xs-12">
-												<input type="radio" name="eco-filter-type"
-												value="year-eco-analysis"></input>
-												Year Analysis
-											</label>
-
-											<div class="current-eco-filter">
-												<select name="eco-category" class="control-label col-xs-12">
-													<option value="" selected>Filter by eco category...</option>
-													<optgroup label="A"
-														>A</optgroup>
-														<option value="A1.1">A1.1</option>
-														<option value="A1.2">A1.2</option>
-														<option value="A1.3">A1.3</option>
-														<option value="A1.4">A1.4</option>
-														<option value="A1.5">A1.5</option>
-													<optgroup label="B"
-														>B</optgroup>
-														<option value="B2.1">B2.1</option>
-														<option value="B2.2">B2.2</option>
-													<optgroup label="C"
-														>C</optgroup>
-														<option value="C3.1">C3.1</option>
-														<option value="C3.2">C3.2</option>
-													<optgroup label="D"
-														>D</optgroup>
-														<option value="D4.1">D4.1</option>
-														<option value="D4.2">D4.2</option>
-													<optgroup label="E"
-														>E</optgroup>
-														<option value="E5.1">E5.1</option>
-														<option value="E5.2">E5.2</option>
-												</select>
-											</div>
-										</div>
-
 										<input type="submit" value="Apply" name="submit"
 										class="btn btn-info btn-lg" >
 										<input type="button" value="Clear"
@@ -191,29 +116,9 @@
 														</h4>
 													</div>
 													<div class="modal-body">
-														<p>To display a graph of the default data set,
-															simply press the apply button.</p>
-														<p>To filter over a range of years, white elo
-															and/or black elo values, type the values
-															between which to display in the appropriate
-															fields.</p>
-														<p>To display only one year by ECO codes, select the low
-															value and select a high value at least 1 higher
-															than the low.</p>
-														<p>To display 1 year by elo codes, select "Year
-															Analysis" and select the wanted year.</p>
-														<p>To display games played over years by single
-															elo value, select low and high to be the same.
+														<p> 
+															TODO: bla bla bla 
 														</p>
-														<p>To upload a different data set, click on
-															"Choose file" and select the wanted PGN file.
-															Click "upload". To display the new data set,
-															click "Apply".</p>
-														<p>To view a previously uploaded file, select the
-															desired file in the list of data sets.</p>
-														<p>For a more detailed description, select "About"
-															at the bottom of the page.</p>
-															<h4>No file larger than 10MB can be uploaded.</h4>
 													</div>
 													<div class="modal-footer">
 														<button type="button" class="btn btn-default"
@@ -289,5 +194,92 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 		<!-- Include all compiled plugins (below), or include individual files as needed -->
 		<script src="js/bootstrap.min.js"></script>
+		<script>
+var init = function() {
+
+	//--- start example JS ---
+	var game = new Chess(),
+	board,
+	statusEl = $('#status'),
+	pgnEl = $('#pgn');
+
+	// do not pick up pieces if the game is over
+	// only pick up pieces for the side to move
+	var onDragStart = function(source, piece, position, orientation) {
+		if (game.game_over() === true ||
+				(game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+				(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+			return false;
+		}
+	};
+
+	var onDrop = function(source, target) {
+		// see if the move is legal
+		var move = game.move({
+			from: source,
+			to: target,
+			promotion: 'q' // NOTE: always promote to a queen for example simplicity
+		});
+
+		// illegal move
+		if (move === null) return 'snapback';
+
+		updateStatus();
+	};
+
+	// update the board position after the piece snap 
+	// for castling, en passant, pawn promotion
+	var onSnapEnd = function() {
+		board.position(game.fen());
+	};
+
+	var updateStatus = function() {
+		var status = '';
+
+		var moveColor = 'White';
+		if (game.turn() === 'b') {
+			moveColor = 'Black';
+		}
+
+		// checkmate?
+		if (game.in_checkmate() === true) {
+			status = 'Game over, ' + moveColor + ' is in checkmate.';
+		}
+
+		// draw?
+		else if (game.in_draw() === true) {
+			status = 'Game over, drawn position';
+		}
+
+		// game still on
+		else {
+			status = moveColor + ' to move';
+
+			// check?
+			if (game.in_check() === true) {
+				status += ', ' + moveColor + ' is in check';
+			}
+		}
+
+		statusEl.html(status);
+		pgnEl.html(game.pgn());
+	};
+
+	var cfg = {
+		draggable: true,
+		position: 'start',
+		onDragStart: onDragStart,
+		onDrop: onDrop,
+		onSnapEnd: onSnapEnd
+	};
+	board = ChessBoard('board', cfg);
+	$(window).resize(board.resize);
+
+	updateStatus();
+	//--- end example JS ---
+
+}; // end init()
+$(document).ready(init);
+		</script>
 	</body>
 </html>

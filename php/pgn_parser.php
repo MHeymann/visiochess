@@ -90,7 +90,13 @@ function parse_white_space($db_file, $dud_line) {
  */
 function parse_pgn_file_to_db($target_file, $db_name,
    	$batch_size=200, $verbose=false) {
-	// echo "Database to be parsed to: " . $db_name;
+
+	if ($verbose || true) {
+		echo "<p>File being parsed: " . $target_file . "</p>\n";
+		echo "<p>Database to be parsed to: " . $db_name . "</p>\n";
+		echo "<p>Batch size being parsed to db in single query: " .
+			$batch_size . "</p>\n";
+	}
 
 	$global_batch_count = 0;
 
