@@ -180,10 +180,20 @@ function handle_filter_submit(event) {
 	var $form = $('#filter_form');
 	var db_val = $('#db_selector').val() || "default";
 	send_url = $form.attr("action");
-	console.log("action url: ", send_url);
 	var filters = getFormData($form);
 
 	filters['database'] = db_val;
+
+	if (filters['eco-filter-type'] == 'category') {
+		send_url = "php/query_cat.php";
+	} else if (filters['eco-filter-type'] == 'class') {
+		send_url = "php/query_class.php";
+	} else if (filters['eco-filter-type'] == 'code') {
+		send_url = "php/query_code.php";
+	} else if (filters['eco-filter-type'] == 'year-eco-analysis') {
+		send_url = "php/query_year.php";
+	}
+	console.log("action url: ", send_url);
 
 	// TODO: vaidation: ensure low year less than high year.
 
