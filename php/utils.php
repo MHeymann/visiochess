@@ -33,4 +33,17 @@ function stringify($object) {
 	return $string;
 }
 
+/**
+ * Remove a specified amount of characters from the end of a string.
+ *
+ * @param $string The string to be trimmed.
+ * @param $num_chars The number of characters to remove from the end.
+ *
+ * @return string $string with the last $num_chars characters removed.
+ */
+function trim_chars($string, $num_chars) {
+	$length = count($string);
+	$stop = $length - $num_chars - 1;
+	return substr($string, 0, $stop);
+}
 ?>
