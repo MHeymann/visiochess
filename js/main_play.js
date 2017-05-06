@@ -5,6 +5,12 @@
 
 /* Global variables */
 var pgnHashes = {};
+var pgnOptions = {};
+var pgnCurrent = "";
+var board;
+var game;
+var statusEl;
+var pgnEl;
 
 /**
  * Set up the necessary parameters and event handlers as soon as the html
@@ -169,7 +175,9 @@ function submit_file(file, send_url) {
  * @param event A json object of he event that triggered this subbmission.
  */
 function handle_filter_submit(event) {
-	event.preventDefault();
+	if (event != null) {
+		event.preventDefault();
+	}
 
 	var $form = $('#filter_form');
 	var db_val = $('#db_selector').val() || "default";
@@ -178,6 +186,11 @@ function handle_filter_submit(event) {
 	var filters = getFormData($form);
 
 	filters['database'] = db_val;
+	if (pgnCurrent != null) {
+		filters['current-pgn'] = pgnCurrent;
+	} else {
+		filters['current-pgn'] = "";
+	}
 
 	// TODO: vaidation: ensure low year less than high year.
 
@@ -190,6 +203,12 @@ function handle_filter_submit(event) {
 	if (db_val != "default_chess_db") {
 		ensure_database_exists_on_server(db_val);
 	}
+	console.log(
+		'Sending these filters:\n',
+		JSON.stringify(filters)
+	);
+	/* Commented out because script doesn't exist yet for server to
+	 * respond.
 	$.ajax({
 		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
 		type: 'post',
@@ -200,6 +219,7 @@ function handle_filter_submit(event) {
 			console.log(errorMessage);
 		}
 	});
+	*/
 }
 
 /**
@@ -260,9 +280,9 @@ function ensure_database_exists_on_server(hash) {
 function handle_filter_response(response) {
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
-	}
-	else {
-		//TODO:
+	} else {
+		//TODO: draw histo
+		$("#temp_results").append("<p>" + JSON.stringify(response) + "</p>");
 	}
 }
 
@@ -283,3 +303,96 @@ function get_file_from_hash(hash) {
 	}
 }
 
+
+var game_init = function() {
+
+	//--- start example JS ---
+	game = new Chess();
+	statusEl = $('#status');
+	pgnEl = $('#pgn');
+
+	var cfg = {
+		draggable: true,
+		position: 'start',
+		onDragStart: onDragStart,
+		onDrop: onDrop,
+		onSnapEnd: onSnapEnd
+	};
+	board = ChessBoard('board', cfg);
+	$(window).resize(board.resize);
+
+	updateStatus();
+}; // end init()
+
+
+function onDrop(source, target) {
+	// see if the move is legal
+	var move = game.move({
+		from: source,
+		to: target,
+		promotion: 'q' // NOTE: always promote to a queen for example simplicity
+	});
+
+	// illegal move
+	if (move === null) {
+		return 'snapback';
+	}
+	console.log("move: " + JSON.stringify(move));
+	//console.log("pgn: " + game.pgn());
+	//game.undo();
+	//console.log("pgn: " + game.pgn());
+
+	updateStatus();
+};
+
+
+// do not pick up pieces if the game is over
+// only pick up pieces for the side to move
+function onDragStart(source, piece, position, orientation) {
+	if (game.game_over() === true ||
+			(game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+			(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+		return false;
+	}
+};
+
+
+// update the board position after the piece snap 
+// for castling, en passant, pawn promotion
+function onSnapEnd() {
+	board.position(game.fen());
+};
+
+
+
+
+function updateStatus() {
+	var status = '';
+
+	var moveColor = 'White';
+	if (game.turn() === 'b') {
+		moveColor = 'Black';
+	}
+
+	// checkmate?
+	if (game.in_checkmate() === true) {
+		status = 'Game over, ' + moveColor + ' is in checkmate.';
+	}
+
+	// draw?
+	else if (game.in_draw() === true) {
+		status = 'Game over, drawn position';
+	} else {
+		// game still on
+		status = moveColor + ' to move';
+
+		// check?
+		if (game.in_check() === true) {
+			status += ', ' + moveColor + ' is in check';
+		}
+	}
+
+	statusEl.html(status);
+	pgnCurrent = game.pgn();
+	pgnEl.html(pgnCurrent);
+};
