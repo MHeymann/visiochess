@@ -8,8 +8,8 @@ then
 fi
 
 # set brew not to update when installing packages: HOMEBREW_NO_AUTO_UPDATE=1
-# install wget p7zip mysql - takes essentially no time if already installed
-HOMEBREW_NO_AUTO_UPDATE=1 brew install wget p7zip mysql
+# install wget p7zip mysql phpunit - takes essentially no time if already installed
+HOMEBREW_NO_AUTO_UPDATE=1 brew install wget p7zip mysql phpunit
 # create directory and donwload files
 mkdir data
 cd data
@@ -51,7 +51,7 @@ user=visiochess
 password=$VISIOPW
 mysql_server=127.0.0.1
 php_server=http://127.0.0.1:8000/
-moves_table=flat
+moves_table=star
 dev_mode=$DEV_MODE
 " > ./.my.cnf
 
@@ -92,8 +92,3 @@ if [ $DEV_MODE ]
 then
 	xterm -hold -e "php -S 127.0.0.1:8000" &
 fi
-
-# stop mysql server (perhaps we should not stop it..)
-# (we need it up to handle user queries...)
-# (we could just start it before and stop it after every query?)
-# mysql.server stop
