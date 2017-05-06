@@ -2,7 +2,7 @@
 
 # Set up the LAMP stack, and some other tools needed
 sudo apt-get install apache2 mysql-server libapache2-mod-php php-mcrypt \
-	php-mysql p7zip-full wget
+	php-mysql p7zip-full wget phpunit
 sudo systemctl restart apache2
 
 # Set up the default database
@@ -44,7 +44,7 @@ user=visiochess
 password=$VISIOPW
 mysql_server=localhost
 php_server=
-moves_table=flat
+moves_table=star
 dev_mode=$DEV_MODE
 " > .my.cnf
 

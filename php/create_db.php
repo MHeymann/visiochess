@@ -42,7 +42,7 @@ function create_database($db_name, $target_file) {
 			'event' => 'VARCHAR(50)',
 			'site' => 'VARCHAR(50)',
 			'date' => 'INT(4)',
-			'round' => 'INT(3)', //check this but we assume round <= 999
+			'round' => 'INT(3)', // we assume round <= 999
 			'white' => 'VARCHAR(50)',
 			'black' => 'VARCHAR(50)',
 			'result' => 'VARCHAR(10)',
@@ -91,6 +91,33 @@ function create_database($db_name, $target_file) {
 		/* TODO: here the Moves table should be created, with a foreign key to
 		 * the Tags table's private key.
 		 */
+
+		 /* create a table with the required fields */
+	 	$db->create_table(
+	 		'moves',
+	 		array(
+	 			'gameID' => "INT(10) REFERENCES $db_name.tags(gameID)",
+	 			'move_index' => 'INT(3)',
+	 			'white_move' => 'VARCHAR(10)', // we can probably make this less
+				'black_move' => 'VARCHAR(10)' // we can probably make this less
+	 		),
+	 		$replace=true
+	 	);
+
+	 	/*
+	 	 * create an index on the most important fields for querying more
+	 	 * efficiently
+	 	 */
+	 	$db->create_index(
+	 		'moves_index',
+	 		'moves',
+	 		array(
+	 			'gameID',
+	 			'move_index',
+				'white_move',
+				'black_move'
+	 		)
+		);
 	}
 
 
