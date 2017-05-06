@@ -52,7 +52,7 @@
 						<div class="panel-body">
 							<div class="panel panel-default">
 								<div class="panel-body">
-									<form action="php/query.php" id="filter_form"
+									<form action="php/query_chess.php" id="filter_form"
 										method="post" enctype="multipart/form-data">
 
 										<h3>Select filters:</h3>
@@ -87,7 +87,8 @@
 										min="0" max="3400" class="control-label col-xs-12">
 
 										<input type="submit" value="Apply" name="submit"
-										class="btn btn-info btn-lg" >
+										class="btn btn-info btn-lg"
+										id="submit_filters">
 										<input type="button" value="Clear"
 											name="clear_filters" id="clear_filters"
 										class="btn btn-info btn-lg" >
@@ -195,91 +196,8 @@
 		<!-- Include all compiled plugins (below), or include individual files as needed -->
 		<script src="js/bootstrap.min.js"></script>
 		<script>
-var init = function() {
-
-	//--- start example JS ---
-	var game = new Chess(),
-	board,
-	statusEl = $('#status'),
-	pgnEl = $('#pgn');
-
-	// do not pick up pieces if the game is over
-	// only pick up pieces for the side to move
-	var onDragStart = function(source, piece, position, orientation) {
-		if (game.game_over() === true ||
-				(game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-				(game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-			return false;
-		}
-	};
-
-	var onDrop = function(source, target) {
-		// see if the move is legal
-		var move = game.move({
-			from: source,
-			to: target,
-			promotion: 'q' // NOTE: always promote to a queen for example simplicity
-		});
-
-		// illegal move
-		if (move === null) return 'snapback';
-
-		updateStatus();
-	};
-
-	// update the board position after the piece snap 
-	// for castling, en passant, pawn promotion
-	var onSnapEnd = function() {
-		board.position(game.fen());
-	};
-
-	var updateStatus = function() {
-		var status = '';
-
-		var moveColor = 'White';
-		if (game.turn() === 'b') {
-			moveColor = 'Black';
-		}
-
-		// checkmate?
-		if (game.in_checkmate() === true) {
-			status = 'Game over, ' + moveColor + ' is in checkmate.';
-		}
-
-		// draw?
-		else if (game.in_draw() === true) {
-			status = 'Game over, drawn position';
-		}
-
-		// game still on
-		else {
-			status = moveColor + ' to move';
-
-			// check?
-			if (game.in_check() === true) {
-				status += ', ' + moveColor + ' is in check';
-			}
-		}
-
-		statusEl.html(status);
-		pgnEl.html(game.pgn());
-	};
-
-	var cfg = {
-		draggable: true,
-		position: 'start',
-		onDragStart: onDragStart,
-		onDrop: onDrop,
-		onSnapEnd: onSnapEnd
-	};
-	board = ChessBoard('board', cfg);
-	$(window).resize(board.resize);
-
-	updateStatus();
-	//--- end example JS ---
-
-}; // end init()
-$(document).ready(init);
+$(document).ready(game_init);
+handle_filter_submit(null);
 		</script>
 	</body>
 </html>
