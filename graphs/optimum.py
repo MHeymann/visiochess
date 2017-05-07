@@ -79,6 +79,7 @@ ynew = f(xnew)
 
 plt.ylabel("Time taken in seconds")
 plt.xlabel("Batch size in tens of queries")
+plt.title("Time taken to populate database over batch size of each query:")
 plt.plot(x, y, 'o')
 plt.plot(lowess_x, lowess_y, '*')
 plt.plot(xnew, ynew, '-')
