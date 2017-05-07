@@ -1,12 +1,6 @@
 <?php
 require_once "utils.php";
 
-/*
-TODO:
-Features:
-Add fatal params - if fatal is true, program quits on error
-*/
-
 class MySqlPhpInterface
 {
 	private $server = null;

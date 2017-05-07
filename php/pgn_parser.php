@@ -472,9 +472,7 @@ function get_longest_moves_string($target_file) {
 		if (feof($db_file)) {
 			break;
 		}
-		/*
-		 * TODO: add some validation for syntax of file
-		 */
+
 		$event_name = sscan_tag($event_line, '[Event "');
 
 		$site_line = fgets($db_file);
@@ -515,11 +513,6 @@ function get_longest_moves_string($target_file) {
 
 			$optional_line = fgets($db_file);
 		}
-
-		/*
-		 * TODO: assert that dud_line is now an empty line
-		 * before start of moves.
-		 */
 
 		/*
 		 * Parse moves into array structure.
