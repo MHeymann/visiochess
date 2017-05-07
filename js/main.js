@@ -167,6 +167,66 @@ function submit_file(file, send_url) {
 	return retval;
 }
 
+function markFieldInvalid($field) {
+	$field.parents('.form-group').addClass('has-error');
+}
+
+function markFieldNeutral($field) {
+	$field.parents('.form-group').removeClass('has-error');
+}
+
+function validateFilters() {
+	var valid = true;
+
+	markFieldNeutral($('#filter_form input'))
+
+	var $yearLow = $('input[name=year-low]');
+	var yearLow = $yearLow.val();
+	var yearHigh = $('input[name=year-high]').val();
+
+	if(!isNaN(parseInt(yearLow)) &&
+	!isNaN(parseInt(yearHigh)) &&
+	yearLow > yearHigh) {
+		markFieldInvalid($yearLow);
+		valid = false;
+	}
+
+	var $ecoLow = $('input[name=eco-low]');
+	var ecoLow = $ecoLow.val();
+	var ecoHigh = $('input[name=eco-high]').val();
+
+	if(!isNaN(parseInt(ecoLow)) &&
+	!isNaN(parseInt(ecoHigh)) &&
+	ecoLow > ecoHigh) {
+		markFieldInvalid($ecoLow);
+		valid = false;
+	}
+
+	var $eloBlackLow = $('input[name=black-elo-low]');
+	var eloBlackLow = $eloBlackLow.val();
+	var eloBlackHigh = $('input[name=black-elo-high]').val();
+
+	if(!isNaN(parseInt(eloBlackLow)) &&
+	!isNaN(parseInt(eloBlackHigh)) &&
+	eloBlackLow > eloBlackHigh) {
+		markFieldInvalid($eloBlackLow);
+		valid = false;
+	}
+
+	var $eloWhiteLow = $('input[name=white-elo-low]');
+	var eloWhiteLow = $eloWhiteLow.val();
+	var eloWhiteHigh = $('input[name=white-elo-high]').val();
+
+	if(!isNaN(parseInt(eloWhiteLow)) &&
+	!isNaN(parseInt(eloWhiteHigh)) &&
+	eloWhiteLow > eloWhiteHigh) {
+		markFieldInvalid($eloWhiteLow);
+		valid = false;
+	}
+
+	return valid;
+}
+
 /**
  * Process the filter form into a json object and send to the server to
  * perform the appropriate query. Successful submission sends the response
@@ -176,6 +236,12 @@ function submit_file(file, send_url) {
  */
 function handle_filter_submit(event) {
 	event.preventDefault();
+
+	var valid = validateFilters();
+
+	if(!valid) {
+		return;
+	}
 
 	var $form = $('#filter_form');
 	var db_val = $('#db_selector').val() || "default";
@@ -194,8 +260,6 @@ function handle_filter_submit(event) {
 		send_url = "php/query_year.php";
 	}
 	console.log("action url: ", send_url);
-
-	// TODO: vaidation: ensure low year less than high year.
 
 	console.log(
 		'Sending these filters:\n',
@@ -276,6 +340,14 @@ function ensure_database_exists_on_server(hash) {
 function handle_filter_response(response) {
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
+		for(i in response.error_fields) {
+			field = response.error_fields[i];
+			markFieldInvalid(
+				$(
+					'#filter_form input[name=' + field + ']'
+				)
+			);
+		}
 	}
 	else {
 		mainJSON = response;
@@ -332,9 +404,11 @@ function handleEcoFilterChange() {
 
 	switch(radioButton.val()) {
 		case 'category':
+			$div = $('<div />').addClass('form-group');
+
 			$categorySelect = $('<select />').attr({
 				'class': 'control-label col-xs-12',
-				'name': 'eco-category'// NB this may break some things!
+				'name': 'eco-category'
 			});
 
 			$categorySelect.append($('<option />').attr({
@@ -361,10 +435,13 @@ function handleEcoFilterChange() {
 				$categorySelect.append($optGroup);
 			});
 
-			$currentFilter.append($categorySelect);
+			$div.append($categorySelect);
+			$currentFilter.append($div);
 
 			break;
 		case 'class':
+			$div = $('<div />').addClass('form-group');
+
 			$classSelect = $('<select />').attr({
 				'class': 'control-label col-xs-12',
 				'name': 'eco-class'
@@ -383,14 +460,16 @@ function handleEcoFilterChange() {
 				$classSelect.append($option);
 			});
 
-
-			$currentFilter.append($classSelect);
+			$div.append($classSelect);
+			$currentFilter.append($div);
 
 			break;
 		case 'code':
+			$div = $('<div />').addClass('form-group');
+
 			$codeSelect = $('<select />').attr({
 				'class': 'control-label col-xs-12',
-				'name': 'eco-class'// NB this may again break some things!
+				'name': 'eco-class'
 			});
 
 			$codeSelect.append($('<option />').attr({
@@ -406,38 +485,41 @@ function handleEcoFilterChange() {
 				$codeSelect.append($option);
 			});
 
-			$currentFilter.append($codeSelect);
+			$div.append($codeSelect);
 
-			$currentFilter.append($('<input />').attr({
+			$div.append($('<input />').attr({
 				'type': 'number',
 				'min': 0,
 				'max': 99,
 				'name': 'eco-low',
 				'placeholder': 'Low',
-				'class': 'control-label col-xs-12'
+				'class': 'form-control control-label col-xs-12'
 			}));
 
-			$currentFilter.append($('<input />').attr({
+			$div.append($('<input />').attr({
 				'type': 'number',
 				'min': 0,
 				'max': 99,
 				'name': 'eco-high',
 				'placeholder': 'High',
-				'class': 'control-label col-xs-12'
+				'class': 'form-control control-label col-xs-12'
 			}));
 
+			$currentFilter.append($div);
 			break;
 		case 'year-eco-analysis':
+			$div = $('<div />').addClass('form-group');
 
-			$currentFilter.append($('<input />').attr({
+			$div.append($('<input />').attr({
 				'type': 'number',
 				'min': 0,
 				'max': 3000,
 				'name': 'year',
 				'placeholder': 'Select a year',
-				'class': 'control-label col-xs-12'
+				'class': 'form-control control-label col-xs-12'
 			}));
 
+			$currentFilter.append($div);
 			break;
 	}
 }
