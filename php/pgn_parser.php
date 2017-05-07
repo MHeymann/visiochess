@@ -28,7 +28,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 }
 
 /**
- * TODO: test the addition to the if statment thoroughly
+ * TODO: test the addition to the if statement thoroughly
  *
  * @param $line The string that is being evaluated.
  * @param $should_start The characters that the line should start with.
@@ -51,7 +51,7 @@ function evaluate_line($line, $should_start) {
 }
 
 /**
- * Parse Through the lines until a non trivial line that does not only
+ * Parse through the lines until a non trivial line that does not only
  * contain whitespace is found. Note, this function assumes that dud_line
  * has already been read into once, but most likely would still work as
  * expected if this is not the case.

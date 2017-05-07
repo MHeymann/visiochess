@@ -28,6 +28,7 @@ Murray Heymann\\ 15988694 \and Jolandi Lombard\\ 16994914 \and Lisa van Staden\\
 The purpose of this project is to develop a web application to provide the user with a detailed analysis
 of the popularity of chess openings over the years.
 
+
 \subsection{General}
 The user can view the default database or upload their own data, provided it is in the correct file
 format, PGN, and contains the needed information.The web application is made fully responsive by using Bootstrap.
@@ -45,6 +46,7 @@ The user can view all the data or apply the following filters:
 	\end{itemize}
 \end{enumerate}
 
+
 \subsection{Front End}
 The front end shall make use of D3.js for visualization of processed data.
 The front end shall give a visual summary of the information after filtering.
@@ -52,13 +54,29 @@ The front end shall have a list of databases to choose from.  The list shall alw
 Before a user has uploaded any data, the default data set shall be preselected.
 Upon loading a pgn file, the newly uploaded data set shall the selected data set.
 
+
 \subsection{Back End}
-The back end shall have an API for receiving an uploaded PGN file
+The back end shall have an API for receiving an uploaded PGN file.
 The back end shall parse the PGN file into a MySQL database.
 The back end shall have an API for receiving filtering commands.
 The back end shall process filtering commands into MySQL queries.
 The back end shall perform MySQL queries on databases of chess games.
-The back end shall return the results of a MySQL query to the user in a way that can be displayed by D3.js, %(This is still a little vague...)
+The back end shall return a JSON object with the following structure:
+\begin{lstlisting}
+	{
+		error: boolean value
+		error_message: String
+		data: JSON
+		pop: array
+	}
+\end{lstlisting}
+The JSON object for the data field shall have the following structure:
+\begin{lstlisting}[escapeinside={(*@}{@*)}]
+	{
+		year: array of values
+		(*@{\vdots}@*)
+	}
+\end{lstlisting}
 
 \section{Program Description}
 
@@ -67,14 +85,18 @@ The Back End is comprised of all code that gets executed on the server side.
 
 All database queries get done here, mostly because the default database is assumed to be used most often and is found here. This also allows devices with limited processing power to use the service with ease, while also requiring a server with reasonably large memory, storage and processing abilities.
 
+
 \subsubsection{make.sh}
 This is a Linux bash script that set's up the backend environment. It downloads all necessary dependencies, creates the MySQL database and creates a configuration file for the server.
+
 
 \subsubsection{make\_osx.sh}
 This is a OSX bash script that set's up the backend environment. It downloads all necessary dependencies, creates the MySQL database and creates a configuration file for the server.
 
+
 \subsubsection{.my.cnf}
 This is a configuration file that is generated. It contains all the information needed to connect to the MySQL server.
+
 
 \subsubsection{user\_upload.php}
 As the specifications dictate that users need to be able to upload their own custom database, user\_upload.php receives such uploads and performs some basic checks on the uploaded file, before saving it to the server disk.  The file gets hashed using sha256 and this hash is used as the file name when saved, allowing users to easily specify which file they wish to use, while avoiding any possible clashes in the naming domain, should different users upload different files with the same name.  Conveniently, if two users upload identical databases, these databases won't be duplicated on the server.
@@ -90,73 +112,82 @@ This script contains a function to create a database for a newly uploaded file. 
 \subsubsection*{create\_database}
 First the login details for a MySQL user is read from a file named .my.cnf in the root directory of the project.  This is then used to connect to the MySQL server on the local server.  Once a connection is set up, a database is created with a query, and its success is checked.  The connection is then closed.
 
-\subsubsection{create\_db.php}
-TODO
+
+\subsubsection{create\_default\_db.php}
+This script creates a new database into which the default data set is then parsed. This script is run to set up the database initially.
+
 
 \subsubsection{eco\_category.php}
-TODO
+This script provides functions to translate between ECO categories and ranges.
 
 \subsubsection*{get\_eco\_category}
-TODO
+Given any ECO code, this function returns the ECO category containing the code. 
+\begin{lstlisting}
+	Example:
+	get_eco_category(A55) will return A1.4
+\end{lstlisting}
 
 \subsubsection*{get\_eco\_class\_ranges}
-TODO
+Given an ECO category, this function will return the ECO class and numeric ranges of the category.
+\begin{lstlisting}
+	Example:
+	get_eco_class_ranges(A1.4) will return A50-A79
+\end{lstlisting}
+
 
 \subsubsection{has\_db.php}
-TODO
+This script ensures that the requested user database is present on the server.
 
 \subsubsection*{has\_db\_available}
-TODO
+This function checks the server for the requested user database. If the database is present the function returns "true". If the requested user database is not present on the server "false" is returned.
+
 
 \subsubsection{pgn\_parser.php}
 This file mostly defines functions used by the user\_upload.php script.  As the name suggests, it parses PGN files.
 
-
-
 \subsubsection*{sscan\_tag}
-The sscan\_tag function is used to scan tags when parsing a PGN file. Takes two string arguments:  the tag string and a string that describes the start of that line.  The second argument is used for getting the offset into the string where the tag value starts.  The function the scans the tag until the tag string closes with '"'.  This scanned value is then returned to the caller.
+The sscan\_tag function is used to scan tags when parsing a PGN file. The function takes two string arguments:  the tag string and a string that describes the start of that line.  The second argument is used for getting the offset into the string where the tag value starts.  The function scans the tag until the tag string closes with '"'.  This scanned value is then returned to the caller.
 
 \subsubsection*{evaluate\_line}
-TODO
+This function takes two strings arguments: the string being evaluated and the characters the line should start with. It returns a boolean value: true if the starting characters are found in the string and false if the string does not contain the starting characters.
 
 \subsubsection*{parse\_white\_space}
-TODO
+This function skips over empty line in the PGN file.
 
 \subsubsection*{parse\_pgn\_file\_to\_db}
-
 The standard seven tags as required by the PGN are processed with the sscan\_tag function and have their values stored in local variables. Thereafter, the optional tags are scanned and each examined as either being an ECO tag or a black or white ELO tag.  If any of these are not present, their local variable simply gets the empty string assigned to it.
 
 The moves are often listed over various lines.  First, these moves are collected into a single line string.  Then, the string is split by spaces, to produce an array.  On array indices that are multiples of three, one finds the move numbers.  On the very last non-trivial entry, one finds the score of the match.  All other entries indicate moves:
-
 \begin{align*}
 \forall i \in \{ x\in \mathbb{Z}\ :\ & x\text{ a valid index in moves array}\},\\
 i & \equiv 2\pmod 3 \implies \text{moves[i] denotes a black move}\\
 i & \equiv 1\pmod 3 \implies \text{moves[i] denotes a white move}
 \end{align*}
-
 The moves are separated into an array of white moves and an array of black moves. These arrays are then stored in an object than can be easily sent to a function that will insert the data into the MySQL database.
 
 \subsubsection*{get\_longest\_moves\_string}
 This function is almost identical to parse\_pgn\_file\_to\_db, but it serves to determine which chess game in a pgn file has the longest move string.  This is helpful when creating the database with the "flat" approach.
 
 
-\subsubsection{query.php}
-The user sends filters to be applied to the database.  These filters are sent to query.php, which then formulates the filter data into MySQL queries.  These queries made into the database and the results are sent back to the user.
+\subsubsection{query\_*.php}
+This is a generic description of the query scripts that follow. The user sends filters to be applied to the database.  These filters are sent to query.php, which then formulates the filter data into MySQL queries.  These queries are made into the database and the results are sent back to the user. 
+
 
 \subsubsection{query\_cat.php}
-TODO
+This script performs all queries when filtering by ECO category.
+
 
 \subsubsection{query\_class.php}
-TODO
+This script performs all queries when filtering by ECO class.
+
 
 \subsubsection{query\_code.php}
-TODO
+This script performs all queries when filtering by ECO code.
+
 
 \subsubsection{query\_year.php}
-TODO
+This script performs all queries when filtering for a single given year.
 
-\subsubsection{send\_config.php}
-TODO
 
 \subsubsection{mysql\_interface.php}
 This file contains the \textit{ServerInterface} class. This class is a PHP interface built on top of the \textit{mysqli} interface. It adds another layer of abstraction that makes interfacing with MySQL servers much easier.
@@ -170,24 +201,30 @@ This file contains the \textit{ServerInterface} class. This class is a PHP inter
 	\item send SQL commands to the server
 \end{itemize}
 
-\subsubsection*{\_\_construct}
-TODO
 \subsubsection*{quit}
-TODO
+This function is called when a fatal error is encoutered. An error message is displayed and the current process is killed.
+
 \subsubsection*{connect}
-TODO
+This function initializes a connection to the MySQL server.
+
 \subsubsection*{disconnect}
-TODO
+This function closes the connection to the MySQL server.
+
 \subsubsection*{attempt}
-TODO
+This function takes a string argument. This string is a SQL statement to be executed by the server.
+
 \subsubsection*{create\_database}
-TODO
+The create\_db function creates a database on the server with a specified name.
+
 \subsubsection*{delete\_database}
-TODO
+This function deletes a specified database that is present on the server.
+
 \subsubsection*{use\_database}
-TODO
+The use\_database function tells the server which database the user is making queries on.
+
 \subsubsection*{create\_table}
-TODO
+This creates a table on the server with a specified name.
+
 \subsubsection*{delete\_table}
 TODO
 \subsubsection*{create\_index}
