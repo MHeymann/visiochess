@@ -232,43 +232,42 @@ This function deletes a specified table that is present on the server.
 This creates indices on a specified table on the server. If the table has not yet been created an error message is thrown.
 
 \subsubsection*{delete\_index}
-TODO
+This deletes a specified index from a specified table on the server.
+
 \subsubsection*{insert}
-TODO
+This inserts data into a specific table on the server.
+
 \subsubsection*{insert\_multiple}
-TODO
-\subsubsection*{select\_form}
-TODO
-\subsubsection*{sql}
-TODO
+This can insert multiple data entries into a specified table on the server.
+
+\subsubsection*{select\_from}
+This returns all the data from a specified columns in the given table meeting the given conditions.
+
 
 \subsubsection{utils.php}
-TODO
+utils.php provides utilitarian functions to prevent code duplications.
 
 \subsubsection*{contains}
-TODO
+This simple function checks whether a certain string is present in some token.
 
 \subsubsection*{stringify}
-TODO
-
+This function translates an object to a string of the key pairs, separated by commas.
 
 \subsubsection*{trim\_chars}
-TODO
-
+The trim\_chars function removes a speicified number of characters form the end of a given string.
 
 \subsubsection*{process\_elo\_data}
-TODO
-
+This processes the ECO data into a data structure that can easily be used by the visualization program.
 
 \subsubsection*{process\_year\_data}
-TODO
-
+This processes the year data into a data structure that can easily be used by the visualization program. This is all sorted and grouped by year.
 
 \subsubsection*{set\_query\_where\_fields}
-TODO
+This constructs a query data structure that is sent to the server.
+
 
 \subsubsection{validate.php}
-TODO
+
 
 \subsubsection*{validate\_filters}
 TODO
@@ -487,7 +486,7 @@ from the scipy library was used to find an interpolation of the data.  The
 plotted data is shown in figure \ref{figure:1}
 
 \begin{figure}[h]
-	\includegraphics[width=8cm]{graph_batch_interpolation}
+	\includegraphics[width=10cm]{graph_batch_interpolation}
 	\caption{Scatter plot of time taken to parse various batch sizes to
 	MySQL, with the interpolated line of best fit drawn in.}
 	\label{figure:1}
@@ -543,8 +542,6 @@ without an index, it took about 1.1 seconds.
 	\label{figure:3}
 \end{figure}
 
-
-
 The execution graphic of the database without and index is shown in figure
 \ref{figure:2}, while the graphic of the same query is shown in figure
 \ref{figure:3}. The query performed looked as follows:
@@ -566,5 +563,8 @@ number of rows that had to be scanned.
 \section{Testing}
 \subsection{JavaScript Testing}
 For testing the JavaScript functions and functionality we used the built in QUnit library to perform JUnit testing.
+
+\section{Additional features}
+
 
 \end{document}

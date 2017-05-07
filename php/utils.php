@@ -47,7 +47,7 @@ function trim_chars($string, $num_chars) {
 }
 
 /**
- * Proces eco data into a data structure that the visualization
+ * Process eco data into a data structure that the visualization
  * program can easily use to render the results.
  *
  * @param $result The result that is received from a query to the database.
