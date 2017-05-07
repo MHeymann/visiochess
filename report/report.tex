@@ -2,6 +2,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amssymb, amsmath}
 \usepackage{hyperref}
+\usepackage{graphicx}
+\graphicspath{ {../graphs/} }
+\usepackage{listings}
 \begin{document}
 
 \title{ \textbf{\Huge Visiochess} \\
@@ -21,19 +24,19 @@ Murray Heymann\\ 15988694 \and Jolandi Lombard\\ 16994914 \and Lisa van Staden\\
 \pagebreak
 \setcounter{page}{1} % Set the page counter to 1
 
-\section{Specifications} 
-The purpose of this project is to develop a web application to provide the user with a detailed analysis 
+\section{Specifications}
+The purpose of this project is to develop a web application to provide the user with a detailed analysis
 of the popularity of chess openings over the years.
 
 \subsection{General}
-The user can view the default database or upload their own data, provided it is in the correct file 
-format, PGN, and contains the needed information.The web application is made fully responsive by using Bootstrap. 
+The user can view the default database or upload their own data, provided it is in the correct file
+format, PGN, and contains the needed information.The web application is made fully responsive by using Bootstrap.
 A user file is restricted to a maximum size of $10$Mb ($10\ 000\ 000$ bytes)
-The visual representation of the analysis is done using D3.js. 
+The visual representation of the analysis is done using D3.js.
 The user can view all the data or apply the following filters:
 \begin{enumerate}
 	\item Data Range by year
-	\item WhiteElo and BlackElo 
+	\item WhiteElo and BlackElo
     \item ECO Codes:
 	\begin{itemize}
 		\item Primary ECO codes (A-E)
@@ -46,35 +49,35 @@ The user can view all the data or apply the following filters:
 The front end shall make use of D3.js for visualization of processed data.
 The front end shall give a visual summary of the information after filtering.
 The front end shall have a list of databases to choose from.  The list shall always contain the default database of the back end, along with any databases uploaded by the user.
-Before a user has uploaded any data, the default data set shall be preselected.  
-Upon loading a pgn file, the newly uploaded data set shall the selected data set.  
-  
+Before a user has uploaded any data, the default data set shall be preselected.
+Upon loading a pgn file, the newly uploaded data set shall the selected data set.
+
 \subsection{Back End}
 The back end shall have an API for receiving an uploaded PGN file
-The back end shall parse the PGN file into a MySQL database. 
-The back end shall have an API for receiving filtering commands.  
+The back end shall parse the PGN file into a MySQL database.
+The back end shall have an API for receiving filtering commands.
 The back end shall process filtering commands into MySQL queries.
-The back end shall perform MySQL queries on databases of chess games.  
+The back end shall perform MySQL queries on databases of chess games.
 The back end shall return the results of a MySQL query to the user in a way that can be displayed by D3.js, %(This is still a little vague...)
 
 \section{Program Description}
 
 \subsection{Back End}
-The Back End is comprised of all code that gets executed on the serverside.  
+The Back End is comprised of all code that gets executed on the server side.
 
-All database queries get done here, mostly because the default database is assumed to be used most often and is found here. This also allows devices with limited processing power to use the service with ease, while also requiring a server with reasonably large memory, storage and processing abilities.  
+All database queries get done here, mostly because the default database is assumed to be used most often and is found here. This also allows devices with limited processing power to use the service with ease, while also requiring a server with reasonably large memory, storage and processing abilities.
 
 \subsubsection{make.sh}
-This is a Linux bash script that set's up the backend environment. It downloads all necessary dependancies, creates the MySQL database and creates a configuration file for the server.
+This is a Linux bash script that set's up the backend environment. It downloads all necessary dependencies, creates the MySQL database and creates a configuration file for the server.
 
 \subsubsection{make\_osx.sh}
-This is a OSX bash script that set's up the backend environment. It downloads all necessary dependancies, creates the MySQL database and creates a configuration file for the server.
+This is a OSX bash script that set's up the backend environment. It downloads all necessary dependencies, creates the MySQL database and creates a configuration file for the server.
 
 \subsubsection{.my.cnf}
 This is a configuration file that is generated. It contains all the information needed to connect to the MySQL server.
 
 \subsubsection{user\_upload.php}
-As the specifications dictate that users need to be able to upload their own custom database, user\_upload.php receives such uploads and performs some basic checks on the uploaded file, before saving it to the server disk.  The file gets hashed using sha256 and this hash is used as the file name when saved, allowing users to easily specify which file they wish to use, while avoiding any possible clashes in the naming domain, should different users upload different files with the same name.  Conveniently, if two users upload identical databases, these databases won't be duplicated on the server. 
+As the specifications dictate that users need to be able to upload their own custom database, user\_upload.php receives such uploads and performs some basic checks on the uploaded file, before saving it to the server disk.  The file gets hashed using sha256 and this hash is used as the file name when saved, allowing users to easily specify which file they wish to use, while avoiding any possible clashes in the naming domain, should different users upload different files with the same name.  Conveniently, if two users upload identical databases, these databases won't be duplicated on the server.
 
 After a file has been uploaded successfully, a database is created with the same name as the local file.  This is done in create\_db.php with the function create\_database.
 
@@ -82,26 +85,26 @@ Once the file has been saved, it get's parsed. For each game, there are three di
 
 
 \subsubsection{create\_db.php}
-This script contains a function to create a database for a newly uploaded file. It has to parse the file to determine the string length to be stored in the moves field. 
+This script contains a function to create a database for a newly uploaded file. It has to parse the file to determine the string length to be stored in the moves field.
 
 \subsubsection*{create\_database}
-First the login details for a MySQL user is read from a file named .my.cnf in the root directory of the project.  This is then used to connect to the MySQL server on the local server.  Once a connection is set up, a database is created with a query, and its success is checked.  The connection is then closed.  
+First the login details for a MySQL user is read from a file named .my.cnf in the root directory of the project.  This is then used to connect to the MySQL server on the local server.  Once a connection is set up, a database is created with a query, and its success is checked.  The connection is then closed.
 
 
 \subsubsection{pgn\_parser.php}
-This file mostly defines functions used by the user\_upload.php script.  As the name suggests, it parses PGN files.  
+This file mostly defines functions used by the user\_upload.php script.  As the name suggests, it parses PGN files.
 
 
 
 \subsubsection*{sscan\_tag}
-The sscan\_tag function is used to scan tags when parsing a PGN file. Takes two string arguments:  the tag string and a string that describes the start of that line.  The second argument is used for getting the offset into the string where the tag value starts.  The function the scans the tag until the tag string closes with '"'.  This scanned value is then returned to the caller. 
+The sscan\_tag function is used to scan tags when parsing a PGN file. Takes two string arguments:  the tag string and a string that describes the start of that line.  The second argument is used for getting the offset into the string where the tag value starts.  The function the scans the tag until the tag string closes with '"'.  This scanned value is then returned to the caller.
 
 
 \subsubsection*{parse\_pgn\_file\_to\_db}
 
-The standard seven tags as required by the PGN are processed with the sscan\_tag function and have their values stored in local variables. Thereafter, the optional tags are scanned and each examined as either being an ECO tag or a black or white ELO tag.  If any of these are not present, their local variable simply gets the empty string assigned to it.  
+The standard seven tags as required by the PGN are processed with the sscan\_tag function and have their values stored in local variables. Thereafter, the optional tags are scanned and each examined as either being an ECO tag or a black or white ELO tag.  If any of these are not present, their local variable simply gets the empty string assigned to it.
 
-The moves are often listed over various lines.  First, these moves are collected into a single line string.  Then, the string is split by spaces, to produce an array.  On array indices that are multiples of three, one finds the move numbers.  On the very last non-trivial entry, one finds the score of the match.  All other entries indicate moves:  
+The moves are often listed over various lines.  First, these moves are collected into a single line string.  Then, the string is split by spaces, to produce an array.  On array indices that are multiples of three, one finds the move numbers.  On the very last non-trivial entry, one finds the score of the match.  All other entries indicate moves:
 
 \begin{align*}
 \forall i \in \{ x\in \mathbb{Z}\ :\ & x\text{ a valid index in moves array}\},\\
@@ -112,21 +115,21 @@ i & \equiv 1\pmod 3 \implies \text{moves[i] denotes a white move}
 The moves are separated into an array of white moves and an array of black moves. These arrays are then stored in an object than can be easily sent to a function that will insert the data into the MySQL database.
 
 \subsubsection*{get\_longest\_moves\_string}
-This function is almost identical to parse\_pgn\_file\_to\_db, but it serves to determine which chess game in a pgn file has the longest move string.  This is helpful when creating the database with the "flat" approach.  
+This function is almost identical to parse\_pgn\_file\_to\_db, but it serves to determine which chess game in a pgn file has the longest move string.  This is helpful when creating the database with the "flat" approach.
 
 
 \subsubsection{query.php}
-The user sends filters to be applied to the database.  These filters are sent to query.php, which then formulates the filter data into MySQL queries.  These queries made into the database and the results are sent back to the user.  
+The user sends filters to be applied to the database.  These filters are sent to query.php, which then formulates the filter data into MySQL queries.  These queries made into the database and the results are sent back to the user.
 
 
 \subsubsection{mysql\_interface.php}
-This file contains the \textit{ServerInterface} class. This class is a PHP interface built ontop of the \textit{mysqli} interface. It adds another layer of abstraction that makes interfacing with MySQL servers much easier.
+This file contains the \textit{ServerInterface} class. This class is a PHP interface built on top of the \textit{mysqli} interface. It adds another layer of abstraction that makes interfacing with MySQL servers much easier.
 \\Among others it provides functions to:
 \begin{itemize}
 	\item connect to a MySQL server
 	\item create and delete a database
 	\item create and delete a table
-	\item insert data into a tabel
+	\item insert data into a table
 	\item fetch data from the database (make queries)
 	\item send SQL commands to the server
 \end{itemize}
@@ -135,14 +138,14 @@ This file contains the \textit{ServerInterface} class. This class is a PHP inter
 
 \subsection{Front End}
 
-The front end is presented to the user using HTML5 (index.html) and suplemented with javascript (main.js) to allow for an interactive and dynamic experience.  The data returned by a query to the server is displayed using d3.js in a dedicated section.  Links to a description of the web application (about.html) and the course 
+The front end is presented to the user using HTML5 (index.html) and supplemented with JavaScript (main.js) to allow for an interactive and dynamic experience.  The data returned by a query to the server is displayed using d3.js in a dedicated section.  Links to a description of the web application (about.html) and the course
 website is provided in the footer.
 
-CSS styling is based on Bootstrap and supplemented with a custom styling sheet (css/style.css) generated by Sass (style.scss).  
+CSS styling is based on Bootstrap and supplemented with a custom styling sheet (css/style.css) generated by Sass (style.scss).
 
 
 \subsubsection{main.js}
-This file contains the javascript that will run in the clients browser. It will handle user interaction (such as constructing new filters and uploading files). It will make the necessary ajax calls to the server when the user wants to apply filters and upload their own PGN file. This file also validates all user input to ensure it is correct and safe to send to the server.
+This file contains the JavaScript that will run in the clients browser. It will handle user interaction (such as constructing new filters and uploading files). It will make the necessary ajax calls to the server when the user wants to apply filters and upload their own PGN file. This file also validates all user input to ensure it is correct and safe to send to the server.
 
 \subsubsection*{handle\_onsubmit function}
 This function runs some checks on the submitted PGN file and if it passes all the checks it uses \textit{hex\_sha256.js} to hash the file. It then sends the file and a hash of the file to the server using ajax.
@@ -156,18 +159,185 @@ This function sends the filter form data in json form to the server. (It will ha
 This function serializes and returns form data in the form of a json. (I believe it was acquired from stackoverflow.com, we should reference that)
 
 \subsubsection{visual\_response.js}
-This file contains javascript that will run in the clients browser. It will handle the visualisation of the data, that is received from the server after
+This file contains JavaScript that will run in the clients browser. It will handle the visualization of the data, that is received from the server after
 the filters have been submitted. A lot of the code is based on the Stacked Area
 Chart Example from \url{https://bl.ocks.org/mbostock/3885211}.
 
 \subsection*{draw}
-This function receives a JSON object from handle\_response or handle\_window\_resize in main.js. After this object has been processed, the data it contains is then visualised using the D3 library functions.
+This function receives a JSON object from handle\_response or handle\_window\_resize in main.js. After this object has been processed, the data it contains is then visualized using the D3 library functions.
 
 \subsubsection*{process\_JSON\_to\_D3}
 This function creates and returns a new JSON object from the received data function which will be used to create the graph.
 
+\section{Database}
+The data specified for this program is found in a file called
+millionbase-2.5.pgn, which as the name suggest has 2.5 million chess game
+summaries. Each one of these is put into the database as a row containing
+multiple different fields.  This provided two challenges:  populating the
+database in a reasonable time, and getting query results as quickly as
+possible.
+
+\subsection{Design of the database}
+
+\subsection{Populating database}
+Our parser started with a naive approach of putting each game into the
+database as soon as it was read.  This process took 50 minutes to parse the
+whole database the first time.
+
+Although populating the database is a once
+of procedure when setting up a server like this, this did pose a problem,
+as we still had to debug the parser and add further parsing features to
+allow for minor errors in notation. Every change to the parser required
+testing.  For every bug in the parsing process that leads to a corrupt
+entry in the database that is corrected, the whole large database would
+need to be re-parsed.  Therefore, we set out to try and improve parsing
+times.
+
+We found that adding the games to the database in batches of 1000 rows, instead
+of one at a time significantly improved parsing times by batching them
+together in groups of a thousand, we could populate the database in about 5
+minutes, an improvement by one order of magnitude.
+
+The question immediately arose:  What is the optimal batch size? To set out
+to answer this question, we parsed data contained in the "tags" table in
+varying batch sizes, each time measuring the time this procedure took.  A
+few sample batch sizes quickly reveals that the optimal batch size for the
+tags table was somewhere between 100 and 240.
+
+Next we systematically took measurements for batch sizes between 80 and
+240, taking steps of 10.  For each batch size, multiple parses were
+attempted and the top three results for each was noted. This is reasonable,
+as we are interested in the best optimal case, not the best average parse
+time for a batch size.  The results are shown in table \ref{table:1}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{||c c c c||}
+		\hline
+		Batch Size & Measure 1 & Measure 2 & Measure 3 \\ [0.5ex]
+		\hline\hline
+		80 & 3:48.322 & 3:48.878 & 3:49.188 \\ [0.5ex]
+		\hline
+		90 & 3:42.912 & 3:43.003 & 3:43.854 \\ [0.5ex]
+		\hline
+		100 & 3:37.482 & 3:37.677 & 3:37.780 \\ [0.5ex]
+		\hline
+		110 & 3:31.704 & 3:31.781 & 3:32.665 \\ [0.5ex]
+		\hline
+		120 & 3:30.718 & 3:30.811 & 3:31.262 \\ [0.5ex]
+		\hline
+		130 & 3:27.843 & 3:28.247 & 3:28.741 \\ [0.5ex]
+		\hline
+		140 & 3:27.545 & 3:27.666 & 3:27.700 \\ [0.5ex]
+		\hline
+		150 & 3:26.064 & 3:26.490 & 3:26.805 \\ [0.5ex]
+		\hline
+		160 & 3:26.658 & 3:27.013 & 3:27.416 \\ [0.5ex]
+		\hline
+		170 & 3:25.859 & 3:25.860 & 3:26.324 \\ [0.5ex]
+		\hline
+		180 & 3:26.652 & 3:26.952 & 3:27.427 \\ [0.5ex]
+		\hline
+		190 & 3:27.345 & 3:28.474 & 3:28.544 \\ [0.5ex]
+		\hline
+		200 & 3:27.552 & 3:27.712 & 3:27.763 \\ [0.5ex]
+		\hline
+		210 & 3:28.452 & 3:28.929 & 3:29.221 \\ [0.5ex]
+		\hline
+		220 & 3:29.454 & 3:29.979 & 3:30.700 \\ [0.5ex]
+		\hline
+		230 & 3:30.577 & 3:30.894 & 3:31.414 \\ [0.5ex]
+		\hline
+		240 & 3:30.406 & 3:31.958 & 3:32.874 \\ [0.5ex]
+		\hline
+	\end{tabular}
+	\caption{Time taken in seconds to parse various batch sizes to MySQL}
+	\label{table:1}
+\end{table}
+
+This data was then plotted in python as a scatter plot.  The interp1d module
+from the scipy library was used to find an interpolation of the data.  The
+plotted data is shown in figure \ref{figure:1}
+
+\begin{figure}[h]
+	\includegraphics[width=8cm]{graph_batch_interpolation}
+	\caption{Scatter plot of time taken to parse various batch sizes to
+	MySQL, with the interpolated line of best fit drawn in.}
+	\label{figure:1}
+\end{figure}
+
+From the graph, it seems an optimal batch size is found around when parsing
+about 160 rows in a single query.
+
+The increase in the efficiency by using batches instead of parsing single
+entries lies in the over head of PHP passing the query to MySQL.  Each
+query comes with a little delay, when the text of the query is sent to the
+database and again for the results that are sent back.  When entering data
+one query at a time, this delay accounts for more than half of time spent
+by the parser.  When batching, say, 100 together, this overhead time stays
+the same, but is divided between 100 rows.  The time taken by mysql to
+process these 100 rows might increase marginally, but this is offset by the
+massive reduction in overhead.
+
+The overall time taken up by this overhead is inversely proportional to
+batch size.  As batch size grow, the proportion of time spent on this overhead tends to
+0. However, this is an asymptote and will never be reached for any real
+numbered batch size.  As batch size grows further, the additional time
+saved in overhead diminishes, but the time taken by MySQL to process the
+query grows.  Scanning of the pgn file and placing data into the database
+happens synchronously, so while mysql processes the insertion, the parser is
+idling  At some point, the time taken by the parser to wait for MySQL to
+finish its insertion query starts to become significant and offsets the
+gains made by reducing overhead.  Therefore, at some point, the total time
+taken starts increasing again.  For our tags table, this point is reached
+at about 160 rows per insertion.
+
+\subsection{Optimization of Queries}
+It made sense to us to try and optimize our query searches.  We did this by
+creating an index on each of out tables, based on the queries we knew we
+would be making.
+
+We were interested in the exact impact this might make on the searches, so
+we created our database without an index.  On mysql-workbench, we then got
+a graphic explanation of how the query would be executed. We then performed
+the same query on the the database, with the index created.
+The average time taken to query with an index is about 0.45 seconds, while
+without an index, it took about 1.1 seconds.
+
+\begin{figure}[h]
+	\includegraphics[width=8cm]{Query_eco_code_no_index}
+	\caption{Execution of query without an index table.}
+	\label{figure:2}
+\end{figure}
+
+\begin{figure}[h]
+	\includegraphics[width=8cm]{Query_eco_code_w_index}
+	\caption{Execution of query with an index table}
+	\label{figure:3}
+\end{figure}
+
+
+
+The execution graphic of the database without and index is shown in figure
+\ref{figure:2}, while the graphic of the same query is shown in figure
+\ref{figure:3}. The query performed looked as follows:
+
+\begin{lstlisting}[language=sql, frame=single]
+SELECT date, CONCAT(eco\_alpha, eco\_numero) as eco,
+count(*) AS popularity
+FROM tags
+WHERE date >= 1900 AND date <= 2000 AND eco\_numero >= 10
+AND eco\_numero <= 30 AND eco\_alpha = 'A'
+group by eco, date
+ORDER BY date, popularity DESC;
+\end{lstlisting}
+
+As expected, the query without an index table had to do a full table scan,
+while the query on the indexed table had a significant reduction in the
+number of rows that had to be scanned.
+
 \section{Testing}
-\subsection{Javascript Testing}
-For testing the javascript functions and functionality we used the built in QUnit library to perform JUnit testing.
+\subsection{JavaScript Testing}
+For testing the JavaScript functions and functionality we used the built in QUnit library to perform JUnit testing.
 
 \end{document}
