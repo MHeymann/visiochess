@@ -302,9 +302,8 @@ function get_file_from_hash(hash) {
 }
 
 function handle_filter_clear(e) {
-	e.preventDefault();
-	console.log("clearing filters");
-	//TODO: clear filter fields
+	$('#filter_form input[type=number]').val('');
+	$('#filter_form select').prop('selectedIndex', 0);
 }
 
 /**
