@@ -80,18 +80,7 @@ function create_database($db_name, $target_file) {
 	 * What follows was meant for the heat map. May still be used for our
 	 * additional work
 	 */
-	if ($moves_approach == "flat") {
-		/* TODO: here the Moves table should be created, based on the longest moves
-		 * sequence in the in the database
-		 */
-
-		//$max_move_length = get_longest_moves_string($target_file);
-		// echo "<p>The length of the longest move is: ". $max_move_length. "</p>\n";
-	} else {
-		/* TODO: here the Moves table should be created, with a foreign key to
-		 * the Tags table's private key.
-		 */
-
+	if ($moves_approach == "star") {
 		 /* create a table with the required fields */
 	 	$db->create_table(
 	 		'moves',
@@ -118,8 +107,14 @@ function create_database($db_name, $target_file) {
 				'black_move'
 	 		)
 		);
+	} else {
+		/* TODO: Remove comment once it has been tested
+		 * I am putting this here for now but we should just make sure
+		 * that this does not break anything on the client's side.
+		 */
+		echo "Moves table will not be added" .
+		"as a supported scheme was not specified";
 	}
-
 
 	$db->disconnect();
 }

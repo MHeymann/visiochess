@@ -4,10 +4,11 @@ require_once "eco_category.php";
 require_once "validate.php";
 require_once "utils.php";
 
+/* still needed for testing */
 //error_reporting(E_ALL);
 //ini_set('display_errors', 1);
 
-// necessary for testing, not sure if it will be needed in production
+// TODO: remove this and check if everything works on hosted server
 header('Access-Control-Allow-Origin: *');
 $filters = array();
 foreach($_POST as $filter_field => $value) {
@@ -90,5 +91,4 @@ if(isset($error) && $error) {
 	$json['pop'] = $top_ecos;
 }
 echo json_encode($json);
-
 ?>

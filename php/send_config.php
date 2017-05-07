@@ -1,5 +1,5 @@
 <?php
-// necessary for testing, not sure if it will be needed in production
+// TODO: remove this and check if everything works on hosted server
 header('Access-Control-Allow-Origin: *');
 
 $settings = parse_ini_file(__DIR__."/../.my.cnf", true);

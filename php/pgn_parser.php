@@ -5,7 +5,7 @@ require_once("eco_category.php");
 require_once("utils.php");
 
 
-/*
+/**
  * Scan a tag as presented in PGN notation and return it's value.
  * @param $read_string:		The string containing the tag to be read.
  * @param $start_of_string: The start of the line being scanned,
@@ -28,12 +28,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 }
 
 /**
- * Validate that a given line starts with the specified characters.
- * TODO or not TODO?: This can be made more robust by not only checking for
- * "contains" but also that the string the line should start with actually
- * occurs at the start of the line. Currently, a line such as "your mother"
- * and a start value of "our m" would evaluate as valid. However, this
- * would need proper further testing.
+ * TODO: test the addition to the if statment thoroughly
  *
  * @param $line The string that is being evaluated.
  * @param $should_start The characters that the line should start with.
@@ -42,7 +37,7 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
  * sequence, false otherwise.
  */
 function evaluate_line($line, $should_start) {
-	if (contains($line, $should_start)) {
+	if (contains($line, $should_start) && strpos($line, $should_start) == 0) {
 		return true;
 	} else {
 		echo "<p>vvvv---------vvvv</p>\n";
@@ -71,7 +66,7 @@ function parse_white_space($db_file, $dud_line) {
 	return $dud_line;
 }
 
-/*
+/**
  * This function parses a pgn file and inserts its entries into the
  * database one by one.  It does some loose syntax validation of the pgn
  * file provided; if a serious error is found, the game is not parsed into
@@ -166,7 +161,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		$date_line = trim(fgets($db_file));
 		$date_line = parse_white_space($db_file, $date_line);
 		/*
-		 * DONE: harvest the year out of the date string, as this is the
+		 * Harvest the year out of the date string, as this is the
 		 * only value of interest, in addition to many games in the default
 		 * database being uncomplete beyond the year.
 		 */
@@ -338,7 +333,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 				$num_moves = max(count($moves['white']), count($moves['black']));
 				if(!isset($moves['black'][$num_moves-1])) {
-					// to handle the case that white wins
+					/* to handle the case where white wins */
 					$moves['black'][$num_moves-1] = "";
 				}
 
@@ -365,21 +360,6 @@ function parse_pgn_file_to_db($target_file, $db_name,
 					$global_moves_count += count($moves_batch);
 					$moves_batch = array();
 				}
-
-				// $moves_batch[] = $sql_moves;
-				/*
-				 * This simply constructs a string to display,
-				 * thus is not needed anymore
-				 */
-				// $num_moves = max(count($moves['white']),
-				// 	count($moves['black']));
-				//
-				// for ($i = 0; $i < $num_moves; $i++) {
-				// 	$move = ($i+1) . ": white: " . $moves['white'][$i];
-				// 	if(isset($moves['black'][$i])) {
-				// 		$move .= ", black: " . $moves['black'][$i] . "<br>";
-				// 	}
-				// }
 			}
 		} else {
 			echo "<p>vvvvvvvvv---Chess pgn notation error---vvvvvvvvvv<p>\n";
@@ -436,8 +416,10 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 }
 
-/* Returns the longest string of chess moves, which will be used to
+/**
+ * Returns the longest string of chess moves, which will be used to
  * determine the width of the 'moves' column.
+ *
  * @param $read_string:		The string containing the tag to be read.
  * @param $start_of_string: The start of the line being scanned.
 */
@@ -516,17 +498,6 @@ function get_longest_moves_string($target_file) {
 
 		/*
 		 * Parse moves into array structure.
-		 * DONE: The end of line of the entire moves array still has an
-		 * extra two spaces after processing.  While this does not corrupt
-		 * the data,
-		 * it does make the count of the moves array misleading.  This is
-		 * complicated by the fact, that the number of non-trivial entries
-		 * is a multiple of 3 when black wins, and one less than a multiple
-		 * of three when white wins.  Note, that, regardless of all of
-		 * this, the move count numbers follow a distinctive pattern:  move
-		 * i has its label i in array position (i - 1) * 3 in the $moves
-		 * array. It may therefore be necessary to make some adjustments
-		 * here, once the database structure has been finalized.
 		 */
 		$moves = "";
 		$dud_line = trim(fgets($db_file));
