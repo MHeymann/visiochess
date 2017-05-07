@@ -3,8 +3,8 @@ require_once 'pgn_parser.php';
 
 use PHPUnit\Framework\TestCase;
 
-class Test extends TestCase {   
-        
+class Test extends TestCase {
+
 	// all functions with the "test_" prefix are automatically run
 	public function test_sscan_tag() {
 		$this->sscan_tag_trailing_space();
@@ -19,12 +19,6 @@ class Test extends TestCase {
 		$output = sscan_tag($input);
 		$correct_output = "Spring";
 
-		/*
-		 * yes this test does fail, the sscan_tag function has a
-		 * small bug, this is why testing is so important.
-		 * I am going to leave the testers to figure out what the bug is
-		 * and release a fix patch for it.
-		 */
 		$this->assertEquals($correct_output, $output);
 	}
 

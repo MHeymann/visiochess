@@ -8,7 +8,7 @@ require_once "define.php";
 //ini_set('display_errors',1); // for the development PC only
 //error_reporting(E_ALL); // ALWAYS
 
-// necessary for testing, not sure if it will be needed in production
+// TODO: remove this and check if everything works on hosted server
 header('Access-Control-Allow-Origin: *');
 
 $target_dir = "/data/";

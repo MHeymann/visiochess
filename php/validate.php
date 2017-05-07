@@ -2,11 +2,6 @@
 /* Used to validate the date */
 date_default_timezone_set('Africa/Johannesburg');
 
-/*
- * If a value is not valid, a error object is returned
- * If a value is valid, null is returned
- */
-
 /**
  * Check if the filters submitted for a query is of valid datatypes and
  * ranges.
@@ -203,6 +198,7 @@ function validate_elo_low($elo, $type, $response=null) {
 
 	return $response;
 }
+
 /**
  * Check whether an elo upper range is valid  for a given player colour.
  *
@@ -211,7 +207,6 @@ function validate_elo_low($elo, $type, $response=null) {
  * @param $response The response structure on which valid filters are
  * collected and on which errors are indicated when picked up.
  */
-
 function validate_elo_high($elo, $type, $response=null) {
 	$elo_high_ok = is_numeric($elo) &&
 		((int) $elo) >= 0 &&
@@ -237,16 +232,7 @@ function validate_elo_high($elo, $type, $response=null) {
  * collected and on which errors are indicated when picked up.
  */
 function validate_eco($filters, $response=null) {
-	/* This is the only case that needs validation */
 	if($filters['eco-filter-type'] == 'code') {
-		/*
-		 * Category does not need to be validated as the user
-		 * may only select one of a few predetermined options
-		 *
-		 * While this is true, the error messages logged does
-		 * serve as good sanity checks, and aids in debugging.
-		 * --> murray
-		 */
 		if($filters['eco-class']) {
 			$response = add_filter('eco-class', $response);
 			$response = validate_eco_class($filters['eco-class'], $response);
@@ -292,7 +278,7 @@ function validate_eco_cat($eco_category, $response=null) {
 }
 
 /**
- * validate the correctness of an eco class specification.
+ * Validate the correctness of an eco class specification.
  *
  * @param $eco_category The category field that is being vaidated.
  * @param $response The response structure on which valid filters are

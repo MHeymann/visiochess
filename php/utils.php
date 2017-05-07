@@ -1,5 +1,4 @@
 <?php
-
 /**
  * A simple function to check whether a certain string is contained in some
  * token.
@@ -47,7 +46,16 @@ function trim_chars($string, $num_chars) {
 	return substr($string, 0, $stop);
 }
 
-
+/**
+ * Proces eco data into a data structure that the visualization
+ * program can easily use to render the results.
+ *
+ * @param $result The result that is received from a query to the database.
+ * @param &$num_ecos The number of eco groups the data is divided into.
+ * @param &$top_ecos The names of the most popular eco groups.
+ * @param &$json_data The data that will be sent to the server,
+ * this is where we parse the eco data into.
+ */
 function process_elo_data($result, &$num_ecos, &$top_ecos, &$json_data) {
 	/* create json that we will send to client for visualization */
 	/* split into years first */
@@ -132,6 +140,18 @@ function process_elo_data($result, &$num_ecos, &$top_ecos, &$json_data) {
 		}
 	}
 }
+
+/**
+ * Proces year data into a data structure that the visualization
+ * program can easily use to render the results. This is all sorted
+ * and grouped by year.
+ *
+ * @param $result The result that is received from a query to the database.
+ * @param &$num_ecos The number of eco groups the data is divided into.
+ * @param &$top_ecos The names of the most popular eco groups.
+ * @param &$json_data The data that will be sent to the server,
+ * this is where we parse the eco data into.
+ */
 function process_year_data($result, &$num_ecos, &$top_ecos, &$json_data) {
 	/* create json that we will send to client for visualization */
 	/* split into years first */
@@ -194,6 +214,13 @@ function process_year_data($result, &$num_ecos, &$top_ecos, &$json_data) {
 	}
 }
 
+/**
+ * Constructs a query data structure that is sent to the server.
+ *
+ * @param $filter_on The fields that we want to query on.
+ * @param $filters The actual values we want to filter (query) on.
+ * @param &$query Where the constructed query is stored.
+ */
 function set_query_where_fields($filter_on, $filters, &$query){
 	foreach ($filter_on as $field) {
 		if(contains($field, 'year')) {
@@ -259,6 +286,4 @@ function set_query_where_fields($filter_on, $filters, &$query){
 		}
 	}
 }
-
-
 ?>
