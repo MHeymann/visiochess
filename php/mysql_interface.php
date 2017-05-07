@@ -404,7 +404,7 @@ class MySqlPhpInterface
 	}
 
 	/**
-	 * Insert data into a specifict table, in a database on the server.
+	 * Insert data into a specific table, in a database on the server.
 	 *
 	 * @param $table_name The name of the
 	 * table you wish to insert the data into.
@@ -636,7 +636,7 @@ class MySqlPhpInterface
 	 *
 	 * @param $table_name The name of the
 	 * table you wish to insert the data into.
-	 * @param $columns An array containing the the names of
+	 * @param $columns An array containing the names of
 	 * the columns you would like to receive from the server.
 	 * @param $conditions This defines the conditions of 'filters'
 	 * of the data you want to receive, this should be an object
@@ -777,7 +777,7 @@ class MySqlPhpInterface
 	 * This function sends a sql statement directly to the server,
 	 * this should not be used if the user is allowed to specify
 	 * any of the data passed to this function. This function is
-	 * only here incase the users needs are not already met with
+	 * only here in case the users needs are not already met with
 	 * existing functionality of this interface.
 	 *
 	 * @param $sql A string of the sql statement to be sent to the server.
