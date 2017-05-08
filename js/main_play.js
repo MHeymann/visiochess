@@ -8,7 +8,7 @@ var pgnHashes = {};
 var pgnOptions = {};
 var pgnCurrent = "";
 var board;
-var game;
+var game = null;
 var statusEl;
 var pgnEl;
 
@@ -141,7 +141,7 @@ function submit_file(file, send_url) {
 	form_data.append("user_db_uploader", file);
 
 	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
+		url: send_url,
 		type: 'post',
 		data: form_data,
 		dataType: 'html',
@@ -184,20 +184,18 @@ function handle_filter_submit(event) {
 	send_url = $form.attr("action");
 	console.log("action url: ", send_url);
 	var filters = getFormData($form);
+	var filters = {};
 
 	filters['database'] = db_val;
 	if (pgnCurrent != null) {
-		filters['current-pgn'] = pgnCurrent;
+		filters['pgn_moves'] = pgnCurrent;
 	} else {
-		filters['current-pgn'] = "";
+		filters['pgn_moves'] = "";
 	}
+	//filters['pgn_moves'] = "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5 4. d4 Nf6 5. Nf3 c6 6. Bd2 Qb6";
+	//filters['pgn_moves'] = "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6";
 
-	// TODO: vaidation: ensure low year less than high year.
-
-	console.log(
-		'Sending these filters:\n',
-		filters
-	);
+	//filters['pgn_moves'] = "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5";
 
 	/* check for presence of db syncronously, reloading if necessary */
 	if (db_val != "default_chess_db") {
@@ -206,11 +204,14 @@ function handle_filter_submit(event) {
 	console.log(
 		'Sending these filters:\n',
 		JSON.stringify(filters)
+		, "to",
+		send_url
 	);
 	/* Commented out because script doesn't exist yet for server to
 	 * respond.
+	*/
 	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
+		url: send_url,
 		type: 'post',
 		data: filters,
 		dataType: 'json',
@@ -219,7 +220,6 @@ function handle_filter_submit(event) {
 			console.log(errorMessage);
 		}
 	});
-	*/
 }
 
 /**
@@ -278,11 +278,13 @@ function ensure_database_exists_on_server(hash) {
  *			error information or the data to graph.
  */
 function handle_filter_response(response) {
+	//console.log("received response: " + response);
+//	$("#temp_results").append("<p>" + response + "</p>");
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
 	} else {
 		//TODO: draw histo
-		$("#temp_results").append("<p>" + JSON.stringify(response) + "</p>");
+		$("#temp_results").append("<p>" + JSON.stringify(response.data) + "</p>");
 	}
 }
 
@@ -357,7 +359,7 @@ function onDragStart(source, piece, position, orientation) {
 };
 
 
-// update the board position after the piece snap 
+// update the board position after the piece snap
 // for castling, en passant, pawn promotion
 function onSnapEnd() {
 	board.position(game.fen());

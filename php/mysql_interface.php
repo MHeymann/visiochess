@@ -667,7 +667,7 @@ class MySqlPhpInterface
 
 		/*
 		 * If no conditions are given, assume the user
-		 * wants all the relavant data, thus we insert
+		 * wants all the relevant data, thus we insert
 		 * a condition that will return all data
 		 */
 		if(!$conditions) {
