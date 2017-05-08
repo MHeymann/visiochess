@@ -38,7 +38,7 @@ function create_database($db_name, $target_file) {
 	$db->create_table(
 		'tags',
 		array(
-			'gameID' => 'INT(10) PRIMARY KEY AUTO_INCREMENT',
+			'gameID' => 'INT(10) PRIMARY KEY',
 			'event' => 'VARCHAR(50)',
 			'site' => 'VARCHAR(50)',
 			'date' => 'INT(4)',
@@ -76,19 +76,40 @@ function create_database($db_name, $target_file) {
 			'blackElo'
 		));
 
+	$longest_moves = get_longest_moves_string($target_file);
 	/*
 	 * What follows was meant for the heat map. May still be used for our
 	 * additional work
 	 */
 	if ($moves_approach == "star") {
 		 /* create a table with the required fields */
-	 	$db->create_table(
-	 		'moves',
+
+		$db->create_table(
+			'moves_pgn',
+			array(
+				'gameID' => "INT(10) REFERENCES $db_name.tags(gameID)",
+				'pgn_string' => 'VARCHAR(' . $longest_moves . ')'
+			),
+			$replace=true
+		);
+		$db->create_index(
+	 		'moves_pgn_index',
+	 		'moves_pgn',
 	 		array(
-	 			'gameID' => "INT(10) REFERENCES $db_name.tags(gameID)",
-	 			'move_index' => 'INT(3)',
-	 			'white_move' => 'VARCHAR(10)', // we can probably make this less
-				'black_move' => 'VARCHAR(10)' // we can probably make this less
+				'pgn_string'
+	 		)
+		);
+
+	 	$db->create_table(
+	 		'moves_six',
+	 		array(
+				'gameID' => "INT(10) REFERENCES $db_name.tags(gameID)",
+	 			'move_1' => 'VARCHAR(10)',
+	 			'move_2' => 'VARCHAR(10)',
+	 			'move_3' => 'VARCHAR(10)',
+	 			'move_4' => 'VARCHAR(10)',
+	 			'move_5' => 'VARCHAR(10)',
+	 			'move_6' => 'VARCHAR(10)'
 	 		),
 	 		$replace=true
 	 	);
@@ -98,13 +119,15 @@ function create_database($db_name, $target_file) {
 	 	 * efficiently
 	 	 */
 	 	$db->create_index(
-	 		'moves_index',
-	 		'moves',
+	 		'moves_six_index',
+	 		'moves_six',
 	 		array(
-	 			'gameID',
-	 			'move_index',
-				'white_move',
-				'black_move'
+	 			'move_1',
+	 			'move_2',
+	 			'move_3',
+	 			'move_4',
+	 			'move_5',
+	 			'move_6'
 	 		)
 		);
 	} else {

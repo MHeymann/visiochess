@@ -64,5 +64,5 @@ if ($uploadOk == false) {
  */
 create_database($hash, $target_file);
 
-parse_pgn_file_to_db($target_file, $hash, 200,false);
+parse_pgn_file_to_db($target_file, $hash, 160, 500, 160, false);
 ?>

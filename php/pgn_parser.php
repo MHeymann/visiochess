@@ -84,17 +84,18 @@ function parse_white_space($db_file, $dud_line) {
  * information than normally.  False by default.
  */
 function parse_pgn_file_to_db($target_file, $db_name,
-   	$batch_size=200, $verbose=false) {
+   	$data_batch_size=160, $first_moves_batch_size=500, $flat_moves_batch_size=160, $verbose=false) {
 
 	if ($verbose || true) {
 		echo "<p>File being parsed: " . $target_file . "</p>\n";
 		echo "<p>Database to be parsed to: " . $db_name . "</p>\n";
 		echo "<p>Batch size being parsed to db in single query: " .
-			$batch_size . "</p>\n";
+			$data_batch_size . "</p>\n";
 	}
 
 	$global_batch_count = 0;
-	$global_moves_count = 0;
+	$global_first_moves_count = 0;
+	$global_flat_moves_count = 0;
 
 	$settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 	$servername = $settings['client']['mysql_server'];
@@ -102,6 +103,8 @@ function parse_pgn_file_to_db($target_file, $db_name,
 	$password = $settings['client']['password'];
 	$moves_approach = $settings['client']['moves_table'];
 	$data_batch = array();
+	$first_moves_batch = array();
+	$flat_moves_batch = array();
 
 	$db = new MySqlPhpInterface(
 		$server=$servername,
@@ -190,14 +193,15 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		$entry_error = $entry_error || !evaluate_line($white_line, '[White "');
 		$white_name = sscan_tag($white_line, '[White "');
 		/* remove the "(wh)" */
-		$white_name = substr($white_name, 0, count($white_name) - 5);
+		// I found entries where these aren't present.
+		//$white_name = substr($white_name, 0, count($white_name) - 5);
 
 		$black_line = trim(fgets($db_file));
 		$black_line = parse_white_space($db_file, $black_line);
 		$entry_error = $entry_error || !evaluate_line($black_line, '[Black "');
 		$black_name = sscan_tag($black_line, '[Black "');
 		/* remove the "(bl)" */
-		$black_name = substr($black_name, 0, count($black_name) - 5);
+		//$black_name = substr($black_name, 0, count($black_name) - 5);
 
 		$result_line = trim(fgets($db_file));
 		$result_line = parse_white_space($db_file, $result_line);
@@ -234,7 +238,9 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 		if (!$entry_error) {
 			/* add tag details to database */
+			$gameID = count($data_batch) + $global_batch_count*$data_batch_size;
 			$data_batch[] = [
+				'gameID' => $gameID,
 				'event' => $event_name,
 				'site' => $site_name,
 				'date' => (int) $event_date,
@@ -263,30 +269,31 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			echo "<p>ECO tag: " . $ECO_alpha . $ECO_numero . "</p>\n";
 			echo "<p>^^^^^^^^^---Chess pgn notation error---^^^^^^^^^^<p>\n";
 		}
-		if (count($data_batch) >= $batch_size) {
+
+
+
+		if (count($data_batch) >= $data_batch_size) {
 			$db->insert_multiple(
 				'tags',
 				$data_batch
 			);
 			$data_batch = array();
 			$global_batch_count += 1;
-			if ($verbose) {
-				echo "<p>entered batch into db, total_count " . $global_batch_count
-				   	* $batch_size . "</p>\n";
-			}
 
-			/* put this print here so that there is not too much spam */
 			if ($verbose) {
-				echo "<p>entered moves batch into db, total_count " .
-				$global_moves_count . "</p>\n";
+				echo "<p>entered batch into db, total game count: " . $global_batch_count
+					* $data_batch_size . "</p>\n";
+				echo "<p>total move count: " .
+					$global_first_moves_count . "</p>\n";
 			}
 		}
+
 
 		/* Parse moves into array structure. */
 		$moves = "";
 		$dud_line = $optional_line;
 		$use_moves = true;
-		if (!contains($dud_line, "1.")) {
+		if (!contains($dud_line, "1.") || !contains($dud_line, "2.")) {
 			echo "<p>first moves are weird</p>\n";
 			echo "<p>" . $dud_line . "</p>\n";
 
@@ -299,7 +306,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 			$dud_line = parse_white_space($db_file, $dud_line);
 		}
 
-		if($use_moves) {
+		if($use_moves && !$entry_error) {
 			/* turn into one huge array */
 			$moves_messy = explode(" ", trim($moves));
 			/* removes score from moves */
@@ -331,50 +338,77 @@ function parse_pgn_file_to_db($target_file, $db_name,
 					}
 				}
 
-				$num_moves = max(count($moves['white']), count($moves['black']));
-				if(!isset($moves['black'][$num_moves-1])) {
-					/* to handle the case where white wins */
-					$moves['black'][$num_moves-1] = "";
+			//	$num_moves = max(count($moves['white']), count($moves['black']));
+				for ($i = 0; $i < 6; $i++) {
+					/* to handle the case where there are fewer than 6 moves */
+					if(!isset($moves['black'][$i])) {
+						$moves['black'][$i] = "";
+					}
+					if(!isset($moves['white'][$i])) {
+						$moves['white'][$i] = "";
+					}
 				}
 
-				$gameID = count($data_batch) + $global_batch_count*$batch_size;
-				for ($i = 0; $i < $num_moves; $i++) {
-					$moves_batch[] = [
-						'gameID' => $gameID,
-						'move_index' => $i + 1, // index for moves starts at 1
-						'white_move' => $moves['white'][$i],
-						'black_move' => $moves['black'][$i]
-					];
-				}
+				/* calculate and subtract one, as data_batch has since been
+				 * increased by one */
+				$gameID = count($data_batch) + $global_batch_count*$data_batch_size - 1;
+				$first_moves_batch[] = [
+					'gameID' => $gameID,
+					'move_1' => $moves['white'][0] . " " . $moves['black'][0],
+					'move_2' => $moves['white'][1] . " " . $moves['black'][1],
+					'move_3' => $moves['white'][2] . " " . $moves['black'][2],
+					'move_4' => $moves['white'][3] . " " . $moves['black'][3],
+					'move_5' => $moves['white'][4] . " " . $moves['black'][4],
+					'move_6' => $moves['white'][5] . " " . $moves['black'][5]
+				];
+				$flat_moves_batch[] = [
+					'gameID' => $gameID,
+					'pgn_string' => implode(" ", $moves_messy)
+				];
+
+
 
 				/*
 				 * a move insert is approximately half the size of a tags
 				 * insert, thus insert moves in 2x bigger batches (make sense?)
 				 */
-				if (count($moves_batch) >= $batch_size * 2) {
+				if (count($first_moves_batch) >= $first_moves_batch_size) {
 					$db->insert_multiple(
-						'moves',
-						$moves_batch
+						'moves_six',
+						$first_moves_batch
 					);
 
-					$global_moves_count += count($moves_batch);
-					$moves_batch = array();
+					$global_first_moves_count += count($first_moves_batch);
+					$first_moves_batch = array();
+				}
+				/*
+				 */
+				if (count($flat_moves_batch) >= $flat_moves_batch_size) {
+					$db->insert_multiple(
+						'moves_pgn',
+						$flat_moves_batch
+					);
+
+					$global_flat_moves_count += count($flat_moves_batch);
+					$flat_moves_batch = array();
 				}
 			}
 		} else {
-			echo "<p>vvvvvvvvv---Chess pgn notation error---vvvvvvvvvv<p>\n";
-			echo "<p>Error while parsing chess game, game will be omitted.</p>\n";
-			echo "<p>The data recorded for this game looks as follows:</p>\n";
-			echo "<p>Event name: " . $event_name . "</p>\n";
-			echo "<p>Event date: " . $event_date . "</p>\n";
-			echo "<p>White player: " . $white_name . "</p>\n";
-			echo "<p>Black player: " . $black_name . "</p>\n";
-			echo "<p>White ELO: " . $white_elo . "</p>\n";
-			echo "<p>Black ELO: " . $black_elo . "</p>\n";
-			echo "<p>Result: " . $game_result . "</p>\n";
-			echo "<p>ECO tag: " . $ECO_alpha . $ECO_numero . "</p>\n";
-			echo "<p> Moves: $moves </p>\n";
-			echo "<p>^^^^^^^^^---Chess pgn notation error---^^^^^^^^^^<p>\n";
+			if (!$use_moves) {
+				echo "<p>vvvvvvvvv---Chess pgn moves notation error---vvvvvvvvvv<p>\n";
+				echo "<p>Error while parsing chess game, game's moves will be omitted.</p>\n";
+				echo "<p>The data recorded for this game looks as follows:</p>\n";
+				echo "<p>Event name: " . $event_name . "</p>\n";
+				echo "<p>Event date: " . $event_date . "</p>\n";
+				echo "<p>White player: " . $white_name . "</p>\n";
+				echo "<p>Black player: " . $black_name . "</p>\n";
+				echo "<p>White ELO: " . $white_elo . "</p>\n";
+				echo "<p>Black ELO: " . $black_elo . "</p>\n";
+				echo "<p>Result: " . $game_result . "</p>\n";
+				echo "<p>ECO tag: " . $ECO_alpha . $ECO_numero . "</p>\n";
+				echo "<p> Moves: $moves </p>\n";
+				echo "<p>^^^^^^^^^---Chess pgn moves notation error---^^^^^^^^^^<p>\n";
+			}
 		}
 
 		$event_line = $dud_line;
@@ -390,25 +424,39 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 		if ($verbose) {
 			echo "<p>inserted last batch into db, total now " .
-				(count($data_batch) + $global_batch_count * $batch_size) .
+				(count($data_batch) + $global_batch_count * $data_batch_size) .
 			   	"</p>\n";
 		}
 
 		$data_batch = array();
 	}
 
-	if(count($moves_batch) > 0) {
+	if(count($first_moves_batch) > 0) {
 		$db->insert_multiple(
 			'moves',
-			$moves_batch
+			$first_moves_batch
 		);
 
 		if ($verbose) {
 			echo "<p>entered last moves batch into db, total now " .
-			(count($moves_batch) + $global_moves_count) . "</p>\n";
+			(count($first_moves_batch) + $global_first_moves_count) . "</p>\n";
 		}
 
-		$moves_batch = array();
+		$first_moves_batch = array();
+	}
+
+	if(count($flat_moves_batch) > 0) {
+		$db->insert_multiple(
+			'moves',
+			$flat_moves_batch
+		);
+
+		if ($verbose) {
+			echo "<p>entered last moves batch into db, total now " .
+			(count($flat_moves_batch) + $global_flat_moves_count) . "</p>\n";
+		}
+
+		$flat_moves_batch = array();
 	}
 
 	$db->disconnect();
