@@ -387,7 +387,23 @@ database in a reasonable time, and getting query results as quickly as
 possible.
 
 \subsection{Design of the database}
-TODO
+The Database is comprised of four tables, shown as an entity relationship
+(ER) model in figure \ref{figure:4}. 
+
+\begin{figure}[h]
+	\includegraphics[width=10cm]{EER}
+	\caption{Entity Relationship model of the database used to store the
+	chess move and tag data.}
+	\label{figure:4}
+\end{figure}
+
+The first and most important table is the tags table.  It stores the seven
+tags required in pgn files (event name, site name, date, 
+), as well as the optional information that we had
+to include for this project.  The primary key is a field called gameID,
+which is simply incremented with every entry added to the database.  For a
+game to be included, the seven 
+
 
 \subsection{Populating database}
 Our parser started with a naive approach of putting each game into the
