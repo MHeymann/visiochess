@@ -1,7 +1,4 @@
 <?php
-// TODO: remove this and check if everything works on hosted server
-header('Access-Control-Allow-Origin: *');
-
 /**
  * Check if the database that the user wants to do queries
  * on is still stored on the server.

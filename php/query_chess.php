@@ -7,9 +7,6 @@ require_once "utils.php";
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// TODO: remove this and check if everything works on hosted server
-header('Access-Control-Allow-Origin: *');
-
 $filters = array();
 foreach($_POST as $filter_field => $value) {
     $filters[$filter_field] = trim($value);

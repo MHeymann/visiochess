@@ -8,9 +8,6 @@ require_once "define.php";
 //ini_set('display_errors',1); // for the development PC only
 //error_reporting(E_ALL); // ALWAYS
 
-// TODO: remove this and check if everything works on hosted server
-header('Access-Control-Allow-Origin: *');
-
 $target_dir = "/data/";
 
 /* receive the file and run some tests */
@@ -26,7 +23,7 @@ $uploadOk = true;
 
 /* Check if file already exists */
 if (file_exists(SITE_ROOT.$target_file)) {
-    echo "<p>file exists.\n</p>";
+//    echo "<p>file exists.\n</p>";
   //  $uploadOk = false;
 }
 

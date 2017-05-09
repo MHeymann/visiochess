@@ -28,8 +28,6 @@ function sscan_tag($read_string, $start_of_string = "[Event \"") {
 }
 
 /**
- * TODO: test the addition to the if statement thoroughly
- *
  * @param $line The string that is being evaluated.
  * @param $should_start The characters that the line should start with.
  *
@@ -86,7 +84,7 @@ function parse_white_space($db_file, $dud_line) {
 function parse_pgn_file_to_db($target_file, $db_name,
    	$data_batch_size=160, $first_moves_batch_size=500, $flat_moves_batch_size=160, $verbose=false) {
 
-	if ($verbose || true) {
+	if ($verbose) {
 		echo "<p>File being parsed: " . $target_file . "</p>\n";
 		echo "<p>Database to be parsed to: " . $db_name . "</p>\n";
 		echo "<p>Batch size being parsed to db in single query: " .
@@ -459,9 +457,13 @@ function parse_pgn_file_to_db($target_file, $db_name,
 		$flat_moves_batch = array();
 	}
 
-	echo "inserting total first move counts";
+	if ($verbose) {
+		echo "inserting total first move counts";
+	}
 	$db->sql("INSERT INTO first_move(move, total) SELECT m.move_1, COUNT(*) FROM moves_six m GROUP BY m.move_1;");
-	echo "inserted total first move counts";
+	if ($verbose) {
+		echo "inserted total first move counts";
+	}
 
 	$db->disconnect();
 	fclose($db_file);
