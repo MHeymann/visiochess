@@ -25,13 +25,15 @@ Murray Heymann\\ 15988694 \and Jolandi Lombard\\ 16994914 \and Lisa van Staden\\
 \setcounter{page}{1} % Set the page counter to 1
 
 \section{Specifications}
-The purpose of this project is to develop a web application to provide the user with a detailed analysis
+The purpose of this project is to develop a web application to provide
+the user with a detailed analysis
 of the popularity of chess openings over the years.
 
-
 \subsection{General}
-The user can view the default database or upload their own data, provided it is in the correct file
-format, PGN, and contains the needed information.The web application is made fully responsive by using Bootstrap.
+The user can view the default database or upload their own data, provided
+it is in the correct file
+format, PGN, and contains the needed information.The web application is
+made fully responsive by using Bootstrap.
 A user file is restricted to a maximum size of $10$Mb ($10\ 000\ 000$ bytes)
 The visual representation of the analysis is done using D3.js.
 The user can view all the data or apply the following filters:
@@ -46,14 +48,15 @@ The user can view all the data or apply the following filters:
 	\end{itemize}
 \end{enumerate}
 
-
 \subsection{Front End}
 The front end shall make use of D3.js for visualization of processed data.
 The front end shall give a visual summary of the information after filtering.
-The front end shall have a list of databases to choose from.  The list shall always contain the default database of the back end, along with any databases uploaded by the user.
+The front end shall have a list of databases to choose from.  The list
+shall always contain the default database of the back end, along with
+any databases uploaded by the user.
 Before a user has uploaded any data, the default data set shall be preselected.
-Upon loading a pgn file, the newly uploaded data set shall the selected data set.
-
+Upon loading a pgn file, the newly uploaded data set shall the selected
+data set.
 
 \subsection{Back End}
 The back end shall have an API for receiving an uploaded PGN file.
@@ -83,165 +86,175 @@ The JSON object for the data field shall have the following structure:
 \subsection{Back End}
 The Back End is comprised of all code that gets executed on the server side.
 
-All database queries get done here, mostly because the default database is assumed to be used most often and is found here. This also allows devices with limited processing power to use the service with ease, while also requiring a server with reasonably large memory, storage and processing abilities.
-
+All database queries get done here, mostly because the default database is
+assumed to be used most often and is found here. This also allows devices
+with limited processing power to use the service with ease, while also
+requiring a server with reasonably large memory, storage and
+processing abilities.
 
 \subsubsection{make.sh}
-This is a Linux bash script that set's up the backend environment. It downloads all necessary dependencies, creates the MySQL database and creates a configuration file for the server.
-
+This is a Linux bash script that set's up the backend environment.
+It downloads all necessary dependencies, creates the MySQL database
+and creates a configuration file for the server.
 
 \subsubsection{make\_osx.sh}
-This is a OSX bash script that set's up the backend environment. It downloads all necessary dependencies, creates the MySQL database and creates a configuration file for the server.
-
+This is a OSX bash script that set's up the backend environment.
+It downloads all necessary dependencies, creates the MySQL database and
+creates a configuration file for the server.
 
 \subsubsection{.my.cnf}
-This is a configuration file that is generated. It contains all the information needed to connect to the MySQL server.
-
+This is a configuration file that is generated. It contains all the
+information needed to connect to the MySQL server.
 
 \subsubsection{user\_upload.php}
-As the specifications dictate that users need to be able to upload their own custom database, user\_upload.php receives such uploads and performs some basic checks on the uploaded file, before saving it to the server disk.  The file gets hashed using sha256 and this hash is used as the file name when saved, allowing users to easily specify which file they wish to use, while avoiding any possible clashes in the naming domain, should different users upload different files with the same name.  Conveniently, if two users upload identical databases, these databases won't be duplicated on the server.
+As the specifications dictate that users need to be able to upload their
+own custom database, user\_upload.php receives such uploads and performs
+some basic checks on the uploaded file, before saving it to the server
+disk.  The file gets hashed using sha256 and this hash is used as the file
+name when saved, allowing users to easily specify which file they wish to
+use, while avoiding any possible clashes in the naming domain, should
+different users upload different files with the same name.  Conveniently,
+if two users upload identical databases, these databases won't be duplicated
+on the server.
 
-After a file has been uploaded successfully, a database is created with the same name as the local file.  This is done in create\_db.php with the function create\_database.
+After a file has been uploaded successfully, a database is created with
+the same name as the local file.  This is done in create\_db.php with
+the function create\_database.
 
-Once the file has been saved, it get's parsed. For each game, there are three different kinds of data to parse:  the seven tags required in PGN, optional tags and the moves made by during the game.  It gets parsed by using the parse\_pgn\_file function in pgn\_parser.php.
-
+Once the file has been saved, it get's parsed. For each game, there are
+three different kinds of data to parse:  the seven tags required in PGN,
+optional tags and the moves made by during the game.  It gets parsed by
+using the parse\_pgn\_file function in pgn\_parser.php.
 
 \subsubsection{create\_db.php}
-This script contains a function to create a database for a newly uploaded file. It has to parse the file to determine the string length to be stored in the moves field.
-
-\subsubsection*{create\_database}
-First the login details for a MySQL user is read from a file named .my.cnf in the root directory of the project.  This is then used to connect to the MySQL server on the local server.  Once a connection is set up, a database is created with a query, and its success is checked.  The connection is then closed.
-
+This script contains a function to create a database for a newly uploaded
+file. It has to parse the file to determine the string length to be stored
+in the moves field. First the login details for a MySQL user is read from
+a file named .my.cnf in the root directory of the project.  This is then
+used to connect to the MySQL server on the local server.  Once a connection
+is set up, a database is created with a query, and its success is checked.
+The connection is then closed.
+\begin{itemize}
+	\item create\_database(\$db\_name, \$target\_file)
+\end{itemize}
 
 \subsubsection{create\_default\_db.php}
-This script creates a new database into which the default data set is then parsed. This script is run to set up the database initially.
-
+This script creates a new database into which the default data set is then
+parsed. This script is run to set up the database initially.
 
 \subsubsection{eco\_category.php}
 This script provides functions to translate between ECO categories and ranges.
-
-\subsubsection*{get\_eco\_category}
-Given any ECO code, this function returns the ECO category containing the code. 
+There are two functions in this script. The get\_eco\_category function takes
+in an ECO code and returns the category containing that code. The
+get\_eco\_class\_ranges returns the code ranges of the given ECO category.
+\begin{itemize}
+	\item get\_eco\_category(\$ECO\_alpha, \$ECO\_numero)
+	\item get\_eco\_class\_ranges(\$category)
+\end{itemize}
 \begin{lstlisting}
-	Example:
-	get_eco_category(A55) will return A1.4
+Example:
+get_eco_category(A, 55) will return A1.4
+get_eco_class_ranges(A1.4) will return A50-A79
 \end{lstlisting}
-
-\subsubsection*{get\_eco\_class\_ranges}
-Given an ECO category, this function will return the ECO class and numeric ranges of the category.
-\begin{lstlisting}
-	Example:
-	get_eco_class_ranges(A1.4) will return A50-A79
-\end{lstlisting}
-
 
 \subsubsection{has\_db.php}
 This script ensures that the requested user database is present on the server.
-
-\subsubsection*{has\_db\_available}
-This function checks the server for the requested user database. If the database is present the function returns "true". If the requested user database is not present on the server "false" is returned.
-
+The has\_db\_available function searches the server for the requested databse.
+A boolean value is returned.
+\begin{itemize}
+	\item had\_db\_available(\$name)
+\end{itemize}
 
 \subsubsection{pgn\_parser.php}
-This file mostly defines functions used by the user\_upload.php script.  As the name suggests, it parses PGN files.
+This file mostly defines functions used by the user\_upload.php script.
+As the name suggests, it parses PGN files. This script contains functions to
+skip white spaces and empty lines. It also has a function to scan the tags
+when parsing a PGN file and to get the length of the longest move string in
+the PGN file. The main function in this script is the parse\_pgn\_gile\_to\_db
+function. The standard seven tags as required by the PGN are processed with
+the sscan\_tag function and have their values stored in local variables.
+Thereafter, the optional tags are scanned and each examined as either being
+an ECO tag or a black or white ELO tag.  If any of these are not present,
+their local variable simply gets the empty string assigned to it.
 
-\subsubsection*{sscan\_tag}
-The sscan\_tag function is used to scan tags when parsing a PGN file. The function takes two string arguments:  the tag string and a string that describes the start of that line.  The second argument is used for getting the offset into the string where the tag value starts.  The function scans the tag until the tag string closes with '"'.  This scanned value is then returned to the caller.
-
-\subsubsection*{evaluate\_line}
-This function takes two strings arguments: the string being evaluated and the characters the line should start with. It returns a boolean value: true if the starting characters are found in the string and false if the string does not contain the starting characters.
-
-\subsubsection*{parse\_white\_space}
-This function skips over empty line in the PGN file.
-
-\subsubsection*{parse\_pgn\_file\_to\_db}
-The standard seven tags as required by the PGN are processed with the sscan\_tag function and have their values stored in local variables. Thereafter, the optional tags are scanned and each examined as either being an ECO tag or a black or white ELO tag.  If any of these are not present, their local variable simply gets the empty string assigned to it.
-
-The moves are often listed over various lines.  First, these moves are collected into a single line string.  Then, the string is split by spaces, to produce an array.  On array indices that are multiples of three, one finds the move numbers.  On the very last non-trivial entry, one finds the score of the match.  All other entries indicate moves:
+The moves are often listed over various lines.  First, these moves are
+collected into a single line string.  Then, the string is split by spaces,
+to produce an array.  On array indices that are multiples of three, one
+finds the move numbers.  On the very last non-trivial entry, one finds
+the score of the match.  All other entries indicate moves:
 \begin{align*}
 \forall i \in \{ x\in \mathbb{Z}\ :\ & x\text{ a valid index in moves array}\},\\
 i & \equiv 2\pmod 3 \implies \text{moves[i] denotes a black move}\\
 i & \equiv 1\pmod 3 \implies \text{moves[i] denotes a white move}
 \end{align*}
-The moves are separated into an array of white moves and an array of black moves. These arrays are then stored in an object than can be easily sent to a function that will insert the data into the MySQL database.
+The moves are separated into an array of white moves and an array of black
+moves. These arrays are then stored in an object than can be easily sent to
+a function that will insert the data into the MySQL database.
 
-\subsubsection*{get\_longest\_moves\_string}
-This function is almost identical to parse\_pgn\_file\_to\_db, but it serves to determine which chess game in a pgn file has the longest move string.  This is helpful when creating the database with the "flat" approach.
-
+\begin{itemize}
+	\item sscan\_tag(\$read\_string, \$start\_of\_string = \textquotedblleft
+	[Event \textbackslash \textquotedblleft\textquotedblright )
+	\item evaluate\_line(\$line, \$should\_start)
+	\item parse\_white\_space(\$db\_file, \$dud\_line)
+	\item parse\_pgn\_file\_to\_db(\$target\_file, \$db\_name)
+	\item get\_longest\_moves\_string(\$target\_file)
+\end{itemize}
 
 \subsubsection{query\_*.php}
-This is a generic description of the query scripts that follow. The user sends filters to be applied to the database.  These filters are sent to query.php, which then formulates the filter data into MySQL queries.  These queries are made into the database and the results are sent back to the user. 
-
+This is a generic description of the query scripts that follow. The user
+sends filters to be applied to the database.  These filters are sent to
+query.php, which then formulates the filter data into MySQL queries.
+These queries are made into the database and the results are sent back to
+the user.
 
 \subsubsection{query\_cat.php}
 This script performs all queries when filtering by ECO category.
 
-
 \subsubsection{query\_class.php}
 This script performs all queries when filtering by ECO class.
-
 
 \subsubsection{query\_code.php}
 This script performs all queries when filtering by ECO code.
 
-
 \subsubsection{query\_year.php}
 This script performs all queries when filtering for a single given year.
 
-
 \subsubsection{mysql\_interface.php}
-This file contains the \textit{ServerInterface} class. This class is a PHP interface built on top of the \textit{mysqli} interface. It adds another layer of abstraction that makes interfacing with MySQL servers much easier.
+This file contains the \textit{ServerInterface} class. This class is a PHP
+interface built on top of the \textit{mysqli} interface. It adds another
+layer of abstraction that makes interfacing with MySQL servers much easier.
 \\Among others it provides functions to:
 \begin{itemize}
-	\item connect to a MySQL server
-	\item create and delete a database
-	\item create and delete a table
-	\item insert data into a table
-	\item fetch data from the database (make queries)
-	\item send SQL commands to the server
+	\item connect to a MySQL server.
+	\item create, delete and use a database.
+	\item create and delete a table.
+	\item create and delete an index.
+	\item insert data into a table.
+	\item fetch data from the database (make queries).
+	\item send SQL commands to the server.
 \end{itemize}
-
-\subsubsection*{quit}
-This function is called when a fatal error is encoutered. An error message is displayed and the current process is killed.
-
-\subsubsection*{connect}
-This function initializes a connection to the MySQL server.
-
-\subsubsection*{disconnect}
-This function closes the connection to the MySQL server.
-
-\subsubsection*{attempt}
-This function takes a string argument. This string is a SQL statement to be executed by the server.
-
-\subsubsection*{create\_database}
-The create\_db function creates a database on the server with a specified name.
-
-\subsubsection*{delete\_database}
-This function deletes a specified database that is present on the server.
-
-\subsubsection*{use\_database}
-The use\_database function tells the server which database the user is making queries on.
-
-\subsubsection*{create\_table}
-This creates a table on the server with a specified name.
-
-\subsubsection*{delete\_table}
-This function deletes a specified table that is present on the server.
-
-\subsubsection*{create\_index}
-This creates indices on a specified table on the server. If the table has not yet been created an error message is thrown.
-
-\subsubsection*{delete\_index}
-This deletes a specified index from a specified table on the server.
-
-\subsubsection*{insert}
-This inserts data into a specific table on the server.
-
-\subsubsection*{insert\_multiple}
-This can insert multiple data entries into a specified table on the server.
-
-\subsubsection*{select\_from}
-This returns all the data from a specified columns in the given table meeting the given conditions.
+Functions:
+\begin{itemize}
+	\item \_\_construct(\$server=null, \$user=null, \$password=null,
+	\$port=null, \$verbose=false)
+	\item quit(\$error\_message=\textquotedblleft\textquotedblright)
+	\item connect()
+	\item disconnect()
+	\item attempt(\$query)
+	\item create\_database(\$name=null, \$replace=false)
+	\item delete\_database(\$name=null)
+	\item use\_database(\$name=null)
+	\item create\_table(\$name=null, \$structure=null, \$replace=false)
+	\item delete\_table(delete\_table)
+	\item create\_index(\$iname=null, \$tname=null, \$cols=null,
+	\$replace=false)
+	\item delete\_index(\$iname=null, \$tname=null)
+	\item insert(\$table\_name=null, \$data=null)
+	\item insert\_multiple(\$table\_name=null, \$data=null)
+	\item select\_from(\$table\_name=null, \$columns=null, \$conditions=null
+	\$extra\_arguments=null)
+	\item sql(\$sql=null)
+\end{itemize}
 
 
 \subsubsection{utils.php}
@@ -251,23 +264,25 @@ utils.php provides utilitarian functions to prevent code duplications.
 This simple function checks whether a certain string is present in some token.
 
 \subsubsection*{stringify}
-This function translates an object to a string of the key pairs, separated by commas.
+This function translates an object to a string of the key pairs, separated
+by commas.
 
 \subsubsection*{trim\_chars}
-The trim\_chars function removes a speicified number of characters form the end of a given string.
+The trim\_chars function removes a speicified number of characters form the
+end of a given string.
 
 \subsubsection*{process\_elo\_data}
-This processes the ECO data into a data structure that can easily be used by the visualization program.
+This processes the ECO data into a data structure that can easily be used
+by the visualization program.
 
 \subsubsection*{process\_year\_data}
-This processes the year data into a data structure that can easily be used by the visualization program. This is all sorted and grouped by year.
+This processes the year data into a data structure that can easily be used
+by the visualization program. This is all sorted and grouped by year.
 
 \subsubsection*{set\_query\_where\_fields}
 This constructs a query data structure that is sent to the server.
 
-
 \subsubsection{validate.php}
-
 
 \subsubsection*{validate\_filters}
 TODO
@@ -323,77 +338,81 @@ TODO
 \subsubsection*{low\_greater\_than\_high}
 TODO
 
-
 \subsection{Front End}
-
-The front end is presented to the user using HTML5 (index.html) and supplemented with JavaScript (main.js) to allow for an interactive and dynamic experience.  The data returned by a query to the server is displayed using d3.js in a dedicated section.  Links to a description of the web application (about.html) and the course
+The front end is presented to the user using HTML5 (index.html) and
+supplemented with JavaScript (main.js) to allow for an interactive and
+dynamic experience.  The data returned by a query to the server is
+displayed using d3.js in a dedicated section.  Links to a description
+of the web application (about.html) and the course
 website is provided in the footer.
 
-CSS styling is based on Bootstrap and supplemented with a custom styling sheet (css/style.css) generated by Sass (style.scss).
-
+CSS styling is based on Bootstrap and supplemented with a custom styling
+sheet (css/style.css) generated by Sass (style.scss).
 
 \subsubsection{main.js}
-This file contains the JavaScript that will run in the clients browser. It will handle user interaction (such as constructing new filters and uploading files). It will make the necessary ajax calls to the server when the user wants to apply filters and upload their own PGN file. This file also validates all user input to ensure it is correct and safe to send to the server.
-
+This file contains the JavaScript that will run in the clients browser. It
+will handle user interaction (such as constructing new filters and uploading
+files). It will make the necessary ajax calls to the server when the user
+wants to apply filters and upload their own PGN file. This file also
+validates all user input to ensure it is correct and safe to send to the server.
 
 \subsubsection*{add\_max\_year\_attr}
 TODO
 
-
 \subsubsection*{getConfigSettings}
 TODO
 
-
 \subsubsection*{handle\_pgn\_submit function}
-This function runs some checks on the submitted PGN file and if it passes all the checks it uses \textit{hex\_sha256.js} to hash the file. It then sends the file and a hash of the file to the server using ajax.
-
+This function runs some checks on the submitted PGN file and if it passes
+all the checks it uses \textit{hex\_sha256.js} to hash the file. It then
+sends the file and a hash of the file to the server using ajax.
 
 \subsubsection*{submit\_file}
 TODO
 
-
 \subsubsection*{handle\_filter\_submit function}
-This function sends the filter form data in json form to the server. (It will handle the response properly later but for now it just embeds it into the html)
-
+This function sends the filter form data in json form to the server.
+(It will handle the response properly later but for now it just embeds it into
+the html)
 
 \subsubsection*{getFormData function}
-This function serializes and returns form data in the form of a json. (I believe it was acquired from stackoverflow.com, we should reference that)
-
+This function serializes and returns form data in the form of a json.
+(I believe it was acquired from stackoverflow.com, we should reference that)
 
 \subsubsection*{ensure\_database\_exists\_on\_server}
 TODO
 
-
 \subsubsection*{handle\_filter\_response}
 TODO
-
 
 \subsubsection*{get\_file\_from\_hash}
 TODO
 
-
 \subsubsection*{handle\_filter\_clear}
 TODO Lisa
-
 
 \subsubsection*{handle\_window\_resize}
 TODO
 
-
 \subsubsection*{handleEcoFilterChange}
 TODO
 
-
 \subsubsection{visual\_response.js}
-This file contains JavaScript that will run in the clients browser. It will handle the visualization of the data, that is received from the server after
+This file contains JavaScript that will run in the clients browser. It
+will handle the visualization of the data, that is received from the server
+after
 the filters have been submitted. A lot of the code is based on the Stacked Area
 Chart Example from \url{https://bl.ocks.org/mbostock/3885211}.
 
 \subsection*{draw}
-This function receives a JSON object from handle\_response or handle\_window\_resize in main.js. After this object has been processed, the data it contains is then visualized using the D3 library functions.
+This function receives a JSON object from handle\_response or
+handle\_window\_resize in main.js. After this object has
+been processed, the data it contains is then visualized using the D3
+library functions.
 
 \subsubsection*{process\_JSON\_to\_D3}
-This function creates and returns a new JSON object from the received data function which will be used to create the graph.
+This function creates and returns a new JSON object from the received
+data function which will be used to create the graph.
 
 \section{Database}
 The data specified for this program is found in a file called
@@ -404,6 +423,7 @@ database in a reasonable time, and getting query results as quickly as
 possible.
 
 \subsection{Design of the database}
+TODO
 
 \subsection{Populating database}
 Our parser started with a naive approach of putting each game into the
@@ -506,7 +526,8 @@ process these 100 rows might increase marginally, but this is offset by the
 massive reduction in overhead.
 
 The overall time taken up by this overhead is inversely proportional to
-batch size.  As batch size grow, the proportion of time spent on this overhead tends to
+batch size.  As batch size grow, the proportion of time spent on this
+overhead tends to
 0. However, this is an asymptote and will never be reached for any real
 numbered batch size.  As batch size grows further, the additional time
 saved in overhead diminishes, but the time taken by MySQL to process the
@@ -562,7 +583,8 @@ number of rows that had to be scanned.
 
 \section{Testing}
 \subsection{JavaScript Testing}
-For testing the JavaScript functions and functionality we used the built in QUnit library to perform JUnit testing.
+For testing the JavaScript functions and functionality we used the built
+in QUnit library to perform JUnit testing.
 
 \section{Additional features}
 
