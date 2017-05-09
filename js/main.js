@@ -39,7 +39,8 @@ function add_max_year_attr() {
 
 // there may be a way to not have this global using closures
 var configTryCount = 0;
-function getConfigSettings(alternateLink=null) {
+
+function getConfigSettings(alternateLink = null) {
 	$.ajax({
 		url: (alternateLink || "") + "php/send_config.php",
 		type: 'post',
@@ -48,11 +49,12 @@ function getConfigSettings(alternateLink=null) {
 			config = response;
 			configTryCount = 0;
 		},
-		error: function (xhr, textStatus, errorMessage) {
+		error: function(xhr, textStatus, errorMessage) {
 			configTryCount++;
-			if(configTryCount < 10) {
+			if (configTryCount < 10) {
 				getConfigSettings("http://127.0.0.1:8000/");
-			} else {
+			}
+			else {
 				console.log(errorMessage);
 			}
 		}
@@ -87,15 +89,16 @@ function handle_pgn_submit(e) {
 
 			if (pgnHashes[hash]) {
 				console.log("file with hash " + hash + " already exists!");
-			} else {
+			}
+			else {
 				pgnHashes[hash] = [file.name, file];
 				console.log("New file " +
 					pgnHashes[hash][0] + " with hash: " + hash);
 				var db_selector = $("#db_selector");
 				db_selector.append($('<option/>', {
-					value : hash,
-					text : file.name,
-					selected : "selected"
+					value: hash,
+					text: file.name,
+					selected: "selected"
 				}));
 			}
 		};
@@ -105,16 +108,18 @@ function handle_pgn_submit(e) {
 		//in case where server fails to receive.
 		if (!submit_file(file, send_url)) {
 			console.log("failed to upload to server");
-		} else {
+		}
+		else {
 
 			/*
 			 * Tell the reader this is a textfile. It will load the file into
-			* memory, which will then call the onload function fust defined
+			 * memory, which will then call the onload function fust defined
 			 * above.
-			*/
+			 */
 			reader.readAsText(file);
 		}
-	} else {
+	}
+	else {
 		console.log("Something is wrong with the file input object...");
 		if ('files' in fileSubmitter &&
 			(fileSubmitter.files.length <= 0)) {
@@ -141,7 +146,7 @@ function submit_file(file, send_url) {
 	form_data.append("user_db_uploader", file);
 
 	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
+		url: ((config['dev_mode']) ? config['php_server'] : '') + send_url,
 		type: 'post',
 		data: form_data,
 		dataType: 'html',
@@ -184,9 +189,9 @@ function validateFilters() {
 	var yearLow = $yearLow.val();
 	var yearHigh = $('input[name=year-high]').val();
 
-	if(!isNaN(parseInt(yearLow)) &&
-	!isNaN(parseInt(yearHigh)) &&
-	yearLow > yearHigh) {
+	if (!isNaN(parseInt(yearLow)) &&
+		!isNaN(parseInt(yearHigh)) &&
+		yearLow > yearHigh) {
 		markFieldInvalid($yearLow);
 		valid = false;
 	}
@@ -195,9 +200,9 @@ function validateFilters() {
 	var ecoLow = $ecoLow.val();
 	var ecoHigh = $('input[name=eco-high]').val();
 
-	if(!isNaN(parseInt(ecoLow)) &&
-	!isNaN(parseInt(ecoHigh)) &&
-	ecoLow > ecoHigh) {
+	if (!isNaN(parseInt(ecoLow)) &&
+		!isNaN(parseInt(ecoHigh)) &&
+		ecoLow > ecoHigh) {
 		markFieldInvalid($ecoLow);
 		valid = false;
 	}
@@ -206,9 +211,9 @@ function validateFilters() {
 	var eloBlackLow = $eloBlackLow.val();
 	var eloBlackHigh = $('input[name=black-elo-high]').val();
 
-	if(!isNaN(parseInt(eloBlackLow)) &&
-	!isNaN(parseInt(eloBlackHigh)) &&
-	eloBlackLow > eloBlackHigh) {
+	if (!isNaN(parseInt(eloBlackLow)) &&
+		!isNaN(parseInt(eloBlackHigh)) &&
+		eloBlackLow > eloBlackHigh) {
 		markFieldInvalid($eloBlackLow);
 		valid = false;
 	}
@@ -217,9 +222,9 @@ function validateFilters() {
 	var eloWhiteLow = $eloWhiteLow.val();
 	var eloWhiteHigh = $('input[name=white-elo-high]').val();
 
-	if(!isNaN(parseInt(eloWhiteLow)) &&
-	!isNaN(parseInt(eloWhiteHigh)) &&
-	eloWhiteLow > eloWhiteHigh) {
+	if (!isNaN(parseInt(eloWhiteLow)) &&
+		!isNaN(parseInt(eloWhiteHigh)) &&
+		eloWhiteLow > eloWhiteHigh) {
 		markFieldInvalid($eloWhiteLow);
 		valid = false;
 	}
@@ -239,7 +244,7 @@ function handle_filter_submit(event) {
 
 	var valid = validateFilters();
 
-	if(!valid) {
+	if (!valid) {
 		return;
 	}
 
@@ -252,11 +257,14 @@ function handle_filter_submit(event) {
 
 	if (filters['eco-filter-type'] == 'category') {
 		send_url = "php/query_cat.php";
-	} else if (filters['eco-filter-type'] == 'class') {
+	}
+	else if (filters['eco-filter-type'] == 'class') {
 		send_url = "php/query_class.php";
-	} else if (filters['eco-filter-type'] == 'code') {
+	}
+	else if (filters['eco-filter-type'] == 'code') {
 		send_url = "php/query_code.php";
-	} else if (filters['eco-filter-type'] == 'year-eco-analysis') {
+	}
+	else if (filters['eco-filter-type'] == 'year-eco-analysis') {
 		send_url = "php/query_year.php";
 	}
 	console.log("action url: ", send_url);
@@ -271,7 +279,7 @@ function handle_filter_submit(event) {
 		ensure_database_exists_on_server(db_val);
 	}
 	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + send_url,
+		url: ((config['dev_mode']) ? config['php_server'] : '') + send_url,
 		type: 'post',
 		data: filters,
 		dataType: 'json',
@@ -308,7 +316,7 @@ function getFormData($form) {
 function ensure_database_exists_on_server(hash) {
 	console.log("Checking for presence of " + hash);
 	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + "php/has_db.php",
+		url: ((config['dev_mode']) ? config['php_server'] : '') + "php/has_db.php",
 		async: false,
 		type: 'post',
 		dataType: 'json',
@@ -340,7 +348,7 @@ function ensure_database_exists_on_server(hash) {
 function handle_filter_response(response) {
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
-		for(i in response.error_fields) {
+		for (i in response.error_fields) {
 			field = response.error_fields[i];
 			markFieldInvalid(
 				$(
@@ -352,9 +360,16 @@ function handle_filter_response(response) {
 	else {
 		mainJSON = response;
 		$("#display_svg").empty();
-		draw(response);
+		$("#legend-div").empty();
+		if ($("input[name=eco-filter-type]:checked").val() === "year-eco-analysis") {
+			draw(response, "ELO Value");
+		}
+		else {
+			draw(response, "Year");
+		}
 	}
 }
+
 
 /**
  * Takes a hash as argument, looks it up in the pgnHashes structure and
@@ -389,7 +404,12 @@ function handle_window_resize(e) {
 	if (mainJSON != null) {
 		$("#display_svg").empty();
 		$("#legend-div").empty();
-		draw(mainJSON);
+		if ($("input[name=eco-filter-type]:checked").val() === "year-eco-analysis") {
+			draw(mainJSON, "ELO Value");
+		}
+		else {
+			draw(mainJSON, "Year");
+		}
 	}
 }
 
@@ -402,7 +422,7 @@ function handleEcoFilterChange() {
 	$currentFilter = $('div.current-eco-filter');
 	$currentFilter.empty();
 
-	switch(radioButton.val()) {
+	switch (radioButton.val()) {
 		case 'category':
 			$div = $('<div />').addClass('form-group');
 
@@ -422,7 +442,7 @@ function handleEcoFilterChange() {
 					'label': letter
 				});
 
-				decimal = (letter == 'A')?[1.1, 1.2, 1.3, 1.4, 1.5]:[1.1, 1.2];
+				decimal = (letter == 'A') ? [1.1, 1.2, 1.3, 1.4, 1.5] : [1.1, 1.2];
 				$.each(decimal, function(index_dec, value) {
 					num = value + index_let;
 					label = letter + num;
