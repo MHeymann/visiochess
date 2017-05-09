@@ -31,6 +31,10 @@ Murray Heymann\\ 15988694 \and Jolandi Lombard\\ 16994914 \and Lisa van Staden\\
 \thispagestyle{empty}
 
 \pagebreak
+\clearpage\lstlistoflistings
+\thispagestyle{empty}
+
+\pagebreak
 \setcounter{page}{1} % Set the page counter to 1
 
 \section{Specifications}
@@ -660,10 +664,20 @@ while the query on the indexed table had a significant reduction in the
 number of rows that had to be scanned.
 
 \section{Testing}
-TODO: Used testing pyramid for reference \cite{test}
+Looking at the testing pyramid\cite{test}, the most important tests are unit
+tests. They form the bulk and the base of any well-designed project. The
+project is tested using approximately 100 unit tests. Serves testing was
+implemented by performing tests on functions that combine smaller, unit tested
+code. User interface testing is the least important tests. This form of testing
+is very difficult to automate. The project UI was tested manually by the
+members of the group.
 \subsection{JavaScript Testing}
-For testing the JavaScript functions and functionality we used the built
-in QUnit library to perform JUnit testing.
+For testing the JavaScript functions and functionality the built
+in QUnit library is used to perform unit testing.
+\subsection{PHP Testing}
+The PHPunit library was used to exhaustively test all PHP code. This library
+makes testing easy and convenient as hundreds of tests can be run at the click
+of a button with meaningful output.
 
 \section{Additional features}
 
