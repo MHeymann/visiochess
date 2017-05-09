@@ -34,14 +34,14 @@ of the popularity of chess openings over the years.
 The user can view the default database or upload their own data, provided
 it is in the correct file
 format, PGN, and contains the needed information.The web application is
-made fully responsive by using Bootstrap.
+made fully responsive by using Bootstrap\cite{boot}.
 A user file is restricted to a maximum size of $10$Mb ($10\ 000\ 000$ bytes)
-The visual representation of the analysis is done using D3.js.
+The visual representation of the analysis is done using D3.js \cite{d3}.
 The user can view all the data or apply the following filters:
 \begin{enumerate}
 	\item Data Range by year
 	\item WhiteElo and BlackElo
-    \item ECO Codes:
+    \item ECO Codes\cite{eco}:
 	\begin{itemize}
 		\item Primary ECO codes (A-E)
 		\item ECO categories(13 categories)
@@ -53,9 +53,10 @@ The user can view all the data or apply the following filters:
 The front end shall make use of D3.js for visualization of processed data.
 The front end shall give a visual summary of the information after filtering.
 The front end shall have a list of databases to choose from.  The list
-shall always contain the default database of the back end, along with
-any databases uploaded by the user.
-Before a user has uploaded any data, the default data set shall be preselected.
+shall always contain the default database of the back end, along
+with any databases uploaded by the user.
+Before a user has uploaded any data, the default data set \cite{def_db} shall
+be preselected.
 Upon loading a pgn file, the newly uploaded data set shall the selected
 data set.
 
@@ -85,21 +86,21 @@ The JSON object for the data field shall have the following structure:
 \section{Program Description}
 
 \subsection{Back End}
-The Back End is comprised of all code that gets executed on the server side.
+The back end is comprised of all code that gets executed on the server side.
 
-All database queries get done here, mostly because the default database is
+All database queries are done here, mostly because the default database is
 assumed to be used most often and is found here. This also allows devices
 with limited processing power to use the service with ease, while also
 requiring a server with reasonably large memory, storage and
 processing abilities.
 
 \subsubsection{make.sh}
-This is a Linux bash script that set's up the backend environment.
+This is a Linux bash script that sets up the back end environment.
 It downloads all necessary dependencies, creates the MySQL database
 and creates a configuration file for the server.
 
 \subsubsection{make\_osx.sh}
-This is a OSX bash script that set's up the backend environment.
+This is a OSX bash script that sets up the back end environment.
 It downloads all necessary dependencies, creates the MySQL database and
 creates a configuration file for the server.
 
@@ -111,7 +112,8 @@ information needed to connect to the MySQL server.
 As the specifications dictate that users need to be able to upload their own
 custom database, user\_upload.php receives such uploads and
 performs some basic checks on the uploaded file, before saving it to the
-server disk. The file gets hashed using sha256 and this hash is used as
+server disk. The file is hashed using sha256\cite{sha} and this hash is used
+as
 the file name when saved, allowing users to easily specify which file
 they wish to use, while avoiding any possible clashes in the naming
 domain, should different users upload different files with the same name.
@@ -122,9 +124,9 @@ After a file has been uploaded successfully, a database is created with
 the same name as the local file. This is done in create\_db.php with
 the function create\_database.
 
-Once the file has been saved, it get's parsed. For each game, there are
+Once the file has been saved, it is parsed. For each game, there are
 three different kinds of data to parse: the seven tags required in PGN,
-optional tags and the moves made by during the game. It gets parsed by
+optional tags and the moves made during the game. It is parsed by
 using the parse\_pgn\_file function in pgn\_parser.php.
 
 \subsubsection{create\_db.php}
@@ -221,8 +223,8 @@ This script performs all queries when filtering by ECO code.
 This script performs all queries when filtering for a single given year.
 
 \subsubsection{mysql\_interface.php}
-This file contains the \textit{ServerInterface} class. This class is a PHP
-interface built on top of the \textit{mysqli} interface. It adds another
+This file contains the \texttt{ServerInterface} class. This class is a PHP
+interface built on top of the \texttt{mysqli} interface. It adds another
 layer of abstraction that makes interfacing with MySQL servers much easier.
 \\Among others it provides functions to:
 \begin{itemize}
@@ -304,7 +306,7 @@ TODO
 The front end is presented to the user using HTML5 (index.html) and
 supplemented with JavaScript (main.js) to allow for an interactive and
 dynamic experience.  The data returned by a query to the server is
-displayed using d3.js in a dedicated section.  Links to a description
+displayed using D3.js in a dedicated section.  Links to a description
 of the web application (about.html) and the course
 website is provided in the footer.
 
@@ -364,7 +366,7 @@ This file contains JavaScript that will run in the clients browser. It
 will handle the visualization of the data, that is received from the server
 after
 the filters have been submitted. A lot of the code is based on the Stacked Area
-Chart Example \cite{d3}.
+Chart Example \cite{chart}.
 \begin{itemize}
 	\item TODO
 \end{itemize}
@@ -380,45 +382,45 @@ data function which will be used to create the graph.
 
 \section{Database}
 The data specified for this program is found in a file called
-millionbase-2.5.pgn, which as the name suggest has 2.5 million chess game
-summaries. Each one of these is put into the database as a row containing
-multiple different fields.  This provided two challenges:  populating the
-database in a reasonable time, and getting query results as quickly as
-possible.
+millionbase-2.5.pgn \cite{def_db}, which as the name suggest has 2.5 million
+chess game summaries. Each one of these is put into the database as a row
+containing multiple different fields.  This provided two challenges:
+populating the database in a reasonable time, and getting query results as
+quickly as possible.
 
 \subsection{Design of the database}
 TODO
 
 \subsection{Populating database}
-Our parser started with a naive approach of putting each game into the
+The parser started with a naive approach of putting each game into the
 database as soon as it was read.  This process took 50 minutes to parse the
 whole database the first time.
 
 Although populating the database is a once
-of procedure when setting up a server like this, this did pose a problem,
-as we still had to debug the parser and add further parsing features to
-allow for minor errors in notation. Every change to the parser required
-testing.  For every bug in the parsing process that leads to a corrupt
-entry in the database that is corrected, the whole large database would
-need to be re-parsed.  Therefore, we set out to try and improve parsing
-times.
+off procedure when setting up a server like this, this did pose a problem,
+as there was still debugging to be done on the parser and the addition of
+further parsing features to allow for minor errors in notation. Every change to
+the parser required testing.  For every bug in the parsing process that leads
+to a corrupt entry in the database that is corrected, the whole large database
+would need to be re-parsed.  Therefore, parsing times should be improved.
 
-We found that adding the games to the database in batches of 1000 rows, instead
-of one at a time significantly improved parsing times by batching them
-together in groups of a thousand, we could populate the database in about 5
+It was found that adding the games to the database in batches of 1000 rows,
+instead of one at a time significantly improved parsing times. By batching them
+together in groups of a thousand, the database could be populated in about 5
 minutes, an improvement by one order of magnitude.
 
 The question immediately arose:  What is the optimal batch size? To set out
-to answer this question, we parsed data contained in the "tags" table in
+to answer this question, the data contained in the "tags" table was parsed in
 varying batch sizes, each time measuring the time this procedure took.  A
 few sample batch sizes quickly reveals that the optimal batch size for the
 tags table was somewhere between 100 and 240.
 
-Next we systematically took measurements for batch sizes between 80 and
-240, taking steps of 10.  For each batch size, multiple parses were
-attempted and the top three results for each was noted. This is reasonable,
-as we are interested in the best optimal case, not the best average parse
-time for a batch size.  The results are shown in table \ref{table:1}.
+Next, measurements for batch sizes between 80 and
+240, taking steps of 10, was systematically taken.  For each batch size,
+multiple parses were attempted and the top three results for each was noted.
+This is reasonable, as we are interested in the best optimal case, not the best
+average parse time for a batch size.  The results are shown in table
+\ref{table:1}.
 
 \begin{table}[h!]
 	\centering
@@ -465,9 +467,9 @@ time for a batch size.  The results are shown in table \ref{table:1}.
 	\label{table:1}
 \end{table}
 
-This data was then plotted in python as a scatter plot.  The interp1d module
-from the scipy library was used to find an interpolation of the data.  The
-plotted data is shown in figure \ref{figure:1}
+This data was then plotted in python as a scatter plot.  The \texttt{interp1d}
+module from the \texttt{scipy} library was used to find an interpolation of
+the data.  The plotted data is shown in figure \ref{figure:1}
 
 \begin{figure}[h]
 	\includegraphics[width=10cm]{graph_batch_interpolation}
@@ -480,40 +482,38 @@ From the graph, it seems an optimal batch size is found around when parsing
 about 160 rows in a single query.
 
 The increase in the efficiency by using batches instead of parsing single
-entries lies in the over head of PHP passing the query to MySQL.  Each
+entries lies in the overhead of PHP passing the query to MySQL.  Each
 query comes with a little delay, when the text of the query is sent to the
 database and again for the results that are sent back.  When entering data
-one query at a time, this delay accounts for more than half of time spent
+one query at a time, this delay accounts for more than half of the time spent
 by the parser.  When batching, say, 100 together, this overhead time stays
-the same, but is divided between 100 rows.  The time taken by mysql to
-process these 100 rows might increase marginally, but this is offset by the
+the same, but is divided between 100 rows.  The time taken by MySQL to
+process these 100 rows might increase marginally but this is offset by the
 massive reduction in overhead.
 
 The overall time taken up by this overhead is inversely proportional to
-batch size.  As batch size grow, the proportion of time spent on this
-overhead tends to
-0. However, this is an asymptote and will never be reached for any real
-numbered batch size.  As batch size grows further, the additional time
-saved in overhead diminishes, but the time taken by MySQL to process the
-query grows.  Scanning of the pgn file and placing data into the database
-happens synchronously, so while mysql processes the insertion, the parser is
-idling  At some point, the time taken by the parser to wait for MySQL to
+batch size.  As batch size grows, the proportion of time spent on this
+overhead tends to 0. However, this is an asymptote and will never be reached
+for any real numbered batch size.  As batch size grows further, the additional
+time saved in overhead diminishes, but the time taken by MySQL to process the
+query grows.  Scanning of the PGN file and placing data into the database
+happens synchronously, so while MySQL processes the insertion, the parser is
+idling.  At some point, the time taken by the parser to wait for MySQL to
 finish its insertion query starts to become significant and offsets the
 gains made by reducing overhead.  Therefore, at some point, the total time
 taken starts increasing again.  For our tags table, this point is reached
 at about 160 rows per insertion.
 
 \subsection{Optimization of Queries}
-It made sense to us to try and optimize our query searches.  We did this by
-creating an index on each of out tables, based on the queries we knew we
-would be making.
+It made sense to try and optimize query searches.  This is done by
+creating an index on each table, based on the known made queries.
 
-We were interested in the exact impact this might make on the searches, so
-we created our database without an index.  On mysql-workbench, we then got
-a graphic explanation of how the query would be executed. We then performed
-the same query on the the database, with the index created.
-The average time taken to query with an index is about 0.45 seconds, while
-without an index, it took about 1.1 seconds.
+Interested in the exact impact this might make on the searches, the database
+was recreated without an index.  On MySQL-workbench, a graphic explanation of
+how the query would be executed was found. The same query was then performed
+on the database, with the index created. The average time taken to query with
+an index is about 0.45 seconds, while without an index, it took about 1.1
+seconds.
 
 \begin{figure}[h]
 	\includegraphics[width=8cm]{Query_eco_code_no_index}
@@ -546,6 +546,7 @@ while the query on the indexed table had a significant reduction in the
 number of rows that had to be scanned.
 
 \section{Testing}
+TODO: Used testing pyramid for reference \cite{test}
 \subsection{JavaScript Testing}
 For testing the JavaScript functions and functionality we used the built
 in QUnit library to perform JUnit testing.
