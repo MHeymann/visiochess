@@ -1,2 +1,8 @@
 #!/bin/bash
-phpunit php/unit_tests.php
+
+ls php/ | grep 'test' > .tests.php
+
+while read FILE
+do
+	phpunit "php/$FILE"
+done < .tests.php

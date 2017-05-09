@@ -35,7 +35,7 @@ class test_validate extends TestCase {
 	public function invalid_year_provider() {
 		return [
 			'Non-numeric string' => ['abcd'],
-			'Negative year' => [-50], 
+			'Negative year' => [-50],
 			'Future year' => [2150]];
 	}
 
@@ -142,28 +142,21 @@ class test_validate extends TestCase {
 	/**
 	 * @dataProvider eco_cat_provider
 	 */
-	public function test_validate_eco_cat($cat, $pass) {
-		$expected = null;
-		if (!$pass) {
-			$expected = new_response();
-			$expected['error'] = true;
-			$expected['error_message'] = 'validation error';
-			$expected['error_fields'] = array('eco-category: given ' . $cat);
-		}
-
+	public function test_validate_eco_cat($cat, $expected) {
 		$result = validate_eco_cat($cat);
 		$this->assertEquals($expected, $result);
 	}
 
 	public function eco_cat_provider() {
 		return [
-			['A1.5', true],
-			['B2.2', true],
-			['G7.1', false],
-			['K26.5', false],
-			['B1.4', false],
-			['C3.1', true],
-			['E3.2' , false]];
+			['A1.5', add_filter('eco-category', new_response())],
+			['B2.2', add_filter('eco-category', new_response())],
+			['G7. 1', add_filter('eco-category', add_error('eco-category: given G7. 1', new_response()))],
+			['K26.5', add_filter('eco-category', add_error('eco-category: given K26.5', new_response()))],
+			['B1.4', add_filter('eco-category', add_error('eco-category: given B1.4', new_response()))],
+			['C3.1', add_filter('eco-category', add_error('eco-category: given C3.1', new_response()))],
+			['E3.2' , add_filter('eco-category', add_error('eco-category: given E3.2', new_response()))]
+		];
 	}
 
 	/**

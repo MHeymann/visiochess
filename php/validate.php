@@ -268,12 +268,24 @@ function validate_eco($filters, $response=null) {
  * collected and on which errors are indicated when picked up.
  */
 function validate_eco_cat($eco_category, $response=null) {
-	$eco_type_ok = preg_match("/^[A-E][1-5].[1-5]$/", $eco_category);
-	if(!$eco_type_ok) {
-		$response = add_error("eco-category: given " . $eco_category,
-			$response);
+	$eco_type_ok = false;
+	$regex_checks = [
+		"/^A[1-5].[1-5]$/",
+		"/^[B-E][1-2].[1-2]$/"
+	];
+
+	foreach($regex_checks as $regex) {
+		$eco_type_ok |= preg_match($regex, $eco_category);
 	}
 
+	if(!$eco_type_ok) {
+		$response = add_error(
+			"eco-category: given " . $eco_category,
+			$response
+		);
+	}
+
+	$response = add_filter("eco-category", $response);
 	return $response;
 }
 

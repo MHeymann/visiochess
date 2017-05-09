@@ -3,7 +3,7 @@ require_once 'pgn_parser.php';
 
 use PHPUnit\Framework\TestCase;
 
-class Test extends TestCase {
+class test_pgn_parser extends TestCase {
 
 	// all functions with the "test_" prefix are automatically run
 	public function test_sscan_tag() {
@@ -15,7 +15,7 @@ class Test extends TestCase {
 
 	// make sub functions to test each aspect of a function
 	function sscan_tag_trailing_space() {
-		$input = '[Event "Spring "]'; // comes directly from database
+		$input = '[Event "Spring "]';
 		$output = sscan_tag($input);
 		$correct_output = "Spring";
 
@@ -42,12 +42,33 @@ class Test extends TestCase {
 		$this->assertEquals($expect, $result);
 	}
 
-        function get_longest_moves_string_dud4() {
+	function get_longest_moves_string_dud4() {
 		$file = '/test/dud4.pgn';
 		$result = get_longest_moves_string($file);
 		$expect = 424;
 		$this->assertEquals($expect, $result);
 	}
 
+	function test_evaluate_line() {
+		$this->evaluate_with_punctuation();
+	}
+
+	function evaluate_with_punctuation() {
+		$string = "Hello, darkness my old friend...";
+		$should_start = "Hello,";
+		$this->assertEquals(true, evaluate_line($string, $should_start));
+
+		$string = "Hello, darkness my old friend...";
+		$should_start = "Hello";
+		$this->assertEquals(true, evaluate_line($string, $should_start));
+
+		$string = "Hello, darkness my old friend...";
+		$should_start = ".Hello";
+		$this->assertEquals(false, evaluate_line($string, $should_start));
+
+		$string = "  Hello, darkness my old friend...";
+		$should_start = "Hello";
+		$this->assertEquals(false, evaluate_line($string, $should_start));
+	}
 }
 ?>
