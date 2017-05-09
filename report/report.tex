@@ -229,6 +229,20 @@ query.php, which then formulates the filter data into MySQL queries.
 These queries are made into the database and the results are sent back to
 the user.
 
+An example used in the databse is shown in listing \ref{lst:9}
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:9}, language=sql, frame=single,
+	caption=Queries for ECO categories]
+SELECT date, CONCAT(eco_alpha, eco_numero) as eco, 
+	COUNT(*) AS popularity
+FROM tags
+WHERE date >= 1900 
+AND whiteElo >= 1500 
+GROUP BY eco, date
+ORDER BY date, popularity DESC;
+	\end{lstlisting}
+\end{figure}
+
 \subsubsection{query\_cat.php}
 This script performs all queries when filtering by ECO category.
 
@@ -623,7 +637,7 @@ at about 160 rows per insertion.
 It made sense to try and optimize query searches.  This is done by
 creating an index on each table, based on the known made queries.
 
-Interested in the exact impact this might make on the searches, the database
+To probe the exact impact this might make on the searches, the database
 was recreated without an index.  On MySQL-workbench, a graphic explanation of
 how the query would be executed was found. The same query was then performed
 on the database, with the index created. The average time taken to query with
@@ -680,7 +694,62 @@ makes testing easy and convenient as hundreds of tests can be run at the click
 of a button with meaningful output.
 
 \section{Additional features}
+As an additional extra feature, an open source chess game engine
+(chess.js \cite{chess}) and an open source chess visualization library
+(chessboard.js \cite{board}) was
+altered to visualize games from the database.  Between all moves and before
+the game, a query was done to the database to get a statistical breakdown
+of every possible move option available to a given game state, based on the
+historical record in the database.  
 
+Legal moves that aren't accounted for
+in the database, were disallowed.  Therefore, this is not a game aiding
+device, but rather an interactive game library of the games from the past
+200 years.  It is also possible to use a user uploaded file in this
+interactive set up. 
+
+Three table's are used to make this possible:  moves\_six, moves\_pgn and
+first\_moves. Moves six is used for when fewer than six games has been
+played.  When white has made w moves, and black b, the query has the
+following form shown in listing \ref{lst:7}.
+
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:7}, language=sql, frame=single,
+	caption=Queries on moves\_pgn]
+SELECT move_{b+1}, count(*) as popularity
+FROM moves_six
+WHERE move_1 = "<move>" 
+AND move_2 = "<move>" 
+AND ... 
+AND move_w = "<move>"
+GROUP BY  move_{b+1}
+ORDER BY popularity DESC;
+	\end{lstlisting}
+\end{figure}
+
+For six or more moves, described with a pgn sequence <pgn>, 
+moves\_pgn is used with queries as in listing \ref{lst:8}.  The results of
+these queries are then grouped together with PHP script.  This is
+reasonable, since most move combinations of six or more limit the user less
+then 500 games in the databse, which is easily sorted with normal serial
+code and arrays.  
+
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:8}, language=sql, frame=single,
+	caption=Queries on moves\_pgn]
+SELECT pgn_string
+FROM moves_pgn
+WHERE pgn_string LIKE "<pgn>%";
+	\end{lstlisting}
+\end{figure}
+
+The third table, first\_move, has the results of the query in 
+listing \ref{lst:7} at the start of the game stored for easy access.
+This was done because with now filter data provided, MySQL has to do a full
+index scan, which is only marginally better than a full table scan.  On
+some runs, this takes as long as 17 seconds.
+
+\newpage
 \bibliographystyle{plain}
 \bibliography{references.bib}
 
