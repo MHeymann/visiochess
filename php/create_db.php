@@ -143,10 +143,6 @@ function create_database($db_name, $target_file) {
 		);
 
 	} else {
-		/* TODO: Remove comment once it has been tested
-		 * I am putting this here for now but we should just make sure
-		 * that this does not break anything on the client's side.
-		 */
 		echo "Moves table will not be added" .
 		"as a supported scheme was not specified";
 	}

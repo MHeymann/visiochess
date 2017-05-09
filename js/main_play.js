@@ -282,8 +282,6 @@ function handle_filter_response(response) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
 		console.log("<p>" + response.error_message + "</p>");
 	} else {
-		//TODO: draw histo
-		//$("#temp_results").append("<p>" + JSON.stringify(response.data) + "</p>");
 		pgnOptions = response.data;
 
 		var total = 0;

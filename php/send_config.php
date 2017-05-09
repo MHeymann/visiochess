@@ -1,7 +1,4 @@
 <?php
-// TODO: remove this and check if everything works on hosted server
-header('Access-Control-Allow-Origin: *');
-
 $settings = parse_ini_file(__DIR__."/../.my.cnf", true);
 $config = $settings['client'];
 
