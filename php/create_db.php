@@ -28,11 +28,13 @@ function create_database($db_name, $target_file) {
 	);
 	$db->connect();
 
+
 	/* create new database */
 	$db->create_database($name=$db_name, $replace=true);
 
 	/* select the new database for querying */
 	$db->use_database($db_name);
+
 
 	/* create a table with the required fields */
 	$db->create_table(
@@ -87,8 +89,8 @@ function create_database($db_name, $target_file) {
 		$db->create_table(
 			'moves_pgn',
 			array(
-				'gameID' => "INT(10) REFERENCES $db_name.tags(gameID)",
-				'pgn_string' => 'VARCHAR(' . $longest_moves . ')'
+				'gameID' => "INT(10) PRIMARY KEY REFERENCES $db_name.tags(gameID)",
+				'pgn_string' => 'VARCHAR(' . ($longest_moves + 5) . ')'
 			),
 			$replace=true
 		);
@@ -103,13 +105,13 @@ function create_database($db_name, $target_file) {
 	 	$db->create_table(
 	 		'moves_six',
 	 		array(
-				'gameID' => "INT(10) REFERENCES $db_name.tags(gameID)",
-	 			'move_1' => 'VARCHAR(10)',
-	 			'move_2' => 'VARCHAR(10)',
-	 			'move_3' => 'VARCHAR(10)',
-	 			'move_4' => 'VARCHAR(10)',
-	 			'move_5' => 'VARCHAR(10)',
-	 			'move_6' => 'VARCHAR(10)'
+				'gameID' => "INT(10) PRIMARY KEY REFERENCES $db_name.tags(gameID)",
+				'move_1' => 'VARCHAR(15)',
+				'move_2' => 'VARCHAR(15)',
+				'move_3' => 'VARCHAR(15)',
+				'move_4' => 'VARCHAR(15)',
+				'move_5' => 'VARCHAR(15)',
+				'move_6' => 'VARCHAR(15)'
 	 		),
 	 		$replace=true
 	 	);
@@ -130,6 +132,16 @@ function create_database($db_name, $target_file) {
 	 			'move_6'
 	 		)
 		);
+
+		$db->create_table(
+			'first_move',
+			array(
+				'move' => "VARCHAR(15) PRIMARY KEY",
+				'total' => 'INT(10)'
+			),
+			$replace=true
+		);
+
 	} else {
 		/* TODO: Remove comment once it has been tested
 		 * I am putting this here for now but we should just make sure

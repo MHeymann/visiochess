@@ -433,7 +433,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 	if(count($first_moves_batch) > 0) {
 		$db->insert_multiple(
-			'moves',
+			'moves_six',
 			$first_moves_batch
 		);
 
@@ -447,7 +447,7 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 	if(count($flat_moves_batch) > 0) {
 		$db->insert_multiple(
-			'moves',
+			'moves_pgn',
 			$flat_moves_batch
 		);
 
@@ -458,6 +458,10 @@ function parse_pgn_file_to_db($target_file, $db_name,
 
 		$flat_moves_batch = array();
 	}
+
+	echo "inserting total first move counts";
+	$db->sql("INSERT INTO first_move(move, total) SELECT m.move_1, COUNT(*) FROM moves_six m GROUP BY m.move_1;");
+	echo "inserted total first move counts";
 
 	$db->disconnect();
 	fclose($db_file);
@@ -472,14 +476,16 @@ function parse_pgn_file_to_db($target_file, $db_name,
  * @param $start_of_string: The start of the line being scanned.
 */
 function get_longest_moves_string($target_file) {
-	$max_move_string = 0;
 
 	$db_file = fopen(SITE_ROOT . $target_file, "r") or
 		die("Opening file for parsing to database failed!");
+	$max = 0;
 
-
-	$event_line = fgets($db_file);
+	$event_line = trim(fgets($db_file));
+	$event_line = parse_white_space($db_file, $event_line);
 	while (!feof($db_file)) {
+		/* A boolean variable for some basic syntax validation */
+		$entry_error = false;
 		/*
 		 * Declare variables for this while loop, so that if any variables
 		 * are missing in the PGN file, they are only given the empty
@@ -495,83 +501,121 @@ function get_longest_moves_string($target_file) {
 		$game_result = "";
 
 		/* "Three rings for the Elven kings under the sky..." */
+		/* This LOR quote is still applicable if you consider ECO
+		 * as part of one category of optional tag :P */
 		$ECO_class	 = "";
+		$ECO_alpha	 = "";
+		$ECO_numero	 = -1;
+		$ECO_category = "";
 		$black_elo	 = "";
 		$white_elo	 = "";
 
 		if (feof($db_file)) {
 			break;
 		}
-
+		$entry_error = $entry_error || !evaluate_line($event_line, '[Event "');
 		$event_name = sscan_tag($event_line, '[Event "');
 
-		$site_line = fgets($db_file);
+		$site_line = trim(fgets($db_file));
+		$site_line = parse_white_space($db_file, $site_line);
+		$entry_error = $entry_error || !evaluate_line($site_line, '[Site "');
 		$site_name = sscan_tag($site_line, '[Site "');
 
-		$date_line = fgets($db_file);
-
+		$date_line = trim(fgets($db_file));
+		$date_line = parse_white_space($db_file, $date_line);
+		/*
+		 * Harvest the year out of the date string, as this is the
+		 * only value of interest, in addition to many games in the default
+		 * database being uncomplete beyond the year.
+		 */
+		$entry_error = $entry_error || !evaluate_line($date_line, '[Date "');
 		$event_date = sscan_tag($date_line, '[Date "');
+		// extract and keep year, throw away rest
+		$event_date = explode('.', trim($event_date))[0];
+		if (strlen($event_date) < 4) {
+			$entry_error = true;
+		}
 
-		$round_line = fgets($db_file);
+		$round_line = trim(fgets($db_file));
+		$round_line = parse_white_space($db_file, $round_line);
+		$entry_error = $entry_error || !evaluate_line($round_line, '[Round "');
 		$event_round = sscan_tag($round_line, '[Round "');
 
-		$white_line = fgets($db_file);
+		$white_line = trim(fgets($db_file));
+		$white_line = parse_white_space($db_file, $white_line);
+		$entry_error = $entry_error || !evaluate_line($white_line, '[White "');
 		$white_name = sscan_tag($white_line, '[White "');
 
-		$black_line = fgets($db_file);
+		$black_line = trim(fgets($db_file));
+		$black_line = parse_white_space($db_file, $black_line);
+		$entry_error = $entry_error || !evaluate_line($black_line, '[Black "');
 		$black_name = sscan_tag($black_line, '[Black "');
 
-		$result_line = fgets($db_file);
+		$result_line = trim(fgets($db_file));
+		$result_line = parse_white_space($db_file, $result_line);
+		$entry_error = $entry_error || !evaluate_line($result_line, '[Result "');
 		$game_result = sscan_tag($result_line, '[Result "');
 
 		/* Harvest ECO and elo's from optional tag data */
-		$optional_line = fgets($db_file);
+		$optional_line = trim(fgets($db_file));
+		$optional_line = parse_white_space($db_file, $optional_line);
 		while ($optional_line[0] == '[') {
-			$eleven_sub = substr($optional_line, 0, 11);
-
-			if (substr($optional_line, 0, 6) == '[ECO "') {
+			if (contains($optional_line, '[ECO "')) {
 				$ECO_class = sscan_tag($optional_line, '[ECO "');
-			}
-
-			if ($eleven_sub == '[BlackElo "') {
+				$ECO_alpha = substr($ECO_class, 0, 1);
+				$ECO_numero = intval(substr($ECO_class, 1, 2));
+				$ECO_category = get_eco_category($ECO_alpha, $ECO_numero);
+			} else if (contains($optional_line, '[BlackElo "')) {
 				$black_elo = sscan_tag($optional_line, '[BlackElo "');
-			}
-
-			if ($eleven_sub == '[WhiteElo "') {
+			} if (contains($optional_line, '[WhiteElo "')) {
 				$white_elo = sscan_tag($optional_line, '[WhiteElo "');
 			}
 
-			$optional_line = fgets($db_file);
+			$optional_line = trim(fgets($db_file));
+			$optional_line = parse_white_space($db_file, $optional_line);
 		}
 
-		/*
-		 * Parse moves into array structure.
-		 */
+		/* This project is very dependent on the presence of the ECO tag. */
+		if ($ECO_class === "") {
+			$entry_error = true;
+		}
+
+
+		/* Parse moves into array structure. */
 		$moves = "";
-		$dud_line = trim(fgets($db_file));
-		while (!feof($db_file) && !empty($dud_line) &&
+		$dud_line = $optional_line;
+		$use_moves = true;
+		if (!contains($dud_line, "1.") || !contains($dud_line, "2.")) {
+			$use_moves = false;
+		}
+		while (!feof($db_file) && !empty(trim($dud_line)) &&
 			($dud_line[0] !== '[')) {
 			$moves .= $dud_line . " ";
 			$dud_line = trim(fgets($db_file));
+			$dud_line = parse_white_space($db_file, $dud_line);
 		}
 
-		/* turn into one huge array */
-		$moves_messy = explode(" ", trim($moves));
+		if($use_moves && !$entry_error) {
+			/* turn into one huge array */
+			$moves_messy = explode(" ", trim($moves));
+			/* removes score from moves */
+			unset($moves_messy[count($moves_messy) - 1]);
 
-		/* removes score from moves */
-		unset($moves_messy[count($moves_messy) - 1]);
 
-		/* turn back into atring */
-		$moves_string = implode(" ", $moves_messy);
+			$moves = implode(" ", $moves_messy);
+			if (strlen($moves) > $max) {
+				$max = strlen($moves);
+			}
 
-		/* find longer string */
-		if (strlen($moves_string) > $max_move_string) {
-			$max_move_string = strlen($moves_string);
 		}
 
-	}
+		$event_line = $dud_line;
+		/* gets rid of dud empty lines between games */
+		$event_line = parse_white_space($db_file, $event_line);
+	} //while not eof
+
 	fclose($db_file);
+	return $max;
 
-	return $max_move_string;
 }
 ?>

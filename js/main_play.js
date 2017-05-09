@@ -278,13 +278,16 @@ function ensure_database_exists_on_server(hash) {
  *			error information or the data to graph.
  */
 function handle_filter_response(response) {
-	//console.log("received response: " + response);
+//	console.log("received response: " + JSON.stringify(response));
 //	$("#temp_results").append("<p>" + response + "</p>");
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
+		console.log("<p>" + response.error_message + "</p>");
 	} else {
 		//TODO: draw histo
-		$("#temp_results").append("<p>" + JSON.stringify(response.data) + "</p>");
+		//$("#temp_results").append("<p>" + JSON.stringify(response.data) + "</p>");
+		pgnOptions = response.data;
+		console.log (response.data);
 	}
 }
 
