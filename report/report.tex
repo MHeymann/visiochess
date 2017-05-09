@@ -390,22 +390,124 @@ quickly as possible.
 
 \subsection{Design of the database}
 The Database is comprised of four tables, shown as an entity relationship
-(ER) model in figure \ref{figure:4}. 
+(ER) model in figure \ref{figure:4}.
 
 \begin{figure}[h]
 	\includegraphics[width=10cm]{EER}
 	\caption{Entity Relationship model of the database used to store the
-	chess move and tag data.}
+	chess move and tag data}
 	\label{figure:4}
 \end{figure}
 
 The first and most important table is the tags table.  It stores the seven
-tags required in pgn files (event name, site name, date, 
-), as well as the optional information that we had
-to include for this project.  The primary key is a field called gameID,
-which is simply incremented with every entry added to the database.  For a
-game to be included, the seven 
+tags required in pgn files (event name, site name, date, round number, the
+names of both players and the game result), as well as the optional information
+that we had to include for this project (The elo of both players and the
+ECO code of the opening). As the ECO code is crucial for this project but
+optional in pgn notation, games for which no ECO code was provided are
+ommitted. The primary key is a field called gameID, which is simply incremented
+with every entry added to the database. The minimum value of the ELO's of
+the two players is computed and added to its own field, to streamline
+certain queries.  All queries that are included to meet the minimum
+requirements of the project query only on this table.
+The data definition language (DDL) of the tags table is shown in listing
+\ref{lst:1}.
 
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:1}, language=sql, frame=single, caption=DDL describing the structure of the tags table]
+CREATE TABLE tags
+(gameID INT(10) PRIMARY KEY,
+event VARCHAR(50),
+site VARCHAR(50),
+date INT(4),
+round INT(3),
+white VARCHAR(50),
+black VARCHAR(50),
+result VARCHAR(10),
+whiteElo INT(4),
+blackElo INT(4),
+minElo INT(4),
+eco_alpha CHAR(1),
+eco_numero INT(2),
+eco_category VARCHAR(5));
+	\end{lstlisting}
+\end{figure}
+
+The moves\_six table and the moves\_pgn tables are responsible for storing
+the moves sequences of games that have valid moves sequences documented.
+The moves\_six table stores up to the first six moves of a given game, and
+has a foreign key, gameID, that references the tags table's gameID.  Games
+with fewer than six moves have their remaining columns filled with empty
+strings. Before moves\_pgn is created, the pgn file from which the data
+is populated is preparsed, and the longest moves string sequence determined.
+Thereafter, moves\_pgn is created with a foreign key, gameID that
+references the gameID field in the tags table and the pgn\_string field.
+This field is a variable character field, up to the number of characters of
+the longest move sequence in the pgn file.
+
+The data definition language (DDL) of the moves\_six table is shown in listing
+\ref{lst:3}, and that of moves\_pgn in listing \ref{lst:4}. Listing
+\ref{lst:5} gives the DDL defining the indices on the three tables.
+
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:3}, language=sql, frame=single,
+	caption=DDL describing the structure of the moves\_six table]
+CREATE TABLE moves_six
+(gameID INT(10) PRIMARY KEY REFERENCES tags.gameID,
+move_1 VARCHAR(15),
+move_2 VARCHAR(15),
+move_3 VARCHAR(15),
+move_4 VARCHAR(15),
+move_5 VARCHAR(15),
+move_6 VARCHAR(15));
+	\end{lstlisting}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:4}, language=sql, frame=single,
+	caption=DDL describing the structure of the moves\_pgn table]
+CREATE TABLE moves_pgn
+(gameID INT(10) PRIMARY KEY REFERENCES tags.gameID,
+pgn_string VARCHAR(<longest>));
+	\end{lstlisting}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:5}, language=sql, frame=single,
+	caption=DDL describing the structure of the various indices]
+CREATE INDEX ON tags
+(date,
+eco_alpha,
+eco_category,
+eco_numero,
+minElo,
+whiteElo,
+blackElo);
+
+CREATE INDEX ON moves_six
+(move_1,
+move_2,
+move_3,
+move_4,
+move_5,
+move_6);
+
+CREATE INDEX ON moves_pgn (pgn_string);
+	\end{lstlisting}
+\end{figure}
+Finally, a first\_move table is created, with two columns, move and total.
+It stores the results of the query in listing \ref{lst:2} that gets used for the
+additional features under play.html:
+
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:2}, language=sql, frame=single,
+	caption=query populating table first\_move]
+	INSERT INTO first_move(move, total)
+	SELECT m.move_1, COUNT(*)
+	FROM moves_six m
+	GROUP BY m.move_1;
+	\end{lstlisting}
+\end{figure}
 
 \subsection{Populating database}
 The parser started with a naive approach of putting each game into the
@@ -545,17 +647,20 @@ seconds.
 
 The execution graphic of the database without and index is shown in figure
 \ref{figure:2}, while the graphic of the same query is shown in figure
-\ref{figure:3}. The query performed looked as follows:
+\ref{figure:3}. The query performed is shown in listing \ref{lst:6}:
 
-\begin{lstlisting}[language=sql, frame=single]
-SELECT date, CONCAT(eco\_alpha, eco\_numero) as eco,
+\begin{figure}[h]
+	\begin{lstlisting}[label={lst:6}, language=sql, frame=single,
+	caption=Query used showing explanations of queries]
+SELECT date, CONCAT(eco_alpha, eco_numero) as eco,
 count(*) AS popularity
 FROM tags
-WHERE date >= 1900 AND date <= 2000 AND eco\_numero >= 10
-AND eco\_numero <= 30 AND eco\_alpha = 'A'
+WHERE date >= 1900 AND date <= 2000 AND eco_numero >= 10
+AND eco_numero <= 30 AND eco_alpha = 'A'
 group by eco, date
 ORDER BY date, popularity DESC;
-\end{lstlisting}
+	\end{lstlisting}
+\end{figure}
 
 As expected, the query without an index table had to do a full table scan,
 while the query on the indexed table had a significant reduction in the
