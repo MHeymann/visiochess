@@ -81,7 +81,32 @@ if ($num_black_moves < 6) {
 $select = [];
 $groups = [];
 /* Set up the query to perform */
-if ($num_black_moves < 6) {
+if (($num_white_moves == 0) && ($num_black_moves == 0)) {
+    $select[] = "`move` as `move_1`";
+    $select[] = "`total` as `popularity`";
+	$query = [];
+	$query["total"] = array();
+	$query["total"][">="] = 0;
+    $groups = ["ORDER BY `popularity` DESC"];
+    //$select = ['`date`', 'CONCAT(eco_alpha, eco_numero) as `eco`', 'COUNT(*) AS `popularity`'];
+
+    /* perform query */
+    $result = $db->select_from(
+            'first_move',
+            $select,
+            $query,
+            $groups
+        );
+
+    if(!count($result)) {
+        $db->disconnect();
+        echo json_encode(array(
+            'error'=>true,
+            'error_message' => "No data exists that satisfy these filters."
+        ));
+        die();
+    }
+} else if ($num_black_moves < 6) {
     $i = $num_black_moves + 1;
     $select[] = "`move_$i`";
     $select[] = "COUNT(*) as `popularity`";
