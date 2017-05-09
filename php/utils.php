@@ -9,6 +9,10 @@
  * @return true if string is present in token, false otherwise.
  */
 function contains($string, $token) {
+	if(!$string || !$token) {
+		return false;
+	}
+
 	if(strpos($string, $token) !== false) {
 		return true;
 	} else {
@@ -28,7 +32,7 @@ function stringify($object) {
 	foreach($object as $key => $value) {
 		$string .= $key . " " . $value . ", ";
 	}
-	$string = substr($string, 0, count($string) - 3);
+	$string = trim_chars($string, 2);
 	return $string;
 }
 
@@ -41,8 +45,11 @@ function stringify($object) {
  * @return string $string with the last $num_chars characters removed.
  */
 function trim_chars($string, $num_chars) {
-	$length = count($string);
-	$stop = $length - $num_chars - 1;
+	$length = strlen($string);
+	if($num_chars >= $length) {
+		return '';
+	}
+	$stop = $length - $num_chars;
 	return substr($string, 0, $stop);
 }
 

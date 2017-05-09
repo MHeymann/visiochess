@@ -18,7 +18,9 @@ class test_eco extends TestCase {
 			['D', '5', 'D4.1'],
 			['B', '33', 'B2.2'],
 			['C', '4', 'C3.1'],
-			['A', '79', 'A1.4']];
+			['A', '79', 'A1.4'],
+			['E', '0', 'E5.1']
+		];
 	}
 	/**
 	 * @dataProvider invalid_eco_provider
@@ -29,32 +31,32 @@ class test_eco extends TestCase {
 
 	public function invalid_eco_provider() {
 		return [
-			'eco with zero' => ['E', '0', 'blamo'],
-			'eco with negative' => ['A', '-45', 'blamo'],
-			'eco with invalid category' => ['F', '34', 'blamo'],
-			'eco above max range' => ['B', '999', 'blamo']];
+			'eco with negative' => ['A', '-45', 'Invalid Numero'],
+			'eco with invalid category' => ['F', '34', 'Invalid Alpha'],
+			'eco above max range' => ['B', '999', 'Invalid Numero']
+		];
 	}
 
 	/**
 	 * @dataProvider valid_class_provider
 	 */
 	public function test_class_valid_category($eco_category, $expected) {
-		$this->assertEquals($expected, get_eco_class($eco_category));
+		$this->assertEquals($expected, get_eco_class_ranges($eco_category));
 	}
 
 	public function valid_class_provider() {
 		return [
-			['A1.2', array('category' => 'A', 'low' => 40, 'high' => 44)],
-			['A1.4', array('category' => 'A', 'low' => 50, 'high' => 79)],
-			['E5.2', array('category' => 'E', 'low' => 60, 'high' => 99)],
-			['B2.2', array('category' => 'B', 'low' => 20, 'high' => 99)]];
+			['A1.2', array('class' => 'A', 'low' => 40, 'high' => 44)],
+			['A1.4', array('class' => 'A', 'low' => 50, 'high' => 79)],
+			['E5.2', array('class' => 'E', 'low' => 60, 'high' => 99)],
+			['B2.2', array('class' => 'B', 'low' => 20, 'high' => 99)]];
 	}
 
 	/**
 	 * @dataProvider invalid_class_provider
 	 */
 	public function test_class_invalid_category($eco_category, $expected) {
-		$this->assertEquals($expected, get_eco_class($eco_category));
+		$this->assertEquals($expected, get_eco_class_ranges($eco_category));
 	}
 
 	public function invalid_class_provider() {

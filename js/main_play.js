@@ -193,14 +193,7 @@ function handle_filter_submit(event) {
 	} else {
 		filters['pgn_moves'] = "";
 	}
-	//filters['pgn_moves'] = "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5 4. d4 Nf6 5. Nf3 c6 6. Bd2 Qb6";
-	//filters['pgn_moves'] = "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6";
-	//filters['pgn_moves'] = "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5";
 
-	/* check for presence of db syncronously, reloading if necessary */
-	if (db_val != "default_chess_db") {
-		ensure_database_exists_on_server(db_val);
-	}
 	console.log(
 		'Sending these filters:\n',
 		JSON.stringify(filters)
@@ -237,38 +230,6 @@ function getFormData($form) {
 	});
 
 	return indexed_array;
-}
-
-/**
- * A Function asking the server whether a certain database is present.  If
- * not, the appropriate file is uploaded to the server.
- *
- * @param hash	The hash of the file that is being inquired about.
- */
-function ensure_database_exists_on_server(hash) {
-	console.log("Checking for presence of " + hash);
-	$.ajax({
-		url: ((config['dev_mode'])?config['php_server']:'') + "php/has_db.php",
-		async: false,
-		type: 'post',
-		dataType: 'json',
-		data: {
-			"hash": hash,
-		},
-		success: function(response) {
-			if (!response.db_present) {
-				$("#temp_results").append("<p>Database " + response.hash +
-					" being reuploaded</p>");
-				submit_file(get_file_from_hash(hash),
-					"php/user_upload.php");
-				$("#temp_results").append("<p>Database " + response.hash +
-					" reuploaded</p>");
-			}
-		},
-		error: function(xhr, textStatus, errorMessage) {
-			console.log(errorMessage);
-		}
-	});
 }
 
 /**
