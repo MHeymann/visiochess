@@ -280,7 +280,9 @@ server.
 \end{itemize}
 
 \subsubsection{validate.php}
-TODO
+It is a collection of functions that validates all user inputs. This necessary
+as the user might have disabled javascript and/or may be using a browser that
+does not support HTML5. It also protects the server from malicious attacks.
 \begin{itemize}
 	\item validate\_filters(\$filters)
 	\item validate\_year(\$filters, \$response=null)
@@ -319,47 +321,22 @@ will handle user interaction (such as constructing new filters and uploading
 files). It will make the necessary ajax calls to the server when the user
 wants to apply filters and upload their own PGN file. This file also
 validates all user input to ensure it is correct and safe to send to the server.
-
-\subsubsection*{add\_max\_year\_attr}
-TODO
-
-\subsubsection*{getConfigSettings}
-TODO
-
-\subsubsection*{handle\_pgn\_submit function}
-This function runs some checks on the submitted PGN file and if it passes
-all the checks it uses \textit{hex\_sha256.js} to hash the file. It then
-sends the file and a hash of the file to the server using ajax.
-
-\subsubsection*{submit\_file}
-TODO
-
-\subsubsection*{handle\_filter\_submit function}
-This function sends the filter form data in json form to the server.
-(It will handle the response properly later but for now it just embeds it into
-the html)
-
-\subsubsection*{getFormData function}
-This function serializes and returns form data in the form of a json.
-(I believe it was acquired from stackoverflow.com, we should reference that)
-
-\subsubsection*{ensure\_database\_exists\_on\_server}
-TODO
-
-\subsubsection*{handle\_filter\_response}
-TODO
-
-\subsubsection*{get\_file\_from\_hash}
-TODO
-
-\subsubsection*{handle\_filter\_clear}
-TODO
-
-\subsubsection*{handle\_window\_resize}
-TODO
-
-\subsubsection*{handleEcoFilterChange}
-TODO
+\begin{itemize}
+	\item add\_max\_year\_attr()
+	\item handle\_pgn\_submit(e)
+	\item submit\_file(file, send\_url)
+	\item markFieldInvalid(\$field)
+	\item markFieldNeutral(\$field)
+	\item validateFilters()
+	\item handle\_filter\_submit(event)
+	\item getFormData(\$form)
+	\item ensure\_database\_exists\_on\_server(hash)
+	\item handle\_filter\_response(response)
+	\item get\_file\_from\_hash(hash)
+	\item handle\_filter\_clear(e)
+	\item handle\_window\_resize(e)
+	\item handleEcoFilterChange()
+\end{itemize}
 
 \subsubsection{visual\_response.js}
 This file contains JavaScript that will run in the clients browser. It
@@ -368,17 +345,9 @@ after
 the filters have been submitted. A lot of the code is based on the Stacked Area
 Chart Example \cite{chart}.
 \begin{itemize}
-	\item TODO
+	\item draw(json\_data)
+	\item process\_JSON\_to\_D3(json\_data, keys)
 \end{itemize}
-\subsection*{draw}
-This function receives a JSON object from handle\_response or
-handle\_window\_resize in main.js. After this object has
-been processed, the data it contains is then visualized using the D3
-library functions.
-
-\subsubsection*{process\_JSON\_to\_D3}
-This function creates and returns a new JSON object from the received
-data function which will be used to create the graph.
 
 \section{Database}
 The data specified for this program is found in a file called
