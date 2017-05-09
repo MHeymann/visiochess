@@ -1,8 +1,9 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{amssymb, amsmath}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{graphicx}
+\usepackage{url}
 \graphicspath{ {../graphs/} }
 \usepackage{listings}
 \begin{document}
@@ -107,23 +108,23 @@ This is a configuration file that is generated. It contains all the
 information needed to connect to the MySQL server.
 
 \subsubsection{user\_upload.php}
-As the specifications dictate that users need to be able to upload their
-own custom database, user\_upload.php receives such uploads and performs
-some basic checks on the uploaded file, before saving it to the server
-disk.  The file gets hashed using sha256 and this hash is used as the file
-name when saved, allowing users to easily specify which file they wish to
-use, while avoiding any possible clashes in the naming domain, should
-different users upload different files with the same name.  Conveniently,
-if two users upload identical databases, these databases won't be duplicated
-on the server.
+As the specifications dictate that users need to be able to upload their own
+custom database, user\_upload.php receives such uploads and
+performs some basic checks on the uploaded file, before saving it to the
+server disk. The file gets hashed using sha256 and this hash is used as
+the file name when saved, allowing users to easily specify which file
+they wish to use, while avoiding any possible clashes in the naming
+domain, should different users upload different files with the same name.
+Conveniently, if two users upload identical databases, these databases
+won't be duplicated on the server.
 
 After a file has been uploaded successfully, a database is created with
-the same name as the local file.  This is done in create\_db.php with
+the same name as the local file. This is done in create\_db.php with
 the function create\_database.
 
 Once the file has been saved, it get's parsed. For each game, there are
-three different kinds of data to parse:  the seven tags required in PGN,
-optional tags and the moves made by during the game.  It gets parsed by
+three different kinds of data to parse: the seven tags required in PGN,
+optional tags and the moves made by during the game. It gets parsed by
 using the parse\_pgn\_file function in pgn\_parser.php.
 
 \subsubsection{create\_db.php}
@@ -258,85 +259,46 @@ Functions:
 
 
 \subsubsection{utils.php}
-utils.php provides utilitarian functions to prevent code duplications.
-
-\subsubsection*{contains}
-This simple function checks whether a certain string is present in some token.
-
-\subsubsection*{stringify}
-This function translates an object to a string of the key pairs, separated
-by commas.
-
-\subsubsection*{trim\_chars}
-The trim\_chars function removes a speicified number of characters form the
-end of a given string.
-
-\subsubsection*{process\_elo\_data}
-This processes the ECO data into a data structure that can easily be used
-by the visualization program.
-
-\subsubsection*{process\_year\_data}
-This processes the year data into a data structure that can easily be used
-by the visualization program. This is all sorted and grouped by year.
-
-\subsubsection*{set\_query\_where\_fields}
-This constructs a query data structure that is sent to the server.
+The utils.php script provides utilitarian functions to prevent code
+duplications. This script has functions to process ECO and year data. The
+contains function checks whether a string is present in some token. The
+trim\_chars function removes a given number of characters from the end of a
+given string. The stringify funtion translates objects to strings. The
+set\_query\_where\_fields constructs a query data structue that is sent to the
+server.
+\begin{itemize}
+	\item contains(\$string, \$token)
+	\item stringify(\$object)
+	\item trim\_chars(\$string, \$num\_chars)
+	\item process\_elo\_data(\$result, \&\$num\_ecos, \&\$top\_ecos,
+		\&\$json\_data)
+	\item process\_year\_data(\$result, \&\$num\_ecos, \&\$top\_ecos,
+		\&\$json\_data)
+	\item set\_query\_where\_fields(\$filter\_on, \$filters, \&\$query)
+\end{itemize}
 
 \subsubsection{validate.php}
-
-\subsubsection*{validate\_filters}
 TODO
-
-\subsubsection*{validate\_year}
-TODO
-
-\subsubsection*{validate\_give\_year}
-TODO
-
-\subsubsection*{validate\_year\_low}
-TODO
-
-\subsubsection*{validate\_year\_high}
-TODO
-
-\subsubsection*{validate\_elos}
-TODO
-
-\subsubsection*{validate\_elo}
-TODO
-
-\subsubsection*{validate\_elo\_low}
-TODO
-
-\subsubsection*{validate\_elo\_high}
-TODO
-
-\subsubsection*{validate\_eco}
-TODO
-
-\subsubsection*{validate\_eco\_cat}
-TODO
-
-\subsubsection*{validate\_eco\_class}
-TODO
-
-\subsubsection*{validate\_eco\_low}
-TODO
-
-\subsubsection*{validate\_eco\_high}
-TODO
-
-\subsubsection*{new\_response}
-TODO
-
-\subsubsection*{add\_error}
-TODO
-
-\subsubsection*{add\_filter}
-TODO
-
-\subsubsection*{low\_greater\_than\_high}
-TODO
+\begin{itemize}
+	\item validate\_filters(\$filters)
+	\item validate\_year(\$filters, \$response=null)
+	\item validate\_given\_year(\$year, \$response=null)
+	\item validate\_year\_low(\$year, \$response=null)
+	\item validate\_year\_high(\$year, \$response=null)
+	\item validate\_elos(\$filters, \$response=null)
+	\item validate\_elo(\$filters, \$type, \$response=null)
+	\item validate\_elo\_low(\$filters, \$type, \$response=null)
+	\item validate\_elo\_high(\$filters, \$type, \$response=null)
+	\item validate\_eco(\$filters, \$response=null)
+	\item validate\_eco\_cat(\$eco\_category, \$response=null)
+	\item validate\_eco\_class(\$eco\_class, \$response=null)
+	\item validate\_eco\_low(\$eco, \$response=null)
+	\item validate\_eco\_high(\$eco, \$response=null)
+	\item new\_response()
+	\item add\_error(\$error, \$response=null)
+	\item add\_filter(\$filter, \$response=null)
+	\item low\_greater\_than\_high(\$low, \$high, \$filter, \$response=null)
+\end{itemize}
 
 \subsection{Front End}
 The front end is presented to the user using HTML5 (index.html) and
@@ -389,7 +351,7 @@ TODO
 TODO
 
 \subsubsection*{handle\_filter\_clear}
-TODO Lisa
+TODO
 
 \subsubsection*{handle\_window\_resize}
 TODO
@@ -402,8 +364,10 @@ This file contains JavaScript that will run in the clients browser. It
 will handle the visualization of the data, that is received from the server
 after
 the filters have been submitted. A lot of the code is based on the Stacked Area
-Chart Example from \url{https://bl.ocks.org/mbostock/3885211}.
-
+Chart Example \cite{d3}.
+\begin{itemize}
+	\item TODO
+\end{itemize}
 \subsection*{draw}
 This function receives a JSON object from handle\_response or
 handle\_window\_resize in main.js. After this object has
@@ -588,5 +552,7 @@ in QUnit library to perform JUnit testing.
 
 \section{Additional features}
 
+\bibliographystyle{plain}
+\bibliography{references.bib}
 
 \end{document}
