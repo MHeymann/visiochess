@@ -12,9 +12,9 @@ var currentData = null;
  * @param json_data A JSON object of the data generated in php/query.php
  */
 function draw(json_data, x_domain) {
-	
+
 	add_title();
-	
+
 	/* the categories */
 	var keys = json_data.pop;
 
@@ -228,7 +228,7 @@ function add_title() {
 			} else {
 					title = "Percentages of ELO Values Over All Years";
 			}
-			
+
 			break;
 	}
 	$("#svg_header").append("<h5>"+title+"</h5>");
