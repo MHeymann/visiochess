@@ -11,8 +11,10 @@ var currentData = null;
  * Draws the graph using the d3 library and data from the database
  * @param json_data A JSON object of the data generated in php/query.php
  */
-function draw(json_data) {
-	/* area in html for graph */
+function draw(json_data, x_domain) {
+	
+	add_title();
+	
 	/* the categories */
 	var keys = json_data.pop;
 
@@ -46,10 +48,17 @@ function draw(json_data) {
 	}
 
 
-	/* the years for x-axis*/
-	var x = d3.scaleTime().range([0, width]),
-		/* popularity for y-axis */
-		y = d3.scaleLinear().range([height, 0]),
+
+	var x;
+
+	if (x_domain === "Year") {
+		x = d3.scaleTime().range([0, width]);
+	}
+	else {
+		x = d3.scaleLinear().range([0, width]);
+	}
+	/* popularity for y-axis */
+	var y = d3.scaleLinear().range([height, 0]),
 		/* colours for each category */
 		z = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -58,7 +67,12 @@ function draw(json_data) {
 	/* creates the area on the graph for each category */
 	var area = d3.area()
 		.x(function(d, i) { // x-coordinates of the shape
-			return x(parseDate(d.data.year));
+			if (x_domain == "Year") {
+				return x(parseDate(d.data.year));
+			}
+			else {
+				return x(d.data.year);
+			}
 		})
 		.y0(function(d, i) { // bottom y-coordinates of the shape
 			if (isNaN(y(d[0]))) {
@@ -84,7 +98,12 @@ function draw(json_data) {
 
 	/* the years */
 	x.domain(d3.extent(data, function(d, i) {
-		return parseDate(d.year);
+		if (x_domain === "Year") {
+			return parseDate(d.year);
+		}
+		else {
+			return d.year;
+		}
 	}));
 
 	/* colours */
@@ -115,8 +134,14 @@ function draw(json_data) {
 		.attr("class", "axis axis--y")
 		.call(d3.axisLeft(y).ticks(10, "%"));
 
+
+	g.append("text")
+		.attr("text-anchor", "middle") // this makes it easy to centre the text as the transform is applied to the anchor
+		.attr("transform", "translate(" + (width / 2) + "," + (height + 50 + ")")) // centre below axis
+		.text(x_domain);
+
 	var legenndSVG = d3.select("#legend-div").append("svg");
-	var legendG = legenndSVG.selectAll(".legend") 
+	var legendG = legenndSVG.selectAll(".legend")
 		.data(stack(data))
 		.enter().append("g")
 		.attr("transform", function(d, i) {
@@ -180,4 +205,31 @@ function process_JSON_to_D3(json_data, keys) {
 	}
 
 	return data;
+}
+/**
+ *  Adds the title to the graph
+ */
+function add_title() {
+		$("#svg_header").empty();
+	var title = "";
+	switch ($("input[name=eco-filter-type]:checked").val()) {
+		case "category":
+			title = "Percentages of ECO Categories Over Time";
+			break;
+		case "code":
+			title = "Percentages of ECO Codes Over Time";
+			break;
+		case "class":
+			title = "Percentages of ECO Classes Over Time";
+			break;
+		case "year-eco-analysis":
+			if ($("input[name='year']").val().length > 0) {
+				title = "Percentages of ELO Values in " + $("input[name='year']").val();
+			} else {
+					title = "Percentages of ELO Values Over All Years";
+			}
+			
+			break;
+	}
+	$("#svg_header").append("<h5>"+title+"</h5>");
 }
