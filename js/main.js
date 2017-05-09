@@ -388,6 +388,7 @@ function handle_filter_clear(e) {
 function handle_window_resize(e) {
 	if (mainJSON != null) {
 		$("#display_svg").empty();
+		$("#legend-div").empty();
 		draw(mainJSON);
 	}
 }

@@ -1,143 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-		<title>VisioChess</title>
 
-		<link rel="stylesheet" type="text/css"
-		href="https://fonts.googleapis.com/css?family=Pangolin">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<title>VisioChess</title>
 
-		<!-- Bootstrap -->
-		<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Pangolin">
 
-		<link href="css/style.css" rel="stylesheet">
-		<script src="https://d3js.org/d3.v4.min.js"></script>
-		<script type="text/javascript" src="js/main.js"></script>
-		<script type="text/javascript" src="js/visual_response.js"></script>
-		<script type="text/javascript" src="js/sha256.js"></script>
+	<!-- Bootstrap -->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
 
-		<link rel="icon" href="http://www.favicon.cc/logo3d/45728.png">
+	<link href="css/style.css" rel="stylesheet">
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script type="text/javascript" src="js/main.js"></script>
+	<script type="text/javascript" src="js/visual_response.js"></script>
+	<script type="text/javascript" src="js/sha256.js"></script>
 
-	</head>
-	<body>
-		<header id="top" class="container">
-			<h1>VisioChess!</h1>
-			<h4>Graphical representation of chess openings through the years.</h4>
-		</header>
+	<link rel="icon" href="http://www.favicon.cc/logo3d/45728.png">
 
-		<div class="container">
-			<div class="row">
+</head>
 
-				<div class="col-xs-12 col-md-8 col-lg-9" id="display_svg">
-					<h1>Please set the filters you want and click "apply"
-						to graph.</h1>
-						<p>To display a graph of the default data set,
-							simply press the apply button.</p>
-						<p>To filter over a range of years, white elo
-							and/or black elo values, type the values
-							between which to display in the appropriate
-							fields.</p>
-						<p>To display only one year by ECO codes, select the low
-							value and select a high value at least 1 higher
-							than the low.</p>
-						<p>To display 1 year by elo codes, select "Year
-							Analysis" and select the wanted year.</p>
-						<p>To display games played over years by single
-							elo value, select low and high to be the same.
-						</p>
-						<p>To upload a different data set, click on
-							"Choose file" and select the wanted PGN file.
-							Click "upload". To display the new data set,
-							click "Apply".</p>
-						<p>To view a previously uploaded file, select the
-							desired file in the list of data sets.</p>
-						<p>For a more detailed description, select "About"
-							at the bottom of the page.</p>
-							<h4>No file larger than 10MB can be uploaded.</h4>
+<body>
+	<header id="top" class="container">
+		<h1>VisioChess!</h1>
+		<h4>Graphical representation of chess openings through the years.</h4>
+	</header>
+
+	<div class="container">
+		<div class="row">
+
+			<div class="col-xs-12 col-md-8 col-lg-9">
+				<div class="col-xs-11" id="display_svg">
+					<h1>Please set the filters you want and click "apply" to graph.</h1>
+					<p>To display a graph of the default data set, simply press the apply button.</p>
+					<p>To filter over a range of years, white elo and/or black elo values, type the values between which to display in the appropriate fields.
+					</p>
+					<p>To display only one year by ECO codes, select the low value and select a high value at least 1 higher than the low.</p>
+					<p>To display 1 year by elo codes, select "Year Analysis" and select the wanted year.</p>
+					<p>To display games played over years by single elo value, select low and high to be the same.
+					</p>
+					<p>To upload a different data set, click on "Choose file" and select the wanted PGN file. Click "upload". To display the new data set, click "Apply".</p>
+					<p>To view a previously uploaded file, select the desired file in the list of data sets.</p>
+					<p>For a more detailed description, select "About" at the bottom of the page.</p>
+					<h4>No file larger than 10Mb can be uploaded.</h4>
 				</div>
+				<div class="col-xs-1" id="legend-div">
+				</div>
+			</div>
 
-				<div class="col-xs-12 col-sm-4 col-lg-3">
-					<div class="panel panel-default">
-						<div class="panel-body">
-							<div class="panel panel-default">
-								<div class="panel-body">
-									<form action="php/query.php" id="filter_form"
-										method="post" enctype="multipart/form-data">
+			<div class="col-xs-12 col-sm-4 col-lg-3">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class="panel panel-default">
+							<div class="panel-body">
+								<form action="php/query.php" id="filter_form" method="post" enctype="multipart/form-data">
 
 
 
-										<h3>Select filters:</h3>
+									<h3>Select filters:</h3>
 
-										<div class="form-group">
-											<label name="year-label"
-												class="control-label col-xs-12">
+									<div class="form-group">
+										<label name="year-label" class="control-label col-xs-12">
 												Year Range:
 											</label>
-											<input title="boom" type="number" name="year-low" placeholder="Low"
-											min="0" class="form-control control-label col-xs-12">
+										<input title="boom" type="number" name="year-low" placeholder="Low" min="0" class="form-control control-label col-xs-12">
 
-											<input type="number" name="year-high" placeholder="High"
-											min="0" class="form-control control-label col-xs-12">
-										</div>
+										<input type="number" name="year-high" placeholder="High" min="0" class="form-control control-label col-xs-12">
+									</div>
 
-										<div class="form-group">
-											<label name="black-elo"
-												class="control-label col-xs-12">
+									<div class="form-group">
+										<label name="black-elo" class="control-label col-xs-12">
 												Black Elo:
 											</label>
-											<input type="number" name="black-elo-low" placeholder="Low"
-											min="0" max="3400" class="form-control control-label col-xs-12">
-											<input type="number" name="black-elo-high" placeholder="High"
-											min="0" max="3400" class="form-control control-label col-xs-12">
-										</div>
+										<input type="number" name="black-elo-low" placeholder="Low" min="0" max="3400" class="form-control control-label col-xs-12">
+										<input type="number" name="black-elo-high" placeholder="High" min="0" max="3400" class="form-control control-label col-xs-12">
+									</div>
 
-										<div class="form-group">
-											<label name="whileelo"
-												class="control-label col-xs-12">
+									<div class="form-group">
+										<label name="whileelo" class="control-label col-xs-12">
 												White Elo:
 											</label>
-											<input type="number" name="white-elo-low" placeholder="Low"
-											min="0" max="3400" class="form-control control-label col-xs-12">
-											<input type="number" name="white-elo-high" placeholder="High"
-											min="0" max="3400" class="form-control control-label col-xs-12">
-										</div>
-										
-										<label name="eco"
-											class="control-label col-xs-12">
+										<input type="number" name="white-elo-low" placeholder="Low" min="0" max="3400" class="form-control control-label col-xs-12">
+										<input type="number" name="white-elo-high" placeholder="High" min="0" max="3400" class="form-control control-label col-xs-12">
+									</div>
+
+									<label name="eco" class="control-label col-xs-12">
 											ECO Code:
 										</label>
 
-										<div name="eco-filters" class="radio col-xs-12">
+									<div name="eco-filters" class="radio col-xs-12">
 
-											<label class="col-xs-12">
+										<label class="col-xs-12">
 												<input type="radio" name="eco-filter-type"
 												value="category" checked></input>
 												eco category
 											</label>
 
-											<label class="col-xs-12">
+										<label class="col-xs-12">
 												<input type="radio" name="eco-filter-type"
 												value="class"></input>
 												eco class
 											</label>
 
-											<label class="col-xs-12">
+										<label class="col-xs-12">
 												<input type="radio" name="eco-filter-type"
 												value="code"></input>
 												eco code
 											</label>
 
-											<label class="col-xs-12">
+										<label class="col-xs-12">
 												<input type="radio" name="eco-filter-type"
 												value="year-eco-analysis"></input>
 												Year Analysis
 											</label>
 
-											<div class="current-eco-filter">
-												<select name="eco-category" class="control-label col-xs-12">
+										<div class="current-eco-filter">
+											<select name="eco-category" class="control-label col-xs-12">
 													<option value="" selected>Filter by eco category...</option>
 													<optgroup label="A"
 														>A</optgroup>
@@ -163,136 +144,117 @@
 														<option value="E5.1">E5.1</option>
 														<option value="E5.2">E5.2</option>
 												</select>
-											</div>
 										</div>
+									</div>
 
-										<input type="submit" value="Apply" name="submit"
-										class="btn btn-info btn-lg" >
-										<input type="button" value="Clear"
-											name="clear_filters" id="clear_filters"
-										class="btn btn-info btn-lg" >
+									<input type="submit" value="Apply" name="submit" class="btn btn-info btn-lg">
+									<input type="button" value="Clear" name="clear_filters" id="clear_filters" class="btn btn-info btn-lg">
 
 
-										<!-- start modal-->
+									<!-- start modal-->
 
-										<!-- Trigger the modal with a button -->
-										<button type="button" class="btn btn-info btn-lg"
-											data-toggle="modal"
-											data-target="#myModal">Help
+									<!-- Trigger the modal with a button -->
+									<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Help
 										</button>
 
-										<!-- Modal -->
-										<div id="myModal" class="modal fade" role="dialog">
-											<div class="modal-dialog">
+									<!-- Modal -->
+									<div id="myModal" class="modal fade" role="dialog">
+										<div class="modal-dialog">
 
-												<!-- Modal content-->
-												<div class="modal-content">
-													<div class="modal-header">
-														<button type="button" class="close"
-															data-dismiss="modal">&times;
+											<!-- Modal content-->
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal">&times;
 														</button>
-														<h4 class="modal-title">
-															How to use:
-														</h4>
-													</div>
-													<div class="modal-body">
-														<p>To display a graph of the default data set,
-															simply press the apply button.</p>
-														<p>To filter over a range of years, white elo
-															and/or black elo values, type the values
-															between which to display in the appropriate
-															fields.</p>
-														<p>To display only one year by ECO codes, select the low
-															value and select a high value at least 1 higher
-															than the low.</p>
-														<p>To display 1 year by elo codes, select "Year
-															Analysis" and select the wanted year.</p>
-														<p>To display games played over years by single
-															elo value, select low and high to be the same.
-														</p>
-														<p>To upload a different data set, click on
-															"Choose file" and select the wanted PGN file.
-															Click "upload". To display the new data set,
-															click "Apply".</p>
-														<p>To view a previously uploaded file, select the
-															desired file in the list of data sets.</p>
-														<p>For a more detailed description, select "About"
-															at the bottom of the page.</p>
-															<h4>No file larger than 10MB can be uploaded.</h4>
-													</div>
-													<div class="modal-footer">
-														<button type="button" class="btn btn-default"
-															data-dismiss="modal">Close</button>
-													</div>
+													<h4 class="modal-title">
+														How to use:
+													</h4>
 												</div>
-
+												<div class="modal-body">
+													<p>To display a graph of the default data set, simply press the apply button.</p>
+													<p>To filter over a range of years, white elo and/or black elo values, type the values between which to display in the appropriate fields.
+													</p>
+													<p>To display only one year by ECO codes, select the low value and select a high value at least 1 higher than the low.</p>
+													<p>To display 1 year by elo codes, select "Year Analysis" and select the wanted year.</p>
+													<p>To display games played over years by single elo value, select low and high to be the same.
+													</p>
+													<p>To upload a different data set, click on "Choose file" and select the wanted PGN file. Click "upload". To display the new data set, click "Apply".</p>
+													<p>To view a previously uploaded file, select the desired file in the list of data sets.</p>
+													<p>For a more detailed description, select "About" at the bottom of the page.</p>
+													<h4>No file larger than 10Mb can be uploaded.</h4>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+												</div>
 											</div>
+
 										</div>
+									</div>
 
-										<!-- end modal -->
+									<!-- end modal -->
 
-									</form>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>
 				</div>
+			</div>
 
-				<div class="col-xs-12 col-sm-8">
-					<div class="panel panel-default">
-						<div class="panel-body">
-							<form id="db_select_form">
-								<select name="db_selector" id="db_selector" size="5"
-									style="max-width:90%">
+			<div class="col-xs-12 col-sm-8">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<form id="db_select_form">
+							<select name="db_selector" id="db_selector" size="5" style="max-width:90%">
 										<option value="default_chess_db"
 										selected="selected">Default</option>
 									<optgroup label="user uploaded: ">
 								</select>
-							</form>
-						</div>
+						</form>
 					</div>
 				</div>
-
-
-				<div class="col-xs-12 col-sm-8 col-md-4">
-					<div class="panel panel-default">
-						<div class="panel-body">
-							<form action="php/user_upload.php" id="pgn_up_form"
-								method="post" enctype="multipart/form-data">
-								Select database to upload:
-								<input type="file" name="user_db_uploader"
-								id="user_db_uploader">
-								<input type="submit" value="Upload"
-							 name="submit" class="btn btn-info btn-lg"> 
-							</form>
-						</div>
-					</div>
-				</div>
-
 			</div>
-			<div class="row">
-				<div class="col-xs-12">
-					<div class="panel panel-default">
-						<div class="panel-body">
-							<div id="temp_results">
-								<p></p>
-							</div>
+
+
+			<div class="col-xs-12 col-sm-8 col-md-4">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<form action="php/user_upload.php" id="pgn_up_form" 
+							method="post" enctype="multipart/form-data">
+							Select database to upload:
+							<input type="file" name="user_db_uploader" 
+							id="user_db_uploader">
+							<input type="submit" value="Upload" 
+							name="submit" class="btn btn-info btn-lg">
+						</form>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div id="temp_results">
+							<p></p>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<footer class="container">
-			<p><a href="http://cs.sun.ac.za/rw334/">CS 334</a></p>
-			<p><a href="index.html">Home</a></p>
-			<p><a href="about.html">About</a></p>
-			<p><a href="play.html">Play</a></p>
-		</footer>
+	<footer class="container">
+		<p><a href="http://cs.sun.ac.za/rw334/">CS 334</a></p>
+		<p><a href="index.html">Home</a></p>
+		<p><a href="about.html">About</a></p>
+		<p><a href="play.html">Play</a></p>
+	</footer>
 
-		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-		<!-- Include all compiled plugins (below), or include individual files as needed -->
-		<script src="js/bootstrap.min.js"></script>
-	</body>
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<!-- Include all compiled plugins (below), or include individual files as needed -->
+	<script src="js/bootstrap.min.js"></script>
+</body>
+
 </html>

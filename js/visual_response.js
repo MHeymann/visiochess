@@ -20,16 +20,16 @@ function draw(json_data) {
 	var data = process_JSON_to_D3(json_data, keys);
 
 	var svg = d3.select("#display_svg").append("svg")
-	.style("width", 960)
-	.style("height", ($("#display_svg").width() * 0.666))
-	.attr("viewBox", "0 0 960 " + ($("#display_svg").width() * 0.666))
-	.attr("preserveAspectRatio", "xMinYMin meet"),
-	margin = {
-		top: 20,
-		right: 20,
-		bottom: 30,
-		left: 50
-	};
+		.style("width", 960)
+		.style("height", (($("#display_svg").width()) * 0.666))
+		.attr("viewBox", "0 0 1080 " + (($("#display_svg").width()) * 0.666))
+		.attr("preserveAspectRatio", "xMinYMin meet"),
+		margin = {
+			top: 20,
+			right: 20,
+			bottom: 30,
+			left: 50
+		};
 
 	var disp_w = $("#display_svg").width();
 	var disp_h = $("#display_svg").height();
@@ -39,7 +39,8 @@ function draw(json_data) {
 	if (disp_h * 1.5 < disp_w) {
 		width = disp_h * 1.5 - margin.left - margin.right;
 		height = disp_h - margin.top - margin.bottom;
-	} else {
+	}
+	else {
 		width = disp_w - margin.left - margin.right;
 		height = disp_w * 0.66667 - margin.top - margin.bottom;
 	}
@@ -47,29 +48,39 @@ function draw(json_data) {
 
 	/* the years for x-axis*/
 	var x = d3.scaleTime().range([0, width]),
-	/* popularity for y-axis */
-	y = d3.scaleLinear().range([height, 0]),
-	/* colours for each category */
-	z = d3.scaleOrdinal(d3.schemeCategory10);
+		/* popularity for y-axis */
+		y = d3.scaleLinear().range([height, 0]),
+		/* colours for each category */
+		z = d3.scaleOrdinal(d3.schemeCategory10);
 
 	var stack = d3.stack();
 
 	/* creates the area on the graph for each category */
 	var area = d3.area()
-	.x(function(d, i) { // x-coordinates of the shape
-		return x(parseDate(d.data.year));
-	})
-	.y0(function(d, i) { // bottom y-coordinates of the shape
-		return y(d[0]);
-	})
-	.y1(function(d) { //top y-coordinates of the shape
-		return y(d[1]);
-	});
+		.x(function(d, i) { // x-coordinates of the shape
+			return x(parseDate(d.data.year));
+		})
+		.y0(function(d, i) { // bottom y-coordinates of the shape
+			if (isNaN(y(d[0]))) {
+				return 0;
+			}
+			else {
+				return y(d[0]);
+			}
+		})
+		.y1(function(d) { //top y-coordinates of the shape
+			if (isNaN(y(d[1]))) {
+				return 0;
+			}
+			else {
+				return y(d[1]);
+			}
+		});
 
 
 	/* group in html to place resulting graph in */
 	var g = svg.append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	/* the years */
 	x.domain(d3.extent(data, function(d, i) {
@@ -84,40 +95,49 @@ function draw(json_data) {
 
 	/* creates layers consisting of each area graph for the different categories */
 	var layer = g.selectAll(".layer")
-	.data(stack(data))
-	.enter().append("g")
-	.attr("class", "layer");
+		.data(stack(data))
+		.enter().append("g")
+		.attr("class", "layer");
 
 	layer.append("path")
-	.attr("class", "area")
-	.style("fill", function(d, i) {
-		return z(keys[i]);
-	})
-	.attr("d", area);
-
-	layer.filter(function(d) {
-		return d[d.length - 1][1] - d[d.length - 1][0] > 0.01;
-	})
-	.append("text")
-	.attr("x", width - 6)
-	.attr("y", function(d) {
-		return y((d[d.length - 1][0] + d[d.length - 1][1]) / 2);
-	})
-	.attr("dy", ".35em")
-	.style("font", "10px sans-serif")
-	.style("text-anchor", "end")
-	.text(function(d) {
-		return d.key;
-	});
+		.attr("class", "area")
+		.style("fill", function(d, i) {
+			return z(keys[i]);
+		})
+		.attr("d", area);
 
 	g.append("g")
-	.attr("class", "axis axis--x")
-	.attr("transform", "translate(0," + height + ")")
-	.call(d3.axisBottom(x));
+		.attr("class", "axis axis--x")
+		.attr("transform", "translate(0," + height + ")")
+		.call(d3.axisBottom(x));
 
 	g.append("g")
-	.attr("class", "axis axis--y")
-	.call(d3.axisLeft(y).ticks(10, "%"));
+		.attr("class", "axis axis--y")
+		.call(d3.axisLeft(y).ticks(10, "%"));
+
+	var legenndSVG = d3.select("#legend-div").append("svg");
+	var legendG = legenndSVG.selectAll(".legend") 
+		.data(stack(data))
+		.enter().append("g")
+		.attr("transform", function(d, i) {
+			return "translate(" + (0) + "," + (i * 15 + 20) + ")"; // place each legend on the right and bump each one down 15 pixels
+		})
+		.attr("class", "legend");
+
+	legendG.append("rect") // make a matching color rect
+		.attr("width", 10)
+		.attr("height", 10)
+		.attr("fill", function(d, i) {
+			return z(keys[i]);
+		});
+
+	legendG.append("text") // add the text
+		.text(function(d) {
+			return " " + d.key;
+		})
+		.style("font-size", 12)
+		.attr("y", 10)
+		.attr("x", 11);
 }
 
 /**
@@ -132,8 +152,8 @@ function process_JSON_to_D3(json_data, keys) {
 
 	if (hex_sha256(JSON.stringify(json_data)) == currentJSONHash) {
 		data = currentData;
-	} else {
-		/* 'data' from json (would be better if array received from php)*/
+	}
+	else {
 
 		for (var year in json_data.data) {
 			var entry = {};
@@ -144,13 +164,15 @@ function process_JSON_to_D3(json_data, keys) {
 			data.push(entry);
 		}
 
-		if(data.length == 1) {
+		if (data.length == 1) {
 			var entry = {};
 			for (key in data[0]) {
 				entry[key] = data[0][key];
 			}
 			entry['year']++;
-			$.extend(data, {1: entry});
+			$.extend(data, {
+				1: entry
+			});
 		}
 
 		currentData = data;
