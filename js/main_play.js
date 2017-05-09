@@ -289,13 +289,9 @@ function handle_filter_response(response) {
 			total += pgnOptions[option];
 		}
 
-		var myTable= "<table><tr><td style='width: 100px; color: red;'>Move</td>";
-		myTable+="<td style='width: 100px; color: red; text-align: right;'>Total</td>";
-		myTable+="<td style='width: 100px; color: red; text-align: right;'>Percent</td></tr>";
-
-		myTable+="<tr><td style='width: 100px;                   '>---------------</td>";
-		myTable+="<td     style='width: 100px; text-align: right;'>---------------</td>";
-		myTable+="<td     style='width: 100px; text-align: right;'>---------------</td></tr>";
+		var myTable= "<table><tr><th>Move</th>";
+		myTable+="<th style='text-align: right;'>Total</th>";
+		myTable+="<th style='text-align: right;'>Percent</th></tr>";
 
 		for (option in pgnOptions) {
 			myTable+="<tr><td style='width: 100px;'>" + option + ":</td>";
