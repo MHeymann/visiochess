@@ -296,7 +296,7 @@ server.
 
 \subsubsection{validate.php}
 It is a collection of functions that validates all user inputs. This necessary
-as the user might have disabled javascript and/or may be using a browser that
+as the user might have disabled JavaScript and/or may be using a browser that
 does not support HTML5. It also protects the server from malicious attacks.
 \begin{itemize}
 	\item validate\_filters(\$filters)
@@ -397,7 +397,7 @@ names of both players and the game result), as well as the optional information
 that we had to include for this project (The elo of both players and the
 ECO code of the opening). As the ECO code is crucial for this project but
 optional in pgn notation, games for which no ECO code was provided are
-ommitted. The primary key is a field called gameID, which is simply incremented
+omitted. The primary key is a field called gameID, which is simply incremented
 with every entry added to the database. The minimum value of the ELO's of
 the two players is computed and added to its own field, to streamline
 certain queries.  All queries that are included to meet the minimum
@@ -431,7 +431,7 @@ The moves\_six table stores up to the first six moves of a given game, and
 has a foreign key, gameID, that references the tags table's gameID.  Games
 with fewer than six moves have their remaining columns filled with empty
 strings. Before moves\_pgn is created, the pgn file from which the data
-is populated is preparsed, and the longest moves string sequence determined.
+is populated is pre-parsed, and the longest moves string sequence determined.
 Thereafter, moves\_pgn is created with a foreign key, gameID that
 references the gameID field in the tags table and the pgn\_string field.
 This field is a variable character field, up to the number of characters of
