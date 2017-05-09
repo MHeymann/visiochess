@@ -57,42 +57,9 @@
 
 										<h3>Select filters:</h3>
 
-										<label name="year-label"
-											class="control-label col-xs-12">
-											Year Range:
-										</label>
-										<input title="boom" type="number" name="year-low" placeholder="Low"
-										min="0" class="control-label col-xs-12">
-
-										<input type="number" name="year-high" placeholder="High"
-										min="0" class="control-label col-xs-12">
-
-										<label name="black-elo"
-											class="control-label col-xs-12">
-											Black Elo:
-										</label>
-										<input type="number" name="black-elo-low" placeholder="Low"
-										min="0" max="3400" class="control-label col-xs-12">
-										<input type="number" name="black-elo-high" placeholder="High"
-										min="0" max="3400" class="control-label col-xs-12">
-
-										<label name="whileelo"
-											class="control-label col-xs-12">
-											White Elo:
-										</label>
-										<input type="number" name="white-elo-low" placeholder="Low"
-
-										min="0" max="3400" class="control-label col-xs-12">
-										<input type="number" name="white-elo-high" placeholder="High"
-										min="0" max="3400" class="control-label col-xs-12">
-
 										<input type="submit" value="Apply" name="submit"
 										class="btn btn-info btn-lg"
 										id="submit_filters">
-										<input type="button" value="Clear"
-											name="clear_filters" id="clear_filters"
-										class="btn btn-info btn-lg" >
-
 
 										<!-- start modal-->
 
@@ -197,7 +164,6 @@
 		<script src="js/bootstrap.min.js"></script>
 		<script>
 $(document).ready(game_init);
-handle_filter_submit(null);
 		</script>
 	</body>
 </html>

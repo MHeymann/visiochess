@@ -11,6 +11,7 @@ var board;
 var game = null;
 var statusEl;
 var pgnEl;
+var moveCount;
 
 /**
  * Set up the necessary parameters and event handlers as soon as the html
@@ -194,7 +195,6 @@ function handle_filter_submit(event) {
 	}
 	//filters['pgn_moves'] = "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5 4. d4 Nf6 5. Nf3 c6 6. Bd2 Qb6";
 	//filters['pgn_moves'] = "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6";
-
 	//filters['pgn_moves'] = "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5";
 
 	/* check for presence of db syncronously, reloading if necessary */
@@ -278,8 +278,6 @@ function ensure_database_exists_on_server(hash) {
  *			error information or the data to graph.
  */
 function handle_filter_response(response) {
-//	console.log("received response: " + JSON.stringify(response));
-//	$("#temp_results").append("<p>" + response + "</p>");
 	if (response.error) {
 		$("#temp_results").append("<p>" + response.error_message + "</p>");
 		console.log("<p>" + response.error_message + "</p>");
@@ -287,7 +285,33 @@ function handle_filter_response(response) {
 		//TODO: draw histo
 		//$("#temp_results").append("<p>" + JSON.stringify(response.data) + "</p>");
 		pgnOptions = response.data;
-		console.log (response.data);
+
+		var total = 0;
+		for (option in pgnOptions) {
+			total += pgnOptions[option];
+		}
+
+		var myTable= "<table><tr><td style='width: 100px; color: red;'>Move</td>";
+		myTable+="<td style='width: 100px; color: red; text-align: right;'>Total</td>";
+		myTable+="<td style='width: 100px; color: red; text-align: right;'>Percent</td></tr>";
+
+		myTable+="<tr><td style='width: 100px;                   '>---------------</td>";
+		myTable+="<td     style='width: 100px; text-align: right;'>---------------</td>";
+		myTable+="<td     style='width: 100px; text-align: right;'>---------------</td></tr>";
+
+		for (option in pgnOptions) {
+			myTable+="<tr><td style='width: 100px;'>" + option + ":</td>";
+			myTable+="<td style='width: 100px; text-align: right;'>" + pgnOptions[option] + "</td>";
+			myTable+="<td style='width: 100px; text-align: right;'>" + (pgnOptions[option] / (total + 0.0) * 100).toFixed(2) + "%</td></tr>";
+		}
+
+		myTable+="<tr><td style='width: 100px;'>Total:</td>";
+		myTable+="<td style='width: 100px; text-align: right;'>" + total + "</td>";
+		myTable+="<td style='width: 100px; text-align: right;'>" + ((total) / (total + 0.0) * 100) + "%</td></tr>";
+		myTable+="</table>";
+
+		$("#temp_results").html(myTable);
+
 	}
 }
 
@@ -311,10 +335,10 @@ function get_file_from_hash(hash) {
 
 var game_init = function() {
 
-	//--- start example JS ---
 	game = new Chess();
 	statusEl = $('#status');
 	pgnEl = $('#pgn');
+	moveCount = 1;
 
 	var cfg = {
 		draggable: true,
@@ -331,6 +355,10 @@ var game_init = function() {
 
 
 function onDrop(source, target) {
+	var moveColor = 'White';
+	if (game.turn() === 'b') {
+		moveColor = 'Black';
+	}
 	// see if the move is legal
 	var move = game.move({
 		from: source,
@@ -343,10 +371,38 @@ function onDrop(source, target) {
 		return 'snapback';
 	}
 	console.log("move: " + JSON.stringify(move));
-	//console.log("pgn: " + game.pgn());
-	//game.undo();
-	//console.log("pgn: " + game.pgn());
 
+	newPgn = game.pgn();
+	console.log("evaulating if new pgn is valid: ", newPgn);
+	var match = false;
+	for (option in pgnOptions) {
+		var cmpOpt = "";
+		if (moveColor == 'Black') {
+			options = option.split(" ");
+			cmpOpt = pgnCurrent + " " + options[options.length - 1];
+
+		} else {
+			if (moveCount == 1) {
+				cmpOpt = moveCount +". " + option;
+			} else {
+				cmpOpt = pgnCurrent + " " + moveCount +". " + option;
+			}
+		}
+		if (cmpOpt.includes(newPgn)) {
+			console.log("positive match!");
+			match = true;
+			break;
+		}
+	}
+	if (!match) {
+		console.log("No match found. Undoing move");
+		game.undo();
+		return 'snapback';
+	}
+
+	if (moveColor == 'Black') {
+		moveCount++;
+	}
 	updateStatus();
 };
 
@@ -374,6 +430,7 @@ function onSnapEnd() {
 function updateStatus() {
 	var status = '';
 
+
 	var moveColor = 'White';
 	if (game.turn() === 'b') {
 		moveColor = 'Black';
@@ -399,5 +456,7 @@ function updateStatus() {
 
 	statusEl.html(status);
 	pgnCurrent = game.pgn();
+	// ajax for new move options
+	handle_filter_submit(null);
 	pgnEl.html(pgnCurrent);
 };
