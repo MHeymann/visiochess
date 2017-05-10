@@ -259,6 +259,9 @@ This script performs all queries when filtering for a single given year.
 This file contains the \texttt{ServerInterface} class. This class is a PHP
 interface built on top of the \texttt{mysqli} interface. It adds another
 layer of abstraction that makes interfacing with MySQL servers much easier.
+This interface has made use of prepared statements when inserting and
+fetching data from the SQL server. The reasons therefore are later discussed
+in this report.
 \\Among others it provides functions to:
 \begin{itemize}
 	\item connect to a MySQL server.
@@ -520,6 +523,15 @@ additional features under play.html:
 	\end{lstlisting}
 \end{figure}
 
+The rational to split the database into 3 relational tables and one non relational
+table was as follows. Server storage space was optimized by ensuring that
+almost no information was repeated. Relational tables are particularly useful when
+doing this since one to many relationships are expressed cleanly and efficiently.
+Not only did the split of the information onto separate relational tables minimize
+the server storage space required, but this also improved the SQL query
+lookup times. Grouping the data in relational tables of information that will most
+likely be queried for together, in a single query improves performance fairly drastically.
+
 \subsection{Populating database}
 The parser started with a naive approach of putting each game into the
 database as soon as it was read.  This process took 50 minutes to parse the
@@ -676,6 +688,14 @@ ORDER BY date, popularity DESC;
 As expected, the query without an index table had to do a full table scan,
 while the query on the indexed table had a significant reduction in the
 number of rows that had to be scanned.
+
+As mentioned above, the interface to the SQL database is designed to
+interact with the database uses prepared statements. The reasons for
+this are twofold: prepared statements ensure that your server is kept
+safe from malicious users that try to inject SQL statements through
+the from on the website by sanitizing all such input. Furthermore,
+prepared statements play a key role in optimization of queries and
+insert statements.
 
 \section{Testing}
 Looking at the testing pyramid\cite{test}, the most important tests are unit
