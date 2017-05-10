@@ -182,54 +182,92 @@ function markFieldNeutral($field) {
 
 function validateFilters() {
 	var valid = true;
-
-	markFieldNeutral($('#filter_form input'))
+	markFieldNeutral($('#filter_form input'));
 
 	var $yearLow = $('input[name=year-low]');
 	var yearLow = $yearLow.val();
 	var yearHigh = $('input[name=year-high]').val();
 
-	if (!isNaN(parseInt(yearLow)) &&
-		!isNaN(parseInt(yearHigh)) &&
-		yearLow > yearHigh) {
-		markFieldInvalid($yearLow);
-		valid = false;
-	}
-
 	var $ecoLow = $('input[name=eco-low]');
 	var ecoLow = $ecoLow.val();
 	var ecoHigh = $('input[name=eco-high]').val();
-
-	if (!isNaN(parseInt(ecoLow)) &&
-		!isNaN(parseInt(ecoHigh)) &&
-		ecoLow > ecoHigh) {
-		markFieldInvalid($ecoLow);
-		valid = false;
-	}
 
 	var $eloBlackLow = $('input[name=black-elo-low]');
 	var eloBlackLow = $eloBlackLow.val();
 	var eloBlackHigh = $('input[name=black-elo-high]').val();
 
-	if (!isNaN(parseInt(eloBlackLow)) &&
-		!isNaN(parseInt(eloBlackHigh)) &&
-		eloBlackLow > eloBlackHigh) {
-		markFieldInvalid($eloBlackLow);
-		valid = false;
-	}
-
 	var $eloWhiteLow = $('input[name=white-elo-low]');
 	var eloWhiteLow = $eloWhiteLow.val();
 	var eloWhiteHigh = $('input[name=white-elo-high]').val();
 
-	if (!isNaN(parseInt(eloWhiteLow)) &&
-		!isNaN(parseInt(eloWhiteHigh)) &&
-		eloWhiteLow > eloWhiteHigh) {
-		markFieldInvalid($eloWhiteLow);
+	if (!validBlackEloRange(eloBlackLow, eloBlackHigh)) {
 		valid = false;
+		markFieldInvalid($eloBlackLow);
+	}
+
+	if (!validWhiteEloRange(eloWhiteLow, eloWhiteHigh)) {
+		valid = false;
+		markFieldInvalid($eloWhiteLow);
+	}
+
+	if (!validEcoRange(ecoLow, ecoHigh)) {
+		valid = false;
+		markFieldInvalid($ecoLow);
+	}
+
+	if (!validYearRange(yearLow, yearHigh)) {
+		valid = false;
+		markFieldInvalid($yearLow);
 	}
 
 	return valid;
+}
+/**
+ * Returns true or false if the year range is valid or invalid, respectively.
+ */
+function validYearRange(yearLow, yearHigh) {
+	if (!isNaN(parseInt(yearLow)) &&
+		!isNaN(parseInt(yearHigh)) &&
+		yearLow > yearHigh) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Returns true or false if the eco range is valid or invalid, respectively.
+ */
+function validEcoRange(ecoLow, ecoHigh) {
+	if (!isNaN(parseInt(ecoLow)) &&
+		!isNaN(parseInt(ecoHigh)) &&
+		ecoLow > ecoHigh) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Returns true or false if the black elo range is valid or invalid, respectively.
+ */
+function validBlackEloRange(eloBlackLow, eloBlackHigh) {
+	if (!isNaN(parseInt(eloBlackLow)) &&
+		!isNaN(parseInt(eloBlackHigh)) &&
+		eloBlackLow > eloBlackHigh) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ *  Returns true or false if the white elo range is valid or invalid, respectively.
+ */
+function validWhiteEloRange(eloWhiteLow, eloWhiteHigh) {
+	if (!isNaN(parseInt(eloWhiteLow)) &&
+		!isNaN(parseInt(eloWhiteHigh)) &&
+		eloWhiteLow > eloWhiteHigh) {
+		return false;
+	}
+	return true;
 }
 
 /**
