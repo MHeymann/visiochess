@@ -1,37 +1,25 @@
-/*
- * These are just some sample test cases to test how the QUnit library works.
- * These will be changed to test the actual functionality in the main.js file
- * To see the sample JUnit output run the tests.html file
-*/
-
-
-QUnit.module("Testing Comparisons");
-QUnit.test( "Test 1: Testing numbers", function( assert ) {
-  assert.ok( 1 == "1", "PASS!" );
+/* global QUnit */
+/* global validYearRange */
+QUnit.test('validYearRange()', function(assert) {
+    assert.ok(validYearRange(2000, 1990) == false, "2000 to 1990 is not valid");
+    assert.ok(validYearRange(2000, 2003) == true, "2000 to 2003 is valid");
+    assert.ok(validYearRange("abc", 1990) == true, "'abc' to 1990 is valid ");
 });
 
-QUnit.test("Test 2: Testing strings", function(assert){
-    assert.ok("Hi There!!!" == "Hi There!!!", "PASS!");
+QUnit.test('validEcoRange()', function(assert) {
+    assert.ok(validEcoRange(200, 199) == false, "200 to 199 is not valid");
+    assert.ok(validEcoRange(100, 300) == true, "100 to 300 is valid");
+    assert.ok(validEcoRange(1990, "") == true, "1990 to '' is valid");
 });
 
-QUnit.test("Test 3: This should fail", function(assert){
-    assert.ok(4 == "four", "PASS!");
+QUnit.test('validBlackEloRange()', function(assert) {
+    assert.ok(validBlackEloRange(2100, 2005) == false, "2100 to 2005 is not valid");
+    assert.ok(validBlackEloRange(2100, 2105) == true, "2100 to 2105 is valid");
+    assert.ok(validBlackEloRange("2000", "2005") == true, "'2000' to '2005' is valid");
 });
 
-
-QUnit.module("Testing objects");
-QUnit.test("Test 1", function(assert){
-    var obj = {foo: "bar"};
-    assert.deepEqual(obj, {foo: "bar"}, "PASS!")
+QUnit.test('validWhiteEloRange()', function(assert) {
+    assert.ok(validWhiteEloRange(3000, 2115) == false, "3000 to 2115 is not valid");
+    assert.ok(validWhiteEloRange(2115, 2105) == false, "2115 to 2105 is not valid");
+    assert.ok(validWhiteEloRange("blou is die wolke", "blou is die lug") == true, "'blou is die wolke' to 'blou is die lug' is valid");
 });
-
-QUnit.test("Test 2", function(assert){
-    var obj = {foo: 1};
-    assert.deepEqual(obj, {foo: 1}, "PASS!")
-});
-
-QUnit.test("Test 3: should fail", function(assert){
-    var obj = {foo: "bar"};
-    assert.deepEqual(obj, {foo: "foo"}, "PASS!")
-});
-
